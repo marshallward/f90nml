@@ -26,10 +26,10 @@ def parse(nml_fname):
 
         # Ignore tokens outside of namelist groups
         while t != '&':
-            t = tokens.next()
+            t = next(tokens)
 
         # Read group name following '&'
-        t = tokens.next()
+        t = next(tokens)
 
         g_name = t
         g_vars = NmlDict()
@@ -39,7 +39,7 @@ def parse(nml_fname):
         while t != '/':
 
             prior_t = t
-            t = tokens.next()
+            t = next(tokens)
 
             if v_name and not t == '=':
 
@@ -89,7 +89,7 @@ def parse(nml_fname):
             # Activate the next variable
             if t == '=':
                 v_name = prior_t
-                t = tokens.next()
+                t = next(tokens)
 
             if t == '/':
                 nmls[g_name] = g_vars
