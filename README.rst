@@ -8,16 +8,15 @@ A Fortran 90 namelist parser
 About f90nml
 ============
 
-This module takes a Fortran 90 namelist file and parses it into a dict of
-namelist groups containing dicts of group variables. Fortran data types are
-converted to equivalent Python types.
+The f90nml_ module takes a Fortran 90 namelist file and parses it into a Python
+``dict`` of namelist groups, each containing a ``dict`` of its variables.
+Fortran data types are converted to equivalent Python types.
 
 
 Usage
 =====
 
-In order to read a Fortran namelist file as a ``dict``, use the ``parse()``
-method:
+To read a Fortran namelist file as a ``dict``, use the ``parse()`` method:
 
 .. code:: python
 
@@ -43,6 +42,15 @@ case-insensitive keys, due to the case insensitivity of Fortran.
 Licensing
 =========
 
-f90nml is licensed under the `Python Software Foundation License`.
+f90nml_ is distributed under the `Apache 2.0 License`_.
 
-..
+
+Contact
+=======
+Marshall Ward <python@marshallward.org>
+
+
+.. _f90nml:
+    https://github.com/marshallward/f90nml
+.. _Apache 2.0 License:
+    http://www.apache.org/licenses/LICENSE-2.0.txt

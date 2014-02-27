@@ -1,6 +1,10 @@
-"""nml
+"""f90nml.py
 Parse fortran namelist files into dicts of standard Python data types.
-Contact: Marshall Ward <nml@marshallward.org>
+Contact: Marshall Ward <python@marshallward.org>
+---
+Distributed as part of f90nml, Copyright 2014 Marshall Ward
+Licensed under the Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0
 """
 import os
 import re

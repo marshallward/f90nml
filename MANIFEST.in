@@ -1,3 +1,5 @@
 include *.py
 include *.rst
+include LICENSE
+include NOTICE
 include MANIFEST.in
