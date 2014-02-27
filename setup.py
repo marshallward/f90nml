@@ -2,8 +2,8 @@
 
 from distutils.core import setup
 
-with open('README.txt') as f:
-    readme_txt = f.read()
+with open('README.rst') as f:
+    readme_rst = f.read()
 
 setup(
     name = 'f90nml',
@@ -11,7 +11,7 @@ setup(
     author = 'Marshall Ward',
     author_email = 'python@marshallward.org',
     description = 'Fortran 90 namelist parser',
-    long_description = readme_txt,
+    long_description = readme_rst,
     license = 'PSFL',
     keywords = 'fortran f90 namelist parser',
     url = 'http://github.com/marshallward/f90nml',
