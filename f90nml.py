@@ -5,6 +5,8 @@ Contact: Marshall Ward <nml@marshallward.org>
 import re
 import shlex
 
+__version__ == '0.1'
+
 f90quotes = ["'", '"']
 
 def parse(nml_fname):
