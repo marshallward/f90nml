@@ -1,2 +1,4 @@
-/build
+MANIFEST
 /__pycache__
+/build
+/dist
