@@ -2,13 +2,14 @@
 Parse fortran namelist files into dicts of standard Python data types.
 Contact: Marshall Ward <nml@marshallward.org>
 """
+import os
 import re
 import shlex
 
-__version__ == '0.1'
+__version__ = '0.1'
 
-f90quotes = ["'", '"']
 
+#---
 def parse(nml_fname):
 
     f = open(nml_fname, 'r')
@@ -54,7 +55,7 @@ def parse(nml_fname):
                 if (prior_t, t) == (',', ','):
                     f90val = None
                 elif prior_t != ',':
-                    f90val = f90type(prior_t)
+                    f90val = from_f90str(prior_t)
                 else:
                     # Skip ahead to next token, do not append lone commas
                     continue
@@ -99,8 +100,60 @@ def parse(nml_fname):
 
 
 #---
-def f90type(s):
+def save(nml, nml_fname):
+
+    if os.path.isfile(nml_fname):
+        raise IOError('File {} already exists.'.format(nml_fname))
+
+    f = open(nml_fname, 'w')
+
+    for grp in sorted(nml.keys()):
+        f.write('&{}\n'.format(grp))
+
+        grp_vars = nml[grp]
+        for v_name in sorted(grp_vars.keys()):
+
+            v_val = grp_vars[v_name]
+
+            if type(v_val) == list:
+                v_str = ', '.join([to_f90str(v) for v in v_val])
+            else:
+                v_str = to_f90str(v_val)
+
+            f.write('    {} = {}\n'.format(v_name, v_str))
+
+        f.write('/\n')
+
+    f.close()
+
+
+#---
+def to_f90str(v):
+    """Convert primitive Python types to equivalent Fortran strings"""
+
+    # TODO: Hash this somehow
+    if type(v) is int:
+        return str(v)
+    elif type(v) is float:
+        # TODO: Floating point precision?
+        return str(v)
+    elif type(v) is bool:
+        return '.{}.'.format(str(v).lower())
+    elif type(v) is complex:
+        return '({}, {})'.format(v.real, v.imag)
+    elif type(v) is str:
+        return '\'{}\''.format(v)
+    elif v is None:
+        return ''
+    else:
+        raise ValueError('Type {} of {} cannot be converted to a Fortran type.'
+                         ''.format(type(v), v))
+
+
+#---
+def from_f90str(s):
     """Convert string repr of Fortran type to equivalent Python type."""
+    assert type(s) is str
 
     recast_funcs = [int, float, f90complex, f90bool, f90str]
 
@@ -125,7 +178,7 @@ def f90complex(s):
         # NOTE: Failed float(str) will raise ValueError
         return complex(float(s_re), float(s_im))
     else:
-        raise ValueError('{} must be in complex number form (x,y)'.format(s))
+        raise ValueError('{} must be in complex number form (x, y)'.format(s))
 
 
 #---
@@ -145,6 +198,8 @@ def f90bool(s):
 #---
 def f90str(s):
     assert type(s) == str
+
+    f90quotes = ["'", '"']
 
     if s[0] in f90quotes and s[-1] in f90quotes:
         return s[1:-1]
