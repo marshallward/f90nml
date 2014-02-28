@@ -1,4 +1,6 @@
-MANIFEST
+*.pyc
 /__pycache__
 /build
 /dist
+/test
+MANIFEST

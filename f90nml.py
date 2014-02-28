@@ -14,12 +14,13 @@ __version__ = '0.1'
 
 
 #---
-def parse(nml_fname):
+def read(nml_fname):
 
     f = open(nml_fname, 'r')
 
     f90 = shlex.shlex(f)
     f90.commenters = '!'
+    f90.escapedquotes = '\'"'
     f90.wordchars += '.-()'   # Numerical characters
     tokens = iter(f90)
 
@@ -189,12 +190,11 @@ def f90complex(s):
 def f90bool(s):
     assert type(s) == str
 
-    # TODO: Only one '.' should be permitted (p = \.?[tTfT])
-    ss = s.lower().strip('.')
-    if ss.startswith('t'):
-        return True
-    elif ss.startswith('f'):
-        return False
+    boolmap = {'t': True, 'f': False}
+
+    match = re.match('\.?[tfTF]', s)
+    if match:
+        return boolmap[match.group()[-1].lower()]
     else:
         raise ValueError('{} is not a valid logical constant.'.format(s))
 
