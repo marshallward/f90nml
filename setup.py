@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name = 'f90nml',
-    version = '0.1a',
+    version = '0.1',
     author = 'Marshall Ward',
     author_email = 'python@marshallward.org',
     description = 'Fortran 90 namelist parser',
