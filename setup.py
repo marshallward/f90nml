@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from distutils.core import setup
 
 with open('README.rst') as f:
@@ -7,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name = 'f90nml',
-    version = '0.1',
+    version = '0.1a',
     author = 'Marshall Ward',
     author_email = 'python@marshallward.org',
     description = 'Fortran 90 namelist parser',
