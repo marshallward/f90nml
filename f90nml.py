@@ -105,7 +105,7 @@ def read(nml_fname):
 
 
 #---
-def save(nml, nml_fname):
+def write(nml, nml_fname):
 
     if os.path.isfile(nml_fname):
         raise IOError('File {} already exists.'.format(nml_fname))
