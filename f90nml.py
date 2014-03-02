@@ -22,7 +22,7 @@ def read(nml_fname):
     f90 = shlex.shlex(f)
     f90.commenters = '!'
     f90.escapedquotes = '\'"'
-    f90.wordchars += '.-'   # Numerical characters
+    f90.wordchars += '.-'   # Include decimal and negation characters
     tokens = iter(f90)
 
     # Store groups in case-insensitive dictionary
@@ -57,9 +57,8 @@ def read(nml_fname):
                 v_indices = []
                 i_start = i_end = i_stride = None
 
-                t = next(tokens)
-
                 # Start index
+                t = next(tokens)
                 try:
                     i_start = int(t)
                 except ValueError:
@@ -69,14 +68,15 @@ def read(nml_fname):
                     elif t == ':':
                         pass
                     else:
-                        raise ValueError
+                        raise
 
                 t = next(tokens)
 
                 # End index
                 if t == ':':
+                    t = next(tokens)
                     try:
-                        i_end = int(next(tokens))
+                        i_end = int(t)
                     except ValueError:
                         if t == ':':
                             raise ValueError('{} end index cannot be implicit '
@@ -85,16 +85,21 @@ def read(nml_fname):
                         elif t in idx_end:
                             pass
                         else:
-                            raise ValueError
+                            raise
                     t = next(tokens)
 
                 # Stride index
                 if t == ':':
+                    t = next(tokens)
                     try:
-                        i_stride = int(next(tokens))
+                        i_stride = int(t)
                     except ValueError:
-                        raise ValueError('{} stride index cannot be '
-                                         'implicit.'.format(v_name))
+                        if t == ')':
+                            raise ValueError('{} stride index cannot be '
+                                             'implicit.'.format(v_name))
+                        else:
+                            raise
+
                     if i_stride == 0:
                         raise ValueError('{} stride index cannot be zero.'
                                          ''.format(v_name))
@@ -109,13 +114,21 @@ def read(nml_fname):
                 v_indices.append((idx_triplet))
                 t = next(tokens)
 
+                #XXX: debug
+                print v_name, v_indices
+
             #TODO: =========
             #TODO: Start refactoring from here
             #TODO: =========
 
             # Set up new variable
             #if t == '=':
-            #    pass
+            #    if not v_name:
+            #        v_name = prior_t
+
+            #====
+            # OLD CODE
+            #====
 
             # If it's a variable name
             if v_name and not t == '=':
