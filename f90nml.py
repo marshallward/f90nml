@@ -109,9 +109,10 @@ def read(nml_fname):
                 v_indices.append((idx_triplet))
                 t = next(tokens)
 
-                print(v_indices)
+            #TODO: =========
+            #TODO: Start refactoring from here
+            #TODO: =========
 
-            print(t)
             # Set up new variable
             #if t == '=':
             #    pass
