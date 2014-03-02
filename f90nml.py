@@ -21,7 +21,11 @@ def read(nml_fname):
     f90 = shlex.shlex(f)
     f90.commenters = '!'
     f90.escapedquotes = '\'"'
-    f90.wordchars += '.-()'   # Numerical characters
+    f90.wordchars += '.-'   # Numerical characters
+    # debug
+    #tokens = list(f90)
+    #print(tokens)
+    #tokens = iter(tokens)
     tokens = iter(f90)
 
     # Store groups in case-insensitive dictionary
@@ -31,21 +35,88 @@ def read(nml_fname):
 
         # Ignore tokens outside of namelist groups
         while t != '&':
+            # TODO: '?' and '?=' support
             t = next(tokens)
 
-        # Read group name following '&'
-        t = next(tokens)
+        # NOTE: Current token is now '&'
 
-        g_name = t
+        g_name = next(tokens)
         g_vars = NmlDict()
 
         v_name = None
         v_vals = []
+
+        t = next(tokens)
+        # NOTE: Current token is either a variable name or finalizer (/)
         while t != '/':
 
             prior_t = t
             t = next(tokens)
 
+            # Determine index of vector variable
+            if t == '(':
+
+                idx_end = (',', ')')
+
+                v_name = prior_t
+                v_indices = []
+
+                t = next(tokens)
+                while not t in idx_end:
+
+                    i_start = i_end = i_stride = None
+
+                    # Start index
+                    try:
+                        i_s = int(t)
+                    except ValueError:
+                        if t in idx_end:
+                            raise ValueError('{} index cannot be empty.'
+                                             ''.format(v_name))
+                        elif not t == ':':
+                            raise ValueError
+                        # else: pass
+                    t = next(tokens)
+
+                    # Finish index
+                    if t == ':':
+                        try:
+                            i_e = int(next(tokens))
+                        except ValueError:
+                            if t == ':':
+                                raise ValueError('i::s not ok?')
+                            elif not t in idx_end:
+                                raise ValueError
+
+
+                        t = next(tokens)
+
+                    # Stride index
+                    if t == ':'
+                        try:
+                            i_stride = int(next(tokens))
+                        except ValueError:
+                            raise ValueError('Stride index of {} cannot be implicit.'
+                                             ''.format(v_name))
+                        if i_stride == 0:
+                            raise ValueError('Stride index of {} cannot be zero.'
+                                             ''.format(v_name))
+
+                        t = next(tokens)
+
+                        # TODO: Warn the user about invalid index
+                        assert t in (',', ')')
+
+                    v_indices.append([i_s, i_e, i_stride])
+
+                #debug
+                print(v_indices)
+
+            # Set up new variable
+            #if t == '=':
+            #    pass
+
+            # If it's a variable name
             if v_name and not t == '=':
 
                 # Test if varname contains a vector index
@@ -96,8 +167,8 @@ def read(nml_fname):
                 v_name = prior_t
                 t = next(tokens)
 
-            if t == '/':
-                nmls[g_name] = g_vars
+        # Append the grouplist to the namelist (including empty groups)
+        nmls[g_name] = g_vars
 
     f.close()
 
