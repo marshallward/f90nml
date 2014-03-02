@@ -12,6 +12,7 @@ import shlex
 
 __version__ = '0.1'
 
+idx_end = (',', ')')
 
 #---
 def read(nml_fname):
@@ -22,10 +23,6 @@ def read(nml_fname):
     f90.commenters = '!'
     f90.escapedquotes = '\'"'
     f90.wordchars += '.-'   # Numerical characters
-    # debug
-    #tokens = list(f90)
-    #print(tokens)
-    #tokens = iter(tokens)
     tokens = iter(f90)
 
     # Store groups in case-insensitive dictionary
@@ -56,62 +53,65 @@ def read(nml_fname):
             # Determine index of vector variable
             if t == '(':
 
-                idx_end = (',', ')')
-
                 v_name = prior_t
                 v_indices = []
+                i_start = i_end = i_stride = None
 
                 t = next(tokens)
-                while not t in idx_end:
 
-                    i_start = i_end = i_stride = None
+                # Start index
+                try:
+                    i_start = int(t)
+                except ValueError:
+                    if t in idx_end:
+                        raise ValueError('{} index cannot be empty.'
+                                         ''.format(v_name))
+                    elif t == ':':
+                        pass
+                    else:
+                        raise ValueError
 
-                    # Start index
+                t = next(tokens)
+
+                # End index
+                if t == ':':
                     try:
-                        i_s = int(t)
+                        i_end = int(next(tokens))
                     except ValueError:
-                        if t in idx_end:
-                            raise ValueError('{} index cannot be empty.'
+                        if t == ':':
+                            raise ValueError('{} end index cannot be implicit '
+                                             'when using stride.'
                                              ''.format(v_name))
-                        elif not t == ':':
+                        elif t in idx_end:
+                            pass
+                        else:
                             raise ValueError
-                        # else: pass
                     t = next(tokens)
 
-                    # Finish index
-                    if t == ':':
-                        try:
-                            i_e = int(next(tokens))
-                        except ValueError:
-                            if t == ':':
-                                raise ValueError('i::s not ok?')
-                            elif not t in idx_end:
-                                raise ValueError
+                # Stride index
+                if t == ':':
+                    try:
+                        i_stride = int(next(tokens))
+                    except ValueError:
+                        raise ValueError('{} stride index cannot be '
+                                         'implicit.'.format(v_name))
+                    if i_stride == 0:
+                        raise ValueError('{} stride index cannot be zero.'
+                                         ''.format(v_name))
 
+                    t = next(tokens)
 
-                        t = next(tokens)
+                if not t in idx_end:
+                    raise ValueError('{} index did not terminate '
+                                     'correctly.'.format(v_name))
 
-                    # Stride index
-                    if t == ':'
-                        try:
-                            i_stride = int(next(tokens))
-                        except ValueError:
-                            raise ValueError('Stride index of {} cannot be implicit.'
-                                             ''.format(v_name))
-                        if i_stride == 0:
-                            raise ValueError('Stride index of {} cannot be zero.'
-                                             ''.format(v_name))
+                idx_triplet = (i_start, i_end, i_stride)
+                v_indices.append((idx_triplet))
+                t = next(tokens)
 
-                        t = next(tokens)
-
-                        # TODO: Warn the user about invalid index
-                        assert t in (',', ')')
-
-                    v_indices.append([i_s, i_e, i_stride])
-
-                #debug
                 print(v_indices)
 
+            print(t)
             # Set up new variable
             #if t == '=':
             #    pass
