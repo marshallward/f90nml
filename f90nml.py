@@ -12,8 +12,6 @@ import shlex
 
 __version__ = '0.1'
 
-idx_end = (',', ')')
-
 #---
 def read(nml_fname):
 
@@ -40,26 +38,28 @@ def read(nml_fname):
         g_name = next(tokens)
         g_vars = NmlDict()
 
+        # XXX: Replace v_vals (list) with v_values (dict) and reconstruct
+
         v_name = None
         v_vals = []
+        v_values = {}
         v_indices = []
 
         t = next(tokens)
+
         # NOTE: Current token is either a variable name or finalizer (/)
+
         while t != '/':
 
             prior_t = t
             t = next(tokens)
 
             # Determine index of vector variable
+            # TODO: Move later?
             if t == '(':
                 v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
 
-            #TODO: =========
-            #TODO: Start refactoring from here
-            #TODO: =========
-
-            # Read values and store
+            # Parse values and store to v_values
             if v_name and not t == '=':
 
                 # Parse the variable string
@@ -221,6 +221,8 @@ def f90str(s):
 
 #---
 def parse_f90idx(tokens, t, prior_t):
+
+        idx_end = (',', ')')
 
         v_name = prior_t
         v_indices = []
