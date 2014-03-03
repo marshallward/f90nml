@@ -42,6 +42,7 @@ def read(nml_fname):
 
         v_name = None
         v_vals = []
+        v_indices = []
 
         t = next(tokens)
         # NOTE: Current token is either a variable name or finalizer (/)
@@ -52,94 +53,14 @@ def read(nml_fname):
 
             # Determine index of vector variable
             if t == '(':
-
-                v_name = prior_t
-                v_indices = []
-                i_start = i_end = i_stride = None
-
-                # Start index
-                t = next(tokens)
-                try:
-                    i_start = int(t)
-                except ValueError:
-                    if t in idx_end:
-                        raise ValueError('{} index cannot be empty.'
-                                         ''.format(v_name))
-                    elif t == ':':
-                        pass
-                    else:
-                        raise
-
-                t = next(tokens)
-
-                # End index
-                if t == ':':
-                    t = next(tokens)
-                    try:
-                        i_end = int(t)
-                    except ValueError:
-                        if t == ':':
-                            raise ValueError('{} end index cannot be implicit '
-                                             'when using stride.'
-                                             ''.format(v_name))
-                        elif t in idx_end:
-                            pass
-                        else:
-                            raise
-                    t = next(tokens)
-
-                # Stride index
-                if t == ':':
-                    t = next(tokens)
-                    try:
-                        i_stride = int(t)
-                    except ValueError:
-                        if t == ')':
-                            raise ValueError('{} stride index cannot be '
-                                             'implicit.'.format(v_name))
-                        else:
-                            raise
-
-                    if i_stride == 0:
-                        raise ValueError('{} stride index cannot be zero.'
-                                         ''.format(v_name))
-
-                    t = next(tokens)
-
-                if not t in idx_end:
-                    raise ValueError('{} index did not terminate '
-                                     'correctly.'.format(v_name))
-
-                idx_triplet = (i_start, i_end, i_stride)
-                v_indices.append((idx_triplet))
-                t = next(tokens)
-
-                #XXX: debug
-                print v_name, v_indices
+                v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
 
             #TODO: =========
             #TODO: Start refactoring from here
             #TODO: =========
 
-            # Set up new variable
-            #if t == '=':
-            #    if not v_name:
-            #        v_name = prior_t
-
-            #====
-            # OLD CODE
-            #====
-
-            # If it's a variable name
+            # Read values and store
             if v_name and not t == '=':
-
-                # Test if varname contains a vector index
-                match = re.search(r'\(\d+\)$', v_name)
-                if match:
-                    v_index = int(v_name[match.start()+1:-1])
-                    v_name = v_name[:match.start()]
-                else:
-                    v_index = None
 
                 # Parse the variable string
                 if (prior_t, t) == (',', ','):
@@ -150,7 +71,8 @@ def read(nml_fname):
                     # Skip ahead to next token, do not append lone commas
                     continue
 
-                if v_index and v_name in g_vars:
+                if v_indices and v_name in g_vars:
+
                     v_vals = g_vars[v_name]
                     if type(v_vals) != list:
                         v_vals = [v_vals]
@@ -168,12 +90,13 @@ def read(nml_fname):
             # Finalize the current variable
             if v_name and (t == '=' or t == '/'):
 
-                if len(v_vals) == 1:
+                if len(v_vals) == 1 and not v_indices:
                     v_vals = v_vals[0]
                 g_vars[v_name] = v_vals
 
                 # Deactivate the current variable
                 v_name = None
+                v_indices = None
                 v_vals = []
 
             # Activate the next variable
@@ -294,6 +217,73 @@ def f90str(s):
         return s[1:-1]
 
     raise ValueError
+
+
+#---
+def parse_f90idx(tokens, t, prior_t):
+
+        v_name = prior_t
+        v_indices = []
+        i_start = i_end = i_stride = None
+
+        # Start index
+        t = next(tokens)
+        try:
+            i_start = int(t)
+        except ValueError:
+            if t in idx_end:
+                raise ValueError('{} index cannot be empty.'
+                                 ''.format(v_name))
+            elif t == ':':
+                pass
+            else:
+                raise
+
+        t = next(tokens)
+
+        # End index
+        if t == ':':
+            t = next(tokens)
+            try:
+                i_end = int(t)
+            except ValueError:
+                if t == ':':
+                    raise ValueError('{} end index cannot be implicit '
+                                     'when using stride.'
+                                     ''.format(v_name))
+                elif t in idx_end:
+                    pass
+                else:
+                    raise
+            t = next(tokens)
+
+        # Stride index
+        if t == ':':
+            t = next(tokens)
+            try:
+                i_stride = int(t)
+            except ValueError:
+                if t == ')':
+                    raise ValueError('{} stride index cannot be '
+                                     'implicit.'.format(v_name))
+                else:
+                    raise
+
+            if i_stride == 0:
+                raise ValueError('{} stride index cannot be zero.'
+                                 ''.format(v_name))
+
+            t = next(tokens)
+
+        if not t in idx_end:
+            raise ValueError('{} index did not terminate '
+                             'correctly.'.format(v_name))
+
+        idx_triplet = (i_start, i_end, i_stride)
+        v_indices.append((idx_triplet))
+        t = next(tokens)
+
+        return v_name, v_indices, t
 
 
 #---
