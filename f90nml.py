@@ -20,7 +20,7 @@ def read(nml_fname):
     f90 = shlex.shlex(f)
     f90.commenters = '!'
     f90.escapedquotes = '\'"'
-    f90.wordchars += '.-'   # Include decimal and negation characters
+    f90.wordchars += '.-+'      # Include floating point characters
     tokens = iter(f90)
 
     # Store groups in case-insensitive dictionary
@@ -33,13 +33,12 @@ def read(nml_fname):
             # TODO: '?' and '?=' support
             t = next(tokens)
 
-        # NOTE: Current token is now '&'
+        # Current token is now '&'
 
         g_name = next(tokens)
         g_vars = NmlDict()
 
         # XXX: Replace v_vals (list) with v_values (dict) and reconstruct
-
         v_name = None
         v_vals = []
         v_values = {}
@@ -48,7 +47,7 @@ def read(nml_fname):
         prior_t = t
         t = next(tokens)
 
-        # NOTE: Current token is either a variable name or finalizer (/)
+        # Current token is either a variable name or finalizer (/)
 
         while t != '/':
 
@@ -60,7 +59,6 @@ def read(nml_fname):
 
                 # Parse the indices of the current variable
                 if t == '(':
-                    #v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
                     v_indices, t = parse_f90idx(tokens, t, prior_t)
 
                 # Save and deactivate the current variable
@@ -84,7 +82,7 @@ def read(nml_fname):
             elif v_name:
                 # Parse the variable string
 
-                # Skip ahead (efficiency)
+                # Skip ahead on first value
                 if prior_t == '=':
                     prior_t = t
                     t = next(tokens)
@@ -97,6 +95,8 @@ def read(nml_fname):
                     v_vals.append(from_f90str(prior_t))
                 else:
                     pass
+
+                # TODO: Relate each value to its index
 
                 #if v_indices and v_name in g_vars:
 
@@ -294,7 +294,6 @@ def parse_f90idx(tokens, t, prior_t):
         v_indices.append((idx_triplet))
         t = next(tokens)
 
-        #return v_name, v_indices, t
         return v_indices, t
 
 
