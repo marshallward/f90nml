@@ -10,7 +10,7 @@ import os
 import re
 import shlex
 
-__version__ = '0.1'
+__version__ = '0.2dev'
 
 #---
 def read(nml_fname):
@@ -38,11 +38,9 @@ def read(nml_fname):
         g_name = next(tokens)
         g_vars = NmlDict()
 
-        # XXX: Replace v_vals (list) with v_values (dict) and reconstruct
         v_name = None
         v_vals = []
-        v_values = {}
-        v_indices = []
+        v_idx = None
 
         prior_t = t
         t = next(tokens)
@@ -60,59 +58,59 @@ def read(nml_fname):
                 # Parse the indices of the current variable
                 if t == '(':
                     v_indices, t = parse_f90idx(tokens, t, prior_t)
+                    v_idx = gen_index(v_indices)
 
                 # Save and deactivate the current variable
                 if v_name:
-                    # TODO: Replace v_vals with v_values
-
-                    if len(v_vals) == 1 and not v_indices:
+                    if len(v_vals) == 1 and not v_idx:
                         v_vals = v_vals[0]
                     g_vars[v_name] = v_vals
 
                     v_name = None
-                    v_indices = None
+                    v_idx = None
                     v_vals = []
-                    v_values = {}
 
                 # Activate the next variable
                 if not v_name and t == '=':
                     v_name = prior_t
 
-            # Parse values and store to v_values
+            # Parse values and store to v_vals
             elif v_name:
-                # Parse the variable string
-
                 # Skip ahead on first value
                 if prior_t == '=':
                     prior_t = t
                     t = next(tokens)
 
+                # Parse the variable string
                 if (prior_t, t) == (',', ','):
-                    #f90val = None
-                    v_vals.append(None)
+                    #v_vals.append(None)
+                    next_value = None
                 elif prior_t != ',':
-                    #f90val = from_f90str(prior_t)
-                    v_vals.append(from_f90str(prior_t))
+                    #v_vals.append(from_f90str(prior_t))
+                    next_value = from_f90str(prior_t)
                 else:
                     pass
 
-                # TODO: Relate each value to its index
+                if v_idx and v_name in g_vars:
 
-                #if v_indices and v_name in g_vars:
+                    v_vals = g_vars[v_name]
+                    if type(v_vals) != list:
+                        v_vals = [v_vals]
+                    try:
+                        # NOTE: Fortran indexing starts at 1
+                        v_vals[v_index - 1] = next_value
+                    except IndexError:
+                        # Expand the list to accomodate out-of-range indices
+                        size = len(v_vals)
+                        v_vals.extend(None for i in range(size, v_index))
+                        v_vals[v_index - 1] = next_value
+                else:
+                    v_vals.append(next_value)
 
-                #    v_vals = g_vars[v_name]
-                #    if type(v_vals) != list:
-                #        v_vals = [v_vals]
-                #    try:
-                #        # NOTE: Fortran indexing starts at 1
-                #        v_vals[v_index-1] = f90val
-                #    except IndexError:
-                #        # Expand the list to accomodate out-of-range indices
-                #        size = len(v_vals)
-                #        v_vals.extend(None for i in range(size, v_index))
-                #        v_vals[v_index-1] = f90val
-                #else:
-                #    v_vals.append(f90val)
+            # hack
+            if t == ',':
+                prior_t = t
+                t = next(tokens)
 
         # Append the grouplist to the namelist (including empty groups)
         nmls[g_name] = g_vars
@@ -295,6 +293,24 @@ def parse_f90idx(tokens, t, prior_t):
         t = next(tokens)
 
         return v_indices, t
+
+
+#---
+def gen_index(idx):
+    # TODO: Multidimensional support (numpy)
+    i_s, i_e, d_i = idx[0]
+
+    # TODO: infinite i_e?
+    if not i_e:
+        i_e = 10000
+
+    if not d_i:
+        d_i = 1
+
+    i = i_s
+    while i <= i_e:
+        yield i
+        i += d_i
 
 
 #---
