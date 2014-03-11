@@ -55,9 +55,10 @@ def read(nml_fname):
             t = next(tokens)
 
             # Determine index of vector variable
-            # TODO: Move later?
             if t == '(':
+                # NOTE: prior_t still points to v_name
                 v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
+                print(v_name, v_indices)
 
             # Parse values and store to v_values
             if v_name and not t == '=':
@@ -232,32 +233,31 @@ def parse_f90idx(tokens, t, prior_t):
         t = next(tokens)
         try:
             i_start = int(t)
+            t = next(tokens)
         except ValueError:
             if t in idx_end:
                 raise ValueError('{} index cannot be empty.'
                                  ''.format(v_name))
-            elif t == ':':
-                pass
-            else:
+            elif not t == ':':
                 raise
-
-        t = next(tokens)
 
         # End index
         if t == ':':
             t = next(tokens)
             try:
                 i_end = int(t)
+                t = next(tokens)
             except ValueError:
                 if t == ':':
                     raise ValueError('{} end index cannot be implicit '
                                      'when using stride.'
                                      ''.format(v_name))
-                elif t in idx_end:
-                    pass
-                else:
+                elif not t in idx_end:
                     raise
-            t = next(tokens)
+        elif t in idx_end:
+            # Replace index with single-index range
+            if i_start:
+                i_end = i_start
 
         # Stride index
         if t == ':':
