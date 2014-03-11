@@ -45,6 +45,7 @@ def read(nml_fname):
         v_values = {}
         v_indices = []
 
+        prior_t = t
         t = next(tokens)
 
         # NOTE: Current token is either a variable name or finalizer (/)
@@ -54,56 +55,64 @@ def read(nml_fname):
             prior_t = t
             t = next(tokens)
 
-            # Determine index of vector variable
-            if t == '(':
-                # NOTE: prior_t still points to v_name
-                v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
-                print(v_name, v_indices)
+            # Update current variable status
+            if t in ('(', '=', '/'):
+
+                # Parse the indices of the current variable
+                if t == '(':
+                    #v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
+                    v_indices, t = parse_f90idx(tokens, t, prior_t)
+
+                # Save and deactivate the current variable
+                if v_name:
+                    # TODO: Replace v_vals with v_values
+
+                    if len(v_vals) == 1 and not v_indices:
+                        v_vals = v_vals[0]
+                    g_vars[v_name] = v_vals
+
+                    v_name = None
+                    v_indices = None
+                    v_vals = []
+                    v_values = {}
+
+                # Activate the next variable
+                if not v_name and t == '=':
+                    v_name = prior_t
 
             # Parse values and store to v_values
-            if v_name and not t == '=':
-
+            elif v_name:
                 # Parse the variable string
+
+                # Skip ahead (efficiency)
+                if prior_t == '=':
+                    prior_t = t
+                    t = next(tokens)
+
                 if (prior_t, t) == (',', ','):
-                    f90val = None
+                    #f90val = None
+                    v_vals.append(None)
                 elif prior_t != ',':
-                    f90val = from_f90str(prior_t)
+                    #f90val = from_f90str(prior_t)
+                    v_vals.append(from_f90str(prior_t))
                 else:
-                    # Skip ahead to next token, do not append lone commas
-                    continue
+                    pass
 
-                if v_indices and v_name in g_vars:
+                #if v_indices and v_name in g_vars:
 
-                    v_vals = g_vars[v_name]
-                    if type(v_vals) != list:
-                        v_vals = [v_vals]
-                    try:
-                        # NOTE: Fortran indexing starts at 1
-                        v_vals[v_index-1] = f90val
-                    except IndexError:
-                        # Expand the list to accomodate out-of-range indices
-                        size = len(v_vals)
-                        v_vals.extend(None for i in range(size, v_index))
-                        v_vals[v_index-1] = f90val
-                else:
-                    v_vals.append(f90val)
-
-            # Finalize the current variable
-            if v_name and (t == '=' or t == '/'):
-
-                if len(v_vals) == 1 and not v_indices:
-                    v_vals = v_vals[0]
-                g_vars[v_name] = v_vals
-
-                # Deactivate the current variable
-                v_name = None
-                v_indices = None
-                v_vals = []
-
-            # Activate the next variable
-            if t == '=':
-                v_name = prior_t
-                t = next(tokens)
+                #    v_vals = g_vars[v_name]
+                #    if type(v_vals) != list:
+                #        v_vals = [v_vals]
+                #    try:
+                #        # NOTE: Fortran indexing starts at 1
+                #        v_vals[v_index-1] = f90val
+                #    except IndexError:
+                #        # Expand the list to accomodate out-of-range indices
+                #        size = len(v_vals)
+                #        v_vals.extend(None for i in range(size, v_index))
+                #        v_vals[v_index-1] = f90val
+                #else:
+                #    v_vals.append(f90val)
 
         # Append the grouplist to the namelist (including empty groups)
         nmls[g_name] = g_vars
@@ -285,7 +294,8 @@ def parse_f90idx(tokens, t, prior_t):
         v_indices.append((idx_triplet))
         t = next(tokens)
 
-        return v_name, v_indices, t
+        #return v_name, v_indices, t
+        return v_indices, t
 
 
 #---
