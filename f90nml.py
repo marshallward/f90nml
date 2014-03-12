@@ -55,6 +55,11 @@ def read(nml_fname):
 
             if v_name:
 
+                # Pass commas
+                if t == ',':
+                    prior_t = t
+                    t = next(tokens)
+
                 #---
                 # Parse the prior token value
 
@@ -117,11 +122,6 @@ def read(nml_fname):
                     v_idx = None
 
             print('{}: {}'.format(v_name, v_vals))
-
-            # Pass commas
-            if t == ',':
-                prior_t = t
-                t = next(tokens)
 
         # Append the grouplist to the namelist (including empty groups)
         nmls[g_name] = g_vars
