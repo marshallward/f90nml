@@ -58,6 +58,8 @@ def read(nml_fname):
                 prior_t = t
                 t = next(tokens)
 
+            print('tokens: {} {}'.format(prior_t, t))
+
             if v_name:
 
                 #---
@@ -75,7 +77,7 @@ def read(nml_fname):
                     if prior_t == ',' :
                         next_value = None
                     else:
-                        next_value = from_f90str(prior_t)
+                        next_value = parse_f90val(tokens, t, prior_t)
 
                     if v_idx:
 
@@ -108,7 +110,7 @@ def read(nml_fname):
                     v_vals = []
 
             # Parse the indices of the current variable
-            if t == '(':
+            if t == '(' and not prior_t == '=':
                 v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
                 v_idx = gen_index(v_indices)
 
@@ -178,7 +180,7 @@ def to_f90str(v):
 
 
 #---
-def from_f90str(s):
+def parse_f90val(tokens, t, s):
     """Convert string repr of Fortran type to equivalent Python type."""
     assert type(s) is str
 
