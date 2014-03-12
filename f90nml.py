@@ -53,63 +53,68 @@ def read(nml_fname):
 
             print('tokens: {} {}'.format(prior_t, t))
 
-            # Save and deactivate the current variable
-            if v_name and t in ('(', '=', '/'):
+            if v_name:
 
-                if len(v_vals) == 1:
-                    v_vals = v_vals[0]
-                g_vars[v_name] = v_vals
+                #---
+                # Parse the prior token value
 
-                v_name = None
-                v_vals = []
+                if t == '/' or not t in ('(', '='):
+
+                    # Skip ahead on first value
+                    if prior_t == '=':
+                        prior_t = t
+                        t = next(tokens)
+
+                    # Parse the variable string
+                    if (prior_t, t) == (',', ','):
+                        #v_vals.append(None)
+                        next_value = None
+                    elif prior_t != ',':
+                        #v_vals.append(from_f90str(prior_t))
+                        next_value = from_f90str(prior_t)
+                    else:
+                        pass
+
+                    if v_idx:
+
+                        v_i = next(v_idx)
+
+                        if v_name in g_vars:
+                            v_vals = g_vars[v_name]
+                            if type(v_vals) != list:
+                                v_vals = [v_vals]
+
+                        try:
+                            # NOTE: Default Fortran indexing starts at 1
+                            v_vals[v_i - 1] = next_value
+                        except IndexError:
+                            # Expand the list to accomodate out-of-range indices
+                            size = len(v_vals)
+                            v_vals.extend(None for i in range(size, v_i))
+                            v_vals[v_i - 1] = next_value
+                    else:
+                        v_vals.append(next_value)
+
+                # Save and deactivate the current variable
+                if t in ('(', '=', '/'):
+
+                    if len(v_vals) == 1:
+                        v_vals = v_vals[0]
+                    g_vars[v_name] = v_vals
+
+                    v_name = None
+                    v_vals = []
 
             # Parse the indices of the current variable
             if t == '(':
                 v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
                 v_idx = gen_index(v_indices)
 
-            elif t == '=':
+            if t == '=':
                 # Activate the next variable
                 if not v_name:
                     v_name = prior_t
                     v_idx = None
-
-            # Parse values and store to v_vals
-            elif v_name:
-                # Skip ahead on first value
-                if prior_t == '=':
-                    prior_t = t
-                    t = next(tokens)
-
-                # Parse the variable string
-                if (prior_t, t) == (',', ','):
-                    #v_vals.append(None)
-                    next_value = None
-                elif prior_t != ',':
-                    #v_vals.append(from_f90str(prior_t))
-                    next_value = from_f90str(prior_t)
-                else:
-                    pass
-
-                if v_idx:
-
-                    v_i = next(v_idx)
-
-                    if v_name in g_vars:
-                        v_vals = g_vars[v_name]
-                        if type(v_vals) != list:
-                            v_vals = [v_vals]
-
-                    try:
-                        # NOTE: Default Fortran indexing starts at 1
-                        v_vals[v_i - 1] = next_value
-                    except IndexError:
-                        # Expand the list to accomodate out-of-range indices
-                        size = len(v_vals)
-                        v_vals.extend(None for i in range(size, v_i))
-                        v_vals[v_i - 1] = next_value
-                else:
-                    v_vals.append(next_value)
 
             print('{}: {}'.format(v_name, v_vals))
 
