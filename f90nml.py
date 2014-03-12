@@ -39,8 +39,8 @@ def read(nml_fname):
         g_vars = NmlDict()
 
         v_name = None
-        v_vals = []
         v_idx = None
+        v_vals = []
 
         prior_t = t
         t = next(tokens)
@@ -52,26 +52,26 @@ def read(nml_fname):
             prior_t = t
             t = next(tokens)
 
-            # Update current variable status
-            if t in ('(', '=', '/'):
+            # Save and deactivate the current variable
+            if v_name and t in ('(', '=', '/'):
 
-                # Parse the indices of the current variable
-                if t == '(':
-                    v_indices, t = parse_f90idx(tokens, t, prior_t)
-                    v_idx = gen_index(v_indices)
+                if len(v_vals) == 1:
+                    v_vals = v_vals[0]
+                g_vars[v_name] = v_vals
 
-                # Save and deactivate the current variable
-                if v_name:
-                    if len(v_vals) == 1 and not v_idx:
-                        v_vals = v_vals[0]
-                    g_vars[v_name] = v_vals
+                v_name = None
+                v_vals = []
 
-                    v_name = None
-                    v_idx = None
-                    v_vals = []
+            # Parse the indices of the current variable
+            if t == '(':
+                v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
+                v_idx = gen_index(v_indices)
 
+            elif t == '=':
                 # Activate the next variable
-                if not v_name and t == '=':
+                if v_idx:
+                    pass
+                else:
                     v_name = prior_t
 
             # Parse values and store to v_vals
@@ -91,23 +91,27 @@ def read(nml_fname):
                 else:
                     pass
 
-                if v_idx and v_name in g_vars:
+                if v_idx:
+                    
+                    v_i = next(v_idx)
+                    
+                    if v_name in g_vars:
+                        v_vals = g_vars[v_name]
+                        if type(v_vals) != list:
+                            v_vals = [v_vals]
 
-                    v_vals = g_vars[v_name]
-                    if type(v_vals) != list:
-                        v_vals = [v_vals]
                     try:
                         # NOTE: Fortran indexing starts at 1
-                        v_vals[v_index - 1] = next_value
+                        v_vals[v_i - 1] = next_value
                     except IndexError:
                         # Expand the list to accomodate out-of-range indices
                         size = len(v_vals)
-                        v_vals.extend(None for i in range(size, v_index))
-                        v_vals[v_index - 1] = next_value
+                        v_vals.extend(None for i in range(size, v_i))
+                        v_vals[v_i - 1] = next_value
                 else:
                     v_vals.append(next_value)
 
-            # hack
+            # Pass commas
             if t == ',':
                 prior_t = t
                 t = next(tokens)
@@ -292,7 +296,7 @@ def parse_f90idx(tokens, t, prior_t):
         v_indices.append((idx_triplet))
         t = next(tokens)
 
-        return v_indices, t
+        return v_name, v_indices, t
 
 
 #---
@@ -300,6 +304,9 @@ def gen_index(idx):
     # TODO: Multidimensional support (numpy)
     i_s, i_e, d_i = idx[0]
 
+    if not i_s:
+        i_s = 1
+    
     # TODO: infinite i_e?
     if not i_e:
         i_e = 10000
