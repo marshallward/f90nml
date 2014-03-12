@@ -57,8 +57,6 @@ def read(nml_fname):
                 prior_t = t
                 t = next(tokens)
 
-            print('tokens: {} {}'.format(prior_t, t))
-
             if v_name:
 
                 #---
