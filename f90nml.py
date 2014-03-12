@@ -7,7 +7,6 @@ Licensed under the Apache License, Version 2.0
 http://www.apache.org/licenses/LICENSE-2.0
 """
 import os
-import re
 import shlex
 
 __version__ = '0.2dev'
@@ -66,7 +65,9 @@ def read(nml_fname):
                 # Parse the prior token value
 
                 # Skip variable names and end commas
-                if not t in ('(', '=') and not (prior_t, t) == (',', '/'):
+                #if not t in ('(', '=') and not (prior_t, t) == (',', '/'):
+                if not ( t == '=' or (t == '(' and not prior_t == '=')
+                        or (prior_t, t) == (',', '/')  or prior_t == ')'):
 
                     # Skip ahead on first value
                     if prior_t == '=':
@@ -77,7 +78,7 @@ def read(nml_fname):
                     if prior_t == ',' :
                         next_value = None
                     else:
-                        next_value = parse_f90val(tokens, t, prior_t)
+                        next_value, t = parse_f90val(tokens, t, prior_t)
 
                     if v_idx:
 
@@ -184,12 +185,23 @@ def parse_f90val(tokens, t, s):
     """Convert string repr of Fortran type to equivalent Python type."""
     assert type(s) is str
 
+    # Construct the complex string
+    if s == '(':
+        s_re = t
+        next(tokens)
+        s_im = next(tokens)
+
+        t = next(tokens)
+
+        s = '({}, {})'.format(s_re, s_im)
+
+
     recast_funcs = [int, float, f90complex, f90bool, f90str]
 
     for f90type in recast_funcs:
         try:
             v = f90type(s)
-            return v
+            return v, t
         except ValueError:
             continue
 
@@ -201,7 +213,7 @@ def parse_f90val(tokens, t, s):
 def f90complex(s):
     assert type(s) == str
 
-    if s[0] == '(' and s[-1] == ')' and len(s,split(',') == 2):
+    if s[0] == '(' and s[-1] == ')' and len(s.split(',')) == 2:
         s_re, s_im = s[1:-1].split(',', 1)
 
         # NOTE: Failed float(str) will raise ValueError
