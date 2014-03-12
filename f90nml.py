@@ -48,7 +48,7 @@ def read(nml_fname):
 
         while t != '/':
 
-            # Pass commas
+            # Skip commas
             if t == ',':
                 prior_t = t
                 t = next(tokens)
@@ -58,14 +58,13 @@ def read(nml_fname):
                 prior_t = t
                 t = next(tokens)
 
-            print('tokens: {} {}'.format(prior_t, t))
-
             if v_name:
 
                 #---
                 # Parse the prior token value
 
-                if t in ('/') or not t in ('(', '='):
+                # Skip variable names and end commas
+                if not t in ('(', '=') and not (prior_t, t) == (',', '/'):
 
                     # Skip ahead on first value
                     if prior_t == '=':
@@ -73,14 +72,10 @@ def read(nml_fname):
                         t = next(tokens)
 
                     # Parse the variable string
-                    if (prior_t, t) == (',', ','):
-                        #v_vals.append(None)
+                    if prior_t == ',' :
                         next_value = None
-                    elif prior_t != ',':
-                        #v_vals.append(from_f90str(prior_t))
-                        next_value = from_f90str(prior_t)
                     else:
-                        pass
+                        next_value = from_f90str(prior_t)
 
                     if v_idx:
 
@@ -92,17 +87,17 @@ def read(nml_fname):
                                 v_vals = [v_vals]
 
                         try:
-                            # NOTE: Default Fortran indexing starts at 1
+                            # Default Fortran indexing starts at 1
                             v_vals[v_i - 1] = next_value
                         except IndexError:
-                            # Expand the list to accomodate out-of-range indices
+                            # Expand list to accomodate out-of-range indices
                             size = len(v_vals)
                             v_vals.extend(None for i in range(size, v_i))
                             v_vals[v_i - 1] = next_value
                     else:
                         v_vals.append(next_value)
 
-                # Save and deactivate the current variable
+                # Save then deactivate the current variable
                 if t in ('(', '=', '/'):
 
                     if len(v_vals) == 1:
@@ -122,8 +117,6 @@ def read(nml_fname):
                 if not v_name:
                     v_name = prior_t
                     v_idx = None
-
-            print('{}: {}'.format(v_name, v_vals))
 
         # Append the grouplist to the namelist (including empty groups)
         nmls[g_name] = g_vars
