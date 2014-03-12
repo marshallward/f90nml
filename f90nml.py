@@ -30,7 +30,6 @@ def read(nml_fname):
 
         # Ignore tokens outside of namelist groups
         while t != '&':
-            # TODO: '?' and '?=' support
             t = next(tokens)
 
         # Current token is now '&'
@@ -53,7 +52,7 @@ def read(nml_fname):
             t = next(tokens)
 
             print('tokens: {} {}'.format(prior_t, t))
-            
+
             # Save and deactivate the current variable
             if v_name and t in ('(', '=', '/'):
 
@@ -71,10 +70,9 @@ def read(nml_fname):
 
             elif t == '=':
                 # Activate the next variable
-                if v_idx:
-                    pass
-                else:
+                if not v_name:
                     v_name = prior_t
+                    v_idx = None
 
             # Parse values and store to v_vals
             elif v_name:
@@ -94,16 +92,16 @@ def read(nml_fname):
                     pass
 
                 if v_idx:
-                    
+
                     v_i = next(v_idx)
-                    
+
                     if v_name in g_vars:
                         v_vals = g_vars[v_name]
                         if type(v_vals) != list:
                             v_vals = [v_vals]
 
                     try:
-                        # NOTE: Fortran indexing starts at 1
+                        # NOTE: Default Fortran indexing starts at 1
                         v_vals[v_i - 1] = next_value
                     except IndexError:
                         # Expand the list to accomodate out-of-range indices
@@ -112,6 +110,8 @@ def read(nml_fname):
                         v_vals[v_i - 1] = next_value
                 else:
                     v_vals.append(next_value)
+
+            print('{}: {}'.format(v_name, v_vals))
 
             # Pass commas
             if t == ',':
@@ -308,7 +308,7 @@ def gen_index(idx):
 
     if not i_s:
         i_s = 1
-    
+
     # TODO: infinite i_e?
     if not i_e:
         i_e = 10000
