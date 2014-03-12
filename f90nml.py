@@ -212,11 +212,15 @@ def f90complex(s):
 def f90bool(s):
     assert type(s) == str
 
-    boolmap = {'t': True, 'f': False}
+    try:
+        s_bool = s[1].lower() if s.startswith('.') else s[0].lower()
+    except IndexError:
+        raise ValueError('{} is not a valid logical constant.'.format(s))
 
-    match = re.match('\.?[tfTF]', s)
-    if match:
-        return boolmap[match.group()[-1].lower()]
+    if s_bool == 't':
+        return True
+    elif s_bool == 'f':
+        return False
     else:
         raise ValueError('{} is not a valid logical constant.'.format(s))
 

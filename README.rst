@@ -42,7 +42,7 @@ intended to accomodate individual references and assignments.
 
 The following namelist features are currently not supported:
 
-* Complex parsing was broken by vector index parsing (added '()' to wordchars)
+* Complex numbers
 * Index range support (``v(i:j) = c``)
 * Repeated indexing (``v = r*c, r*``)
 * Upcast vector elements if components differ (``x(i) = int, x(j) = float``)
