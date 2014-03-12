@@ -52,6 +52,8 @@ def read(nml_fname):
             prior_t = t
             t = next(tokens)
 
+            print('tokens: {} {}'.format(prior_t, t))
+            
             # Save and deactivate the current variable
             if v_name and t in ('(', '=', '/'):
 
