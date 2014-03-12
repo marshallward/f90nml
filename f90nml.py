@@ -48,22 +48,24 @@ def read(nml_fname):
 
         while t != '/':
 
-            prior_t = t
-            t = next(tokens)
+            # Pass commas
+            if t == ',':
+                prior_t = t
+                t = next(tokens)
+
+            # Advance token
+            if not t == '/':
+                prior_t = t
+                t = next(tokens)
 
             print('tokens: {} {}'.format(prior_t, t))
 
             if v_name:
 
-                # Pass commas
-                if t == ',':
-                    prior_t = t
-                    t = next(tokens)
-
                 #---
                 # Parse the prior token value
 
-                if t == '/' or not t in ('(', '='):
+                if t in ('/') or not t in ('(', '='):
 
                     # Skip ahead on first value
                     if prior_t == '=':
