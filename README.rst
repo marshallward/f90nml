@@ -42,9 +42,10 @@ intended to accomodate individual references and assignments.
 
 The following namelist features are currently not supported:
 
-* Index range support (``v(i:j) = c``)
+* Implicit vector assignment (``v(i:j) = c``)
+* Multidimensional vector assignment (``v(:,:) = 1, 2, 3, 4``)
 * Repeated indexing (``v = r*c, r*``)
-* Upcast vector elements if components differ (``x(i) = int, x(j) = float``)
+* Upcast vector elements if components differ (``x(i) = 1, x(j) = 2.0``)
 * Escape on repeated quotes (``'This doesn''t parse correctly'``)
 * Type character resolver (``x%y = c``)
 * stdin/stdout support (``?``, ``?=``)

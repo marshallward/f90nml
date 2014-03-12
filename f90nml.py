@@ -9,7 +9,7 @@ http://www.apache.org/licenses/LICENSE-2.0
 import os
 import shlex
 
-__version__ = '0.2dev'
+__version__ = '0.2'
 
 #---
 def read(nml_fname):
