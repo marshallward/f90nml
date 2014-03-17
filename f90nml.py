@@ -6,6 +6,8 @@ Distributed as part of f90nml, Copyright 2014 Marshall Ward
 Licensed under the Apache License, Version 2.0
 http://www.apache.org/licenses/LICENSE-2.0
 """
+
+import itertools
 import os
 import shlex
 
@@ -111,13 +113,16 @@ def read(nml_fname):
             # Parse the indices of the current variable
             if t == '(' and not prior_t == '=':
                 v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
-                v_idx = gen_index(v_indices)
 
-            if t == '=':
-                # Activate the next variable
-                if not v_name:
-                    v_name = prior_t
-                    v_idx = None
+                # TODO: Multidimensional support
+                # TODO: End index support (currently ignored)
+                i_s = 1 if not v_indices[0][0] else v_indices[0][0]
+                i_r = 1 if not v_indices[0][2] else v_indices[0][2]
+                v_idx = itertools.count(i_s, i_r)
+
+            if t == '=' and not v_name:
+                v_name = prior_t
+                v_idx = None
 
         # Append the grouplist to the namelist (including empty groups)
         nmls[g_name] = g_vars
@@ -315,27 +320,6 @@ def parse_f90idx(tokens, t, prior_t):
         t = next(tokens)
 
         return v_name, v_indices, t
-
-
-#---
-def gen_index(idx):
-    # TODO: Multidimensional support (numpy)
-    i_s, i_e, d_i = idx[0]
-
-    if not i_s:
-        i_s = 1
-
-    # TODO: infinite i_e?
-    if not i_e:
-        i_e = 10000
-
-    if not d_i:
-        d_i = 1
-
-    i = i_s
-    while i <= i_e:
-        yield i
-        i += d_i
 
 
 #---
