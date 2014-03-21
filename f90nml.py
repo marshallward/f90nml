@@ -15,10 +15,13 @@ __version__ = '0.2'
 
 #---
 def read(nml_fname):
+    """Parse a Fortran 90 namelist file and store the contents in a ``dict``.
 
-    f = open(nml_fname, 'r')
+    >>> nml = f90nml.read('data.nml')"""
 
-    f90 = shlex.shlex(f)
+    nml_file = open(nml_fname, 'r')
+
+    f90 = shlex.shlex(nml_file)
     f90.commenters = '!'
     f90.escapedquotes = '\'"'
     f90.wordchars += '.-+'      # Include floating point characters
@@ -65,7 +68,6 @@ def read(nml_fname):
                 # Parse the prior token value
 
                 # Skip variable names and end commas
-                #if not t in ('(', '=') and not (prior_t, t) == (',', '/'):
                 if not (t == '=' or (t == '(' and not prior_t == '=')
                         or (prior_t, t) == (',', '/')  or prior_t == ')'):
 
@@ -127,21 +129,22 @@ def read(nml_fname):
         # Append the grouplist to the namelist (including empty groups)
         nmls[g_name] = g_vars
 
-    f.close()
+    nml_file.close()
 
     return nmls
 
 
 #---
 def write(nml, nml_fname):
+    """Output dict to a Fortran 90 namelist file."""
 
     if os.path.isfile(nml_fname):
         raise IOError('File {} already exists.'.format(nml_fname))
 
-    f = open(nml_fname, 'w')
+    nml_file = open(nml_fname, 'w')
 
     for grp in sorted(nml.keys()):
-        f.write('&{}\n'.format(grp))
+        nml_file.write('&{}\n'.format(grp))
 
         grp_vars = nml[grp]
         for v_name in sorted(grp_vars.keys()):
@@ -153,34 +156,32 @@ def write(nml, nml_fname):
             else:
                 v_str = to_f90str(v_val)
 
-            f.write('    {} = {}\n'.format(v_name, v_str))
+            nml_file.write('    {} = {}\n'.format(v_name, v_str))
 
-        f.write('/\n')
+        nml_file.write('/\n')
 
-    f.close()
+    nml_file.close()
 
 
 #---
-def to_f90str(v):
+def to_f90str(value):
     """Convert primitive Python types to equivalent Fortran strings"""
 
-    # TODO: Hash this somehow
-    if type(v) is int:
-        return str(v)
-    elif type(v) is float:
-        # TODO: Floating point precision?
-        return str(v)
-    elif type(v) is bool:
-        return '.{}.'.format(str(v).lower())
-    elif type(v) is complex:
-        return '({}, {})'.format(v.real, v.imag)
-    elif type(v) is str:
-        return '\'{}\''.format(v)
-    elif v is None:
+    if type(value) is int:
+        return str(value)
+    elif type(value) is float:
+        return str(value)
+    elif type(value) is bool:
+        return '.{}.'.format(str(value).lower())
+    elif type(value) is complex:
+        return '({}, {})'.format(value.real, value.imag)
+    elif type(value) is str:
+        return '\'{}\''.format(value)
+    elif value is None:
         return ''
     else:
         raise ValueError('Type {} of {} cannot be converted to a Fortran type.'
-                         ''.format(type(v), v))
+                         ''.format(type(value), value))
 
 
 #---
@@ -203,8 +204,8 @@ def parse_f90val(tokens, t, s):
 
     for f90type in recast_funcs:
         try:
-            v = f90type(s)
-            return v, t
+            value = f90type(s)
+            return value, t
         except ValueError:
             continue
 
@@ -214,6 +215,7 @@ def parse_f90val(tokens, t, s):
 
 #---
 def f90complex(s):
+    """Convert string repr of Fortran complex to Python complex."""
     assert type(s) == str
 
     if s[0] == '(' and s[-1] == ')' and len(s.split(',')) == 2:
@@ -227,6 +229,7 @@ def f90complex(s):
 
 #---
 def f90bool(s):
+    """Convert string repr of Fortran logical to Python logical."""
     assert type(s) == str
 
     try:
@@ -244,6 +247,7 @@ def f90bool(s):
 
 #---
 def f90str(s):
+    """Convert string repr of Fortran string to Python string."""
     assert type(s) == str
 
     f90quotes = ["'", '"']
@@ -256,6 +260,7 @@ def f90str(s):
 
 #---
 def parse_f90idx(tokens, t, prior_t):
+    """Parse Fortran vector indices into a tuple of Python indices."""
 
     idx_end = (',', ')')
 
@@ -324,6 +329,7 @@ def parse_f90idx(tokens, t, prior_t):
 
 #---
 class NmlDict(dict):
+    """Case-insensitive Python dict"""
     def __setitem__(self, key, value):
         super(NmlDict, self).__setitem__(key.lower(), value)
 
