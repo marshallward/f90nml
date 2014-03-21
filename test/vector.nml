@@ -1,0 +1,30 @@
+&vector_nml
+
+    ! Standard vector
+    v = 1,2,3,4,5
+
+    ! Component test
+    v_idx(1) = 1
+    v_idx(2) = 2
+    v_idx(3) = 3
+    v_idx(4) = 4
+
+    ! Out-of-order test
+    v_idx_ooo(2) = 2
+    v_idx_ooo(4) = 4
+    v_idx_ooo(3) = 3
+    v_idx_ooo(1) = 1
+
+    ! Range test
+    v_range(1:4) = 1,2,3,4
+
+    ! Implicit range test
+    v_implicit_start(1:) = 1,2,3,4
+    v_implicit_end(:4) = 1,2,3,4
+    v_implicit_all(:) = 1,2,3,4,
+
+    ! Null vector component
+    v_null_start = ,2,3,4
+    v_null_end = 1,2,3,,
+    v_null_interior = 1,2,,4
+/
