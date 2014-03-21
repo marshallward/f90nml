@@ -66,7 +66,7 @@ def read(nml_fname):
 
                 # Skip variable names and end commas
                 #if not t in ('(', '=') and not (prior_t, t) == (',', '/'):
-                if not ( t == '=' or (t == '(' and not prior_t == '=')
+                if not (t == '=' or (t == '(' and not prior_t == '=')
                         or (prior_t, t) == (',', '/')  or prior_t == ')'):
 
                     # Skip ahead on first value
@@ -75,7 +75,7 @@ def read(nml_fname):
                         t = next(tokens)
 
                     # Parse the variable string
-                    if prior_t == ',' :
+                    if prior_t == ',':
                         next_value = None
                     else:
                         next_value, t = parse_f90val(tokens, t, prior_t)
@@ -257,69 +257,69 @@ def f90str(s):
 #---
 def parse_f90idx(tokens, t, prior_t):
 
-        idx_end = (',', ')')
+    idx_end = (',', ')')
 
-        v_name = prior_t
-        v_indices = []
-        i_start = i_end = i_stride = None
+    v_name = prior_t
+    v_indices = []
+    i_start = i_end = i_stride = None
 
-        # Start index
+    # Start index
+    t = next(tokens)
+    try:
+        i_start = int(t)
+        t = next(tokens)
+    except ValueError:
+        if t in idx_end:
+            raise ValueError('{} index cannot be empty.'
+                             ''.format(v_name))
+        elif not t == ':':
+            raise
+
+    # End index
+    if t == ':':
         t = next(tokens)
         try:
-            i_start = int(t)
+            i_end = int(t)
             t = next(tokens)
         except ValueError:
-            if t in idx_end:
-                raise ValueError('{} index cannot be empty.'
+            if t == ':':
+                raise ValueError('{} end index cannot be implicit '
+                                 'when using stride.'
                                  ''.format(v_name))
-            elif not t == ':':
+            elif not t in idx_end:
+                raise
+    elif t in idx_end:
+        # Replace index with single-index range
+        if i_start:
+            i_end = i_start
+
+    # Stride index
+    if t == ':':
+        t = next(tokens)
+        try:
+            i_stride = int(t)
+        except ValueError:
+            if t == ')':
+                raise ValueError('{} stride index cannot be '
+                                 'implicit.'.format(v_name))
+            else:
                 raise
 
-        # End index
-        if t == ':':
-            t = next(tokens)
-            try:
-                i_end = int(t)
-                t = next(tokens)
-            except ValueError:
-                if t == ':':
-                    raise ValueError('{} end index cannot be implicit '
-                                     'when using stride.'
-                                     ''.format(v_name))
-                elif not t in idx_end:
-                    raise
-        elif t in idx_end:
-            # Replace index with single-index range
-            if i_start:
-                i_end = i_start
+        if i_stride == 0:
+            raise ValueError('{} stride index cannot be zero.'
+                             ''.format(v_name))
 
-        # Stride index
-        if t == ':':
-            t = next(tokens)
-            try:
-                i_stride = int(t)
-            except ValueError:
-                if t == ')':
-                    raise ValueError('{} stride index cannot be '
-                                     'implicit.'.format(v_name))
-                else:
-                    raise
-
-            if i_stride == 0:
-                raise ValueError('{} stride index cannot be zero.'
-                                 ''.format(v_name))
-
-            t = next(tokens)
-
-        if not t in idx_end:
-            raise ValueError('{} index did not terminate '
-                             'correctly.'.format(v_name))
-
-        idx_triplet = (i_start, i_end, i_stride)
-        v_indices.append((idx_triplet))
         t = next(tokens)
 
-        return v_name, v_indices, t
+    if not t in idx_end:
+        raise ValueError('{} index did not terminate '
+                         'correctly.'.format(v_name))
+
+    idx_triplet = (i_start, i_end, i_stride)
+    v_indices.append((idx_triplet))
+    t = next(tokens)
+
+    return v_name, v_indices, t
 
 
 #---
