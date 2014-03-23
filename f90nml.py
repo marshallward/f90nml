@@ -17,7 +17,7 @@ __version__ = '0.2'
 def read(nml_fname):
     """Parse a Fortran 90 namelist file and store the contents in a ``dict``.
 
-    >>> nml = f90nml.read('data.nml')"""
+    >>> data_nml = f90nml.read('data.nml')"""
 
     nml_file = open(nml_fname, 'r')
 
@@ -54,13 +54,11 @@ def read(nml_fname):
 
             # Skip commas
             if t == ',':
-                prior_t = t
-                t = next(tokens)
+                t, prior_t = next(tokens), t
 
             # Advance token
             if not t == '/':
-                prior_t = t
-                t = next(tokens)
+                t, prior_t = next(tokens), t
 
             if v_name:
 
@@ -73,8 +71,7 @@ def read(nml_fname):
 
                     # Skip ahead on first value
                     if prior_t == '=':
-                        prior_t = t
-                        t = next(tokens)
+                        t, prior_t = next(tokens), t
 
                     # Parse the variable string
                     if prior_t == ',':

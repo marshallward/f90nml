@@ -31,6 +31,12 @@ class Test(unittest.TestCase):
                             }
                           }
 
+        self.comment_nml = {'comment_nml':
+                            {'v_cmt_inline': 123,
+                             'v_cmt_in_str': 'This token ! is not a comment',
+                             'v_cmt_after_str': 'This ! is not a comment',
+                            }
+                           }
 
     def test_empty(self):
         test_nml = f90nml.read('empty.nml')
@@ -43,6 +49,10 @@ class Test(unittest.TestCase):
     def test_vector(self):
         test_nml = f90nml.read('vector.nml')
         self.assertEqual(self.vector_nml, test_nml)
+
+    def test_comment(self):
+        test_nml = f90nml.read('comment.nml')
+        self.assertEqual(self.comment_nml, test_nml)
 
 
 if __name__ == '__main__':
