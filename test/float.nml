@@ -1,8 +1,14 @@
 &float_nml
-    v_decimal = 1.
+    v_float = 1.0
+    v_decimal_end = 1.
+    v_negative = -1.
+
     v_single = 1.0e0
     v_double = 1.0d0
 
     v_single_upper = 1.0E0
     v_double_upper = 1.0D0
+
+    v_positive_index = 1.0e+01
+    v_negative_index = 1.0e-01
 /

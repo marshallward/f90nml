@@ -15,7 +15,7 @@ class Test(unittest.TestCase):
                              'v_logical': True,
                              'v_string': 'Hello',
                             }
-                          }
+                         }
 
         self.vector_nml = {'vector_nml':
                             {'v': [1, 2, 3, 4, 5],
@@ -30,6 +30,19 @@ class Test(unittest.TestCase):
                              'v_null_end': [1, 2, 3, None],
                             }
                           }
+
+        self.float_nml = {'float_nml':
+                            {'v_float': 1.,
+                             'v_decimal_end': 1.,
+                             'v_negative': -1.,
+                             'v_single': 1.,
+                             'v_double': 1.,
+                             'v_single_upper': 1.,
+                             'v_double_upper': 1.,
+                             'v_positive_index': 10.,
+                             'v_negative_index': 0.1,
+                            }
+                         }
 
         self.comment_nml = {'comment_nml':
                             {'v_cmt_inline': 123,
@@ -49,6 +62,10 @@ class Test(unittest.TestCase):
     def test_vector(self):
         test_nml = f90nml.read('vector.nml')
         self.assertEqual(self.vector_nml, test_nml)
+
+    def test_float(self):
+        test_nml = f90nml.read('float.nml')
+        self.assertEqual(self.float_nml, test_nml)
 
     def test_comment(self):
         test_nml = f90nml.read('comment.nml')
