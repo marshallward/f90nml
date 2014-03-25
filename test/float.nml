@@ -1,0 +1,8 @@
+&float_nml
+    v_decimal = 1.
+    v_single = 1.0e0
+    v_double = 1.0d0
+
+    v_single_upper = 1.0E0
+    v_double_upper = 1.0D0
+/
