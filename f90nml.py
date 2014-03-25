@@ -197,7 +197,7 @@ def parse_f90val(tokens, t, s):
         s = '({}, {})'.format(s_re, s_im)
 
 
-    recast_funcs = [int, float, f90complex, f90bool, f90str]
+    recast_funcs = [int, f90float, f90complex, f90bool, f90str]
 
     for f90type in recast_funcs:
         try:
@@ -211,6 +211,14 @@ def parse_f90val(tokens, t, s):
 
 
 #---
+def f90float(s):
+    """Convert string repr of Fortran floating point to Python double"""
+
+    # TODO: Distinguish between single and double precision
+    return float(s.lower().replace('d', 'e'))
+
+
+#---
 def f90complex(s):
     """Convert string repr of Fortran complex to Python complex."""
     assert type(s) == str
@@ -219,7 +227,7 @@ def f90complex(s):
         s_re, s_im = s[1:-1].split(',', 1)
 
         # NOTE: Failed float(str) will raise ValueError
-        return complex(float(s_re), float(s_im))
+        return complex(f90float(s_re), f90float(s_im))
     else:
         raise ValueError('{} must be in complex number form (x, y)'.format(s))
 
