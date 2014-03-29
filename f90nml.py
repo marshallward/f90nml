@@ -11,7 +11,7 @@ import itertools
 import os
 import shlex
 
-__version__ = '0.2'
+__version__ = '0.2.1'
 
 #---
 def read(nml_fname):
