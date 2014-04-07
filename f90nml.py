@@ -7,6 +7,7 @@ Licensed under the Apache License, Version 2.0
 http://www.apache.org/licenses/LICENSE-2.0
 """
 
+from collections import OrderedDict
 import itertools
 import os
 import shlex
@@ -140,11 +141,11 @@ def write(nml, nml_fname):
 
     nml_file = open(nml_fname, 'w')
 
-    for grp in sorted(nml.keys()):
+    for grp in nml.keys():
         nml_file.write('&{}\n'.format(grp))
 
         grp_vars = nml[grp]
-        for v_name in sorted(grp_vars.keys()):
+        for v_name in grp_vars.keys():
 
             v_val = grp_vars[v_name]
 
@@ -333,7 +334,7 @@ def parse_f90idx(tokens, t, prior_t):
 
 
 #---
-class NmlDict(dict):
+class NmlDict(OrderedDict):
     """Case-insensitive Python dict"""
     def __setitem__(self, key, value):
         super(NmlDict, self).__setitem__(key.lower(), value)
