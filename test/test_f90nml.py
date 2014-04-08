@@ -51,6 +51,13 @@ class Test(unittest.TestCase):
                             }
                            }
 
+        self.f77_nml = {'f77_nml':
+                            {'x': 123},
+                        'next_f77_nml':
+                            {'y': 'abc'},
+                        }
+
+
     def test_empty(self):
         test_nml = f90nml.read('empty.nml')
         self.assertEqual(self.empty_nml, test_nml)
@@ -70,6 +77,10 @@ class Test(unittest.TestCase):
     def test_comment(self):
         test_nml = f90nml.read('comment.nml')
         self.assertEqual(self.comment_nml, test_nml)
+
+    def test_f77(self):
+        test_nml = f90nml.read('f77.nml')
+        self.assertEqual(self.f77_nml, test_nml)
 
 
 if __name__ == '__main__':

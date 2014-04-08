@@ -48,16 +48,18 @@ def read(nml_fname):
         prior_t = t
         t = next(tokens)
 
-        # Current token is either a variable name or finalizer (/)
+        # Current token is either a variable name or finalizer (/, &)
 
-        while t != '/':
+        while not t in ('/', '&'):
+
+            #print('state: {} {}'.format(t, prior_t))
 
             # Skip commas
             if t == ',':
                 t, prior_t = next(tokens), t
 
             # Advance token
-            if not t == '/':
+            if not t in ('/', '&'):
                 t, prior_t = next(tokens), t
 
             if v_name:
@@ -67,7 +69,9 @@ def read(nml_fname):
 
                 # Skip variable names and end commas
                 if not (t == '=' or (t == '(' and not prior_t == '=')
-                        or (prior_t, t) == (',', '/')  or prior_t == ')'):
+                        or (prior_t, t) == (',', '/')
+                        or (prior_t, t) == (',', '&')
+                        or prior_t == ')'):
 
                     # Skip ahead on first value
                     if prior_t == '=':
@@ -100,7 +104,7 @@ def read(nml_fname):
                         v_vals.append(next_value)
 
                 # Save then deactivate the current variable
-                if t in ('(', '=', '/'):
+                if t in ('(', '=', '/', '&'):
 
                     if len(v_vals) == 1:
                         v_vals = v_vals[0]
@@ -122,6 +126,11 @@ def read(nml_fname):
             if t == '=' and not v_name:
                 v_name = prior_t
                 v_idx = None
+
+            if t == '&':
+                t, prior_t = next(tokens), t
+                if t == 'end':
+                    break
 
         # Append the grouplist to the namelist (including empty groups)
         nmls[g_name] = g_vars
