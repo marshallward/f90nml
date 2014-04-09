@@ -1,17 +1,23 @@
-from distutils.core import setup
+from setuptools import setup
 
-with open('README.rst') as f:
-    readme_rst = f.read()
+project_name = 'f90nml'
+project_version = __import__(project_name).__version__
+project_readme_fname = 'README.rst'
+
+with open(project_readme_fname) as f:
+    project_readme = f.read()
 
 setup(
-    name = 'f90nml',
-    version = '0.2.1',
+    name = project_name,
+    version = project_version,
+    description = 'Fortran 90 namelist parser',
+    long_description = project_readme,
     author = 'Marshall Ward',
     author_email = 'python@marshallward.org',
-    description = 'Fortran 90 namelist parser',
-    long_description = readme_rst,
     url = 'http://github.com/marshallward/f90nml',
+
     py_modules = ['f90nml'],
+
     classifiers = [
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: Apache Software License',

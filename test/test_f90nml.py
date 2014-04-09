@@ -1,7 +1,7 @@
 import sys
 import unittest
 
-sys.path.append('../')
+sys.path.insert(1, '../')
 import f90nml
 
 class Test(unittest.TestCase):
