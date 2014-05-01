@@ -1,4 +1,9 @@
-from setuptools import setup
+try:
+    #This one does overwrite the existing installation (python setup.py install)
+    #convenient for developing and testing
+    from distutils.core import setup
+except ImportError:
+    from setuptools import setup
 
 project_name = 'f90nml'
 project_version = __import__(project_name).__version__

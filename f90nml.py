@@ -225,6 +225,8 @@ def f90float(s):
     """Convert string repr of Fortran floating point to Python double"""
 
     # TODO: Distinguish between single and double precision
+    if s.lower().endswith("_wp"):
+        s = s[:-3]
     return float(s.lower().replace('d', 'e'))
 
 
@@ -350,3 +352,8 @@ class NmlDict(OrderedDict):
 
     def __getitem__(self, key):
         return super(NmlDict, self).__getitem__(key.lower())
+
+
+    def save(self, path):
+        """Convenience method"""
+        write(self, path)
