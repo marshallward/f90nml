@@ -12,10 +12,11 @@ import itertools
 import os
 import shlex
 
-__version__ = '0.2.1'
+__version__ = '0.3'
+
 
 #---
-def read(nml_fname):
+def read(nml_fname, assume_kind_type=False, verbose=False):
     """Parse a Fortran 90 namelist file and store the contents in a ``dict``.
 
     >>> data_nml = f90nml.read('data.nml')"""
@@ -53,7 +54,9 @@ def read(nml_fname):
 
         while not t in ('/', '&'):
 
-            #print('state: {} {}'.format(t, prior_t))
+            # Diagnostic testing
+            if verbose:
+                print('state: {} {}'.format(t, prior_t))
 
             # Skip commas
             if t == ',':
@@ -71,6 +74,7 @@ def read(nml_fname):
                 # Skip variable names and end commas
                 if not (t == '=' or (t == '(' and not prior_t == '=')
                         or (prior_t, t) == (',', '/')
+                        or (prior_t, t) == ('=', '/')
                         or (prior_t, t) == (',', '&')
                         or prior_t == ')'):
 
@@ -82,7 +86,8 @@ def read(nml_fname):
                     if prior_t == ',':
                         next_value = None
                     else:
-                        next_value, t = parse_f90val(tokens, t, prior_t)
+                        next_value, t = parse_f90val(tokens, t, prior_t,
+                                                     assume_kind_type)
 
                     if v_idx:
 
@@ -107,8 +112,11 @@ def read(nml_fname):
                 # Save then deactivate the current variable
                 if t in ('(', '=', '/', '&'):
 
-                    if len(v_vals) == 1:
+                    if len(v_vals) == 0:
+                        v_vals = None
+                    elif len(v_vals) == 1:
                         v_vals = v_vals[0]
+
                     g_vars[v_name] = v_vals
 
                     v_name = None
@@ -124,10 +132,12 @@ def read(nml_fname):
                 i_r = 1 if not v_indices[0][2] else v_indices[0][2]
                 v_idx = itertools.count(i_s, i_r)
 
+            # Set the next active variable
             if t == '=' and not v_name:
                 v_name = prior_t
                 v_idx = None
 
+            # Test for classic namelist termination
             if t == '&':
                 t, prior_t = next(tokens), t
                 if t == 'end':
@@ -142,10 +152,10 @@ def read(nml_fname):
 
 
 #---
-def write(nml, nml_fname):
+def write(nml, nml_fname, force=False):
     """Output dict to a Fortran 90 namelist file."""
 
-    if os.path.isfile(nml_fname):
+    if not force and os.path.isfile(nml_fname):
         raise IOError('File {} already exists.'.format(nml_fname))
 
     nml_file = open(nml_fname, 'w')
@@ -192,7 +202,7 @@ def to_f90str(value):
 
 
 #---
-def parse_f90val(tokens, t, s):
+def parse_f90val(tokens, t, s, assume_kind_type=False):
     """Convert string repr of Fortran type to equivalent Python type."""
     assert type(s) is str
 
@@ -206,12 +216,16 @@ def parse_f90val(tokens, t, s):
 
         s = '({}, {})'.format(s_re, s_im)
 
-
     recast_funcs = [int, f90float, f90complex, f90bool, f90str]
 
     for f90type in recast_funcs:
         try:
-            value = f90type(s)
+            if assume_kind_type and f90type == int:
+                value = f90type(s.rpartition('_')[0])
+            elif assume_kind_type and f90type in (f90float, f90complex):
+                value = f90type(s, assume_kind_type)
+            else:
+                value = f90type(s)
             return value, t
         except ValueError:
             continue
@@ -221,17 +235,17 @@ def parse_f90val(tokens, t, s):
 
 
 #---
-def f90float(s):
+def f90float(s, assume_kind_type=False):
     """Convert string repr of Fortran floating point to Python double"""
 
-    # TODO: Distinguish between single and double precision
-    if s.lower().endswith("_wp"):
-        s = s[:-3]
+    if assume_kind_type:
+        s, _, _ = s.rpartition('_')
+
     return float(s.lower().replace('d', 'e'))
 
 
 #---
-def f90complex(s):
+def f90complex(s, assume_kind_type=False):
     """Convert string repr of Fortran complex to Python complex."""
     assert type(s) == str
 
@@ -239,7 +253,8 @@ def f90complex(s):
         s_re, s_im = s[1:-1].split(',', 1)
 
         # NOTE: Failed float(str) will raise ValueError
-        return complex(f90float(s_re), f90float(s_im))
+        return complex(f90float(s_re, assume_kind_type),
+                       f90float(s_im, assume_kind_type))
     else:
         raise ValueError('{} must be in complex number form (x, y)'.format(s))
 
@@ -354,6 +369,6 @@ class NmlDict(OrderedDict):
         return super(NmlDict, self).__getitem__(key.lower())
 
 
-    def save(self, path):
-        """Convenience method"""
-        write(self, path)
+    def write(self, path, force=False):
+        """Wrapper to the ``write`` method"""
+        write(self, path, force)
