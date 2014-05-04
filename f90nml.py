@@ -40,6 +40,7 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
 
         # Current token is now '&'
 
+        # Create the next namelist
         g_name = next(tokens)
         g_vars = NmlDict()
 
@@ -47,30 +48,22 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
         v_idx = None
         v_vals = []
 
-        prior_t = t
-        t = next(tokens)
+        t, prior_t = next(tokens), t
 
         # Current token is either a variable name or finalizer (/, &)
 
-        while not t in ('/', '&'):
+        # Populate the namelist group
+        while g_name:
 
             # Diagnostic testing
             if verbose:
                 print('state: {} {}'.format(t, prior_t))
 
-            # Skip commas
-            if t == ',':
-                t, prior_t = next(tokens), t
-
-            # Advance token
-            if not t in ('/', '&'):
-                t, prior_t = next(tokens), t
-
             if v_name:
 
-                #---
                 # Parse the prior token value
 
+                # TODO: This is miserable, refactor this
                 # Skip variable names and end commas
                 if not (t == '=' or (t == '(' and not prior_t == '=')
                         or (prior_t, t) == (',', '/')
@@ -137,14 +130,24 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
                 v_name = prior_t
                 v_idx = None
 
-            # Test for classic namelist termination
-            if t == '&':
-                t, prior_t = next(tokens), t
-                if t == 'end':
-                    break
+            # Finalise namelist group
+            if t in ('/', '&'):
+                # Test for classic namelist finaliser
+                if t == '&':
+                    t, prior_t = next(tokens), t
+                    assert t.lower() == 'end'
 
-        # Append the grouplist to the namelist (including empty groups)
-        nmls[g_name] = g_vars
+                # Append the grouplist to the namelist (including empty groups)
+                nmls[g_name] = g_vars
+                g_name, g_vars = None, None
+
+            else:
+                # TODO: How to remove this?
+                # Skip commas
+                if t == ',':
+                    t, prior_t = next(tokens), t
+
+                t, prior_t = next(tokens), t
 
     nml_file.close()
 
