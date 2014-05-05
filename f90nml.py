@@ -48,12 +48,16 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
         v_idx = None
         v_vals = []
 
-        t, prior_t = next(tokens), t
-
         # Current token is either a variable name or finalizer (/, &)
 
         # Populate the namelist group
         while g_name:
+
+            # Skip commas separating objects
+            if t == ',':
+                t, prior_t = next(tokens), t
+
+            t, prior_t = next(tokens), t
 
             # Diagnostic testing
             if verbose:
@@ -140,14 +144,6 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
                 # Append the grouplist to the namelist (including empty groups)
                 nmls[g_name] = g_vars
                 g_name, g_vars = None, None
-
-            else:
-                # TODO: How to remove this?
-                # Skip commas
-                if t == ',':
-                    t, prior_t = next(tokens), t
-
-                t, prior_t = next(tokens), t
 
     nml_file.close()
 
