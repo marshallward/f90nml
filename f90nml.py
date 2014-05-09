@@ -16,7 +16,7 @@ __version__ = '0.3'
 
 
 #---
-def read(nml_fname, assume_kind_type=False, verbose=False):
+def read(nml_fname, verbose=False):
     """Parse a Fortran 90 namelist file and store the contents in a ``dict``.
 
     >>> data_nml = f90nml.read('data.nml')"""
@@ -83,11 +83,11 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
                     print('    tokens: {} {}'.format(prior_t, t))
 
                 # Parse the prior token value
-                # TODO: Add '%'
+                # TODO: Add '%' to first tuple
                 if not t in ('(', '=') or prior_t == '=':
                     # Parse the variable string
                     if prior_t in ('=', ','):
-                        if t == ',':
+                        if t in (',', '/', '&'):
                             next_value = None
                         else:
                             continue
@@ -201,7 +201,7 @@ def to_f90str(value):
 
 
 #---
-def parse_f90val(tokens, t, s, assume_kind_type=False):
+def parse_f90val(tokens, t, s):
     """Convert string repr of Fortran type to equivalent Python type."""
     assert type(s) is str
 
@@ -223,12 +223,7 @@ def parse_f90val(tokens, t, s, assume_kind_type=False):
 
     for f90type in recast_funcs:
         try:
-            if assume_kind_type and f90type == int:
-                value = f90type(s.rpartition('_')[0])
-            elif assume_kind_type and f90type in (f90float, f90complex):
-                value = f90type(s, assume_kind_type)
-            else:
-                value = f90type(s)
+            value = f90type(s)
             return value, t
         except ValueError:
             continue
@@ -238,17 +233,14 @@ def parse_f90val(tokens, t, s, assume_kind_type=False):
 
 
 #---
-def f90float(s, assume_kind_type=False):
+def f90float(s):
     """Convert string repr of Fortran floating point to Python double"""
-
-    if assume_kind_type:
-        s, _, _ = s.rpartition('_')
 
     return float(s.lower().replace('d', 'e'))
 
 
 #---
-def f90complex(s, assume_kind_type=False):
+def f90complex(s):
     """Convert string repr of Fortran complex to Python complex."""
     assert type(s) == str
 
@@ -256,8 +248,7 @@ def f90complex(s, assume_kind_type=False):
         s_re, s_im = s[1:-1].split(',', 1)
 
         # NOTE: Failed float(str) will raise ValueError
-        return complex(f90float(s_re, assume_kind_type),
-                       f90float(s_im, assume_kind_type))
+        return complex(f90float(s_re), f90float(s_im))
     else:
         raise ValueError('{} must be in complex number form (x, y)'.format(s))
 

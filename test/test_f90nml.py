@@ -49,13 +49,6 @@ class Test(unittest.TestCase):
                             }
                          }
 
-        self.kind_nml = {'kind_nml':
-                            {'int_kind': 123,
-                             'real_kind': 1.0,
-                             'complex_kind': 1. - 2.j
-                            }
-                        }
-
         self.comment_nml = {'comment_nml':
                             {'v_cmt_inline': 123,
                              'v_cmt_in_str': 'This token ! is not a comment',
@@ -89,10 +82,6 @@ class Test(unittest.TestCase):
     def test_float(self):
         test_nml = f90nml.read('float.nml')
         self.assertEqual(self.float_nml, test_nml)
-
-    def test_kind(self):
-        test_nml = f90nml.read('kind.nml', assume_kind_type=True)
-        self.assertEqual(self.kind_nml, test_nml)
 
     def test_comment(self):
         test_nml = f90nml.read('comment.nml')

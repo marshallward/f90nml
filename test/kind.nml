@@ -1,5 +1,0 @@
-&kind_nml
-    int_kind = 123_ip
-    real_kind = 1.0_dp
-    complex_kind = (1.0_dp, -2.0_dp)
-/
