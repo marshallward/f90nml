@@ -42,15 +42,6 @@ To overwrite an existing file when using the ``write`` method, use the
 
    f90nml.write(nml, nml_filename, force=True)
 
-The kind type selection of any constants, such as ``1.0_dp`` where ``dp``
-contains the kind type value, is ignored on default and such input would be
-interpreted as a string. If your namelist file contains data using kind type
-selection, then use the following flag in the ``read`` method:
-
-.. code:: python
-
-   nml = f90nml.read(nml_filename, assume_kind_type=True)
-
 
 Notes
 =====
@@ -58,7 +49,7 @@ Notes
 The ``read`` method produces an ``NmlDict``, which behaves as a ``dict`` with
 case-insensitive keys, due to the case insensitivity of Fortran. This
 implementation is currently not a true case-insensitive ``dict``, and is only
-intended to accomodate individual references and assignments.
+intended to accommodate individual references and assignments.
 
 In a Fortran executable, the data types of values in the namelist files are set
 by the corresponding variables within the program, and cannot in general be
