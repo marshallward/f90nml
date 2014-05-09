@@ -53,11 +53,22 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
         # Populate the namelist group
         while g_name:
 
-            t, prior_t = next(tokens), t
-
-            # Skip commas separating objects
-            if t == ',':
+            if not v_name:
                 t, prior_t = next(tokens), t
+
+                # Skip commas separating objects
+                if t == ',':
+                    t, prior_t = next(tokens), t
+                # Parse the indices of the current variable
+            else:
+                if t == '(':
+                    v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
+
+                    # TODO: Multidimensional support
+                    # TODO: End index support (currently ignored)
+                    i_s = 1 if not v_indices[0][0] else v_indices[0][0]
+                    i_r = 1 if not v_indices[0][2] else v_indices[0][2]
+                    v_idx = itertools.count(i_s, i_r)
 
             # Diagnostic testing
             if verbose:
@@ -73,12 +84,13 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
 
                 # Parse the prior token value
                 # TODO: Add '%'
-                if not t in ('(', '='):
+                if not t in ('(', '=') or prior_t == '=':
                     # Parse the variable string
-                    if prior_t == '=':
-                        continue
-                    elif prior_t == ',':
-                        next_value = None
+                    if prior_t in ('=', ','):
+                        if t == ',':
+                            next_value = None
+                        else:
+                            continue
                     else:
                         next_value, t = parse_f90val(tokens, t, prior_t)
 
@@ -121,16 +133,6 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
             if t in ('=', '('):
                 v_name = prior_t
                 v_idx = None
-
-                # Parse the indices of the current variable
-                if t == '(':
-                    v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
-
-                    # TODO: Multidimensional support
-                    # TODO: End index support (currently ignored)
-                    i_s = 1 if not v_indices[0][0] else v_indices[0][0]
-                    i_r = 1 if not v_indices[0][2] else v_indices[0][2]
-                    v_idx = itertools.count(i_s, i_r)
 
             # Finalise namelist group
             if t in ('/', '&'):
