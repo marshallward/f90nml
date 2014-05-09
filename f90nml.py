@@ -36,7 +36,7 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
 
         # Ignore tokens outside of namelist groups
         while t != '&':
-            t = next(tokens)
+            t, prior_t = next(tokens), t
 
         # Current token is now '&'
 
@@ -53,60 +53,80 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
         # Populate the namelist group
         while g_name:
 
+            t, prior_t = next(tokens), t
+
             # Skip commas separating objects
             if t == ',':
                 t, prior_t = next(tokens), t
 
-            t, prior_t = next(tokens), t
-
             # Diagnostic testing
             if verbose:
-                print('state: {} {}'.format(t, prior_t))
+                print('  gstate: {} {}'.format(prior_t, t))
 
-            if v_name:
+            # Set the next active variable
+            # TODO: Add '%' to the list
+            if t in ('=', '('):
+                v_name = prior_t
+                v_idx = None
+
+                # Parse the indices of the current variable
+                if t == '(':
+                    v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
+
+                    # TODO: Multidimensional support
+                    # TODO: End index support (currently ignored)
+                    i_s = 1 if not v_indices[0][0] else v_indices[0][0]
+                    i_r = 1 if not v_indices[0][2] else v_indices[0][2]
+                    v_idx = itertools.count(i_s, i_r)
+
+            if verbose:
+                print('  active variable: {} {}'.format(v_name, v_idx))
+
+            while v_name:
+
+                t, prior_t = next(tokens), t
+
+                if verbose:
+                    print('    vstate: {} {}'.format(prior_t, t))
 
                 # Parse the prior token value
 
-                # TODO: This is miserable, refactor this
-                # Skip variable names and end commas
-                if not (t == '=' or (t == '(' and not prior_t == '=')
-                        or (prior_t, t) == (',', '/')
-                        or (prior_t, t) == ('=', '/')
-                        or (prior_t, t) == (',', '&')
-                        or prior_t == ')'):
+                ## TODO: This is miserable, refactor this
+                ## Skip variable names and end commas
+                #if not (t == '=' or (t == '(' and not prior_t == '=')
+                #        or (prior_t, t) == (',', '/')
+                #        or (prior_t, t) == ('=', '/')
+                #        or (prior_t, t) == (',', '&')
+                #        or prior_t == ')'):
 
-                    # Skip ahead on first value
-                    if prior_t == '=':
-                        t, prior_t = next(tokens), t
+                # Parse the variable string
+                if prior_t == ',':
+                    next_value = None
+                else:
+                    next_value, t = parse_f90val(tokens, t, prior_t)
 
-                    # Parse the variable string
-                    if prior_t == ',':
-                        next_value = None
-                    else:
-                        next_value, t = parse_f90val(tokens, t, prior_t,
-                                                     assume_kind_type)
+                if v_idx:
 
-                    if v_idx:
+                    v_i = next(v_idx)
 
-                        v_i = next(v_idx)
+                    if v_name in g_vars:
+                        v_vals = g_vars[v_name]
+                        if type(v_vals) != list:
+                            v_vals = [v_vals]
 
-                        if v_name in g_vars:
-                            v_vals = g_vars[v_name]
-                            if type(v_vals) != list:
-                                v_vals = [v_vals]
-
-                        try:
-                            # Default Fortran indexing starts at 1
-                            v_vals[v_i - 1] = next_value
-                        except IndexError:
-                            # Expand list to accomodate out-of-range indices
-                            size = len(v_vals)
-                            v_vals.extend(None for i in range(size, v_i))
-                            v_vals[v_i - 1] = next_value
-                    else:
-                        v_vals.append(next_value)
+                    try:
+                        # Default Fortran indexing starts at 1
+                        v_vals[v_i - 1] = next_value
+                    except IndexError:
+                        # Expand list to accomodate out-of-range indices
+                        size = len(v_vals)
+                        v_vals.extend(None for i in range(size, v_i))
+                        v_vals[v_i - 1] = next_value
+                else:
+                    v_vals.append(next_value)
 
                 # Save then deactivate the current variable
+                # TODO: Add '%'
                 if t in ('(', '=', '/', '&'):
 
                     if len(v_vals) == 0:
@@ -118,21 +138,6 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
 
                     v_name = None
                     v_vals = []
-
-            # Parse the indices of the current variable
-            if t == '(' and not prior_t == '=':
-                v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
-
-                # TODO: Multidimensional support
-                # TODO: End index support (currently ignored)
-                i_s = 1 if not v_indices[0][0] else v_indices[0][0]
-                i_r = 1 if not v_indices[0][2] else v_indices[0][2]
-                v_idx = itertools.count(i_s, i_r)
-
-            # Set the next active variable
-            if t == '=' and not v_name:
-                v_name = prior_t
-                v_idx = None
 
             # Finalise namelist group
             if t in ('/', '&'):
