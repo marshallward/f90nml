@@ -23,11 +23,11 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
 
     nml_file = open(nml_fname, 'r')
 
-    f90 = shlex.shlex(nml_file)
-    f90.commenters = '!'
-    f90.escapedquotes = '\'"'
-    f90.wordchars += '.-+'      # Include floating point characters
-    tokens = iter(f90)
+    f90lex = shlex.shlex(nml_file)
+    f90lex.commenters = '!'
+    f90lex.escapedquotes = '\'"'
+    f90lex.wordchars += '.-+'      # Include floating point characters
+    tokens = iter(f90lex)
 
     # Store groups in case-insensitive dictionary
     nmls = NmlDict()
@@ -72,30 +72,8 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
                     print('    tokens: {} {}'.format(prior_t, t))
 
                 # Parse the prior token value
-
-                ## TODO: This is miserable, refactor this
-                ## Skip variable names and end commas
-                #if not (t == '=' or (t == '(' and not prior_t == '=')
-                #        or (prior_t, t) == (',', '/')
-                #        or (prior_t, t) == ('=', '/')
-                #        or (prior_t, t) == (',', '&')
-                #        or prior_t == ')'):
-
-                # Save then deactivate the current variable
                 # TODO: Add '%'
-                if t in ('(', '=', '/', '&'):
-
-                    if len(v_vals) == 0:
-                        v_vals = None
-                    elif len(v_vals) == 1:
-                        v_vals = v_vals[0]
-
-                    g_vars[v_name] = v_vals
-
-                    v_name = None
-                    v_vals = []
-
-                else:
+                if not t in ('(', '='):
                     # Parse the variable string
                     if prior_t == '=':
                         continue
@@ -123,6 +101,20 @@ def read(nml_fname, assume_kind_type=False, verbose=False):
                             v_vals[v_i - 1] = next_value
                     else:
                         v_vals.append(next_value)
+
+                # Save then deactivate the current variable
+                # TODO: Add '%'
+                if t in ('(', '=', '/', '&'):
+
+                    if len(v_vals) == 0:
+                        v_vals = None
+                    elif len(v_vals) == 1:
+                        v_vals = v_vals[0]
+
+                    g_vars[v_name] = v_vals
+
+                    v_name = None
+                    v_vals = []
 
             # Set the next active variable
             # TODO: Add '%' to the list
@@ -216,6 +208,10 @@ def parse_f90val(tokens, t, s, assume_kind_type=False):
         s_re = t
         next(tokens)
         s_im = next(tokens)
+
+        # Bypass the right parenthesis
+        t = next(tokens)
+        assert t == ')'
 
         t = next(tokens)
 
