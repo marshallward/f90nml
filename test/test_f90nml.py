@@ -10,7 +10,9 @@ class Test(unittest.TestCase):
         self.empty_nml = {'empty_nml': {}}
 
         self.null_nml = {'null_nml':
-                            {'null_value': None}
+                            {'null_value': None},
+                         'null_comma_nml':
+                            {'null_comma': None}
                         }
 
         self.types_nml = {'types_nml':

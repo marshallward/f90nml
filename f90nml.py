@@ -84,7 +84,8 @@ def read(nml_fname, verbose=False):
 
                 # Parse the prior token value
                 # TODO: Add '%' to first tuple
-                if not t in ('(', '=') or prior_t == '=':
+                if (not t in ('(', '=') or prior_t == '=') \
+                        and not (prior_t, t) == (',', '/'):
                     # Parse the variable string
                     if prior_t in ('=', ','):
                         if t in (',', '/', '&'):

@@ -2,7 +2,7 @@
 f90nml
 ======
 
-A Fortran 90 namelist parser
+A Python module for parsing Fortran namelist files
 
 
 About f90nml
