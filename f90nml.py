@@ -59,16 +59,6 @@ def read(nml_fname, verbose=False):
                 # Skip commas separating objects
                 if t == ',':
                     t, prior_t = next(tokens), t
-                # Parse the indices of the current variable
-            else:
-                if t == '(':
-                    v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
-
-                    # TODO: Multidimensional support
-                    # TODO: End index support (currently ignored)
-                    i_s = 1 if not v_indices[0][0] else v_indices[0][0]
-                    i_r = 1 if not v_indices[0][2] else v_indices[0][2]
-                    v_idx = itertools.count(i_s, i_r)
 
             # Diagnostic testing
             if verbose:
@@ -134,6 +124,21 @@ def read(nml_fname, verbose=False):
             if t in ('=', '('):
                 v_name = prior_t
                 v_idx = None
+
+                # Parse the indices of the current variable
+                if t == '(':
+                    v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
+
+                    # TODO: Multidimensional support
+                    # TODO: End index support (currently ignored)
+                    i_s = 1 if not v_indices[0][0] else v_indices[0][0]
+                    i_r = 1 if not v_indices[0][2] else v_indices[0][2]
+                    v_idx = itertools.count(i_s, i_r)
+
+                # Identify any derived type fields
+                if t == '%':
+                    # TODO: Recurse into a new parsing of variable name
+                    pass
 
             # Finalise namelist group
             if t in ('/', '&'):
@@ -286,6 +291,13 @@ def f90str(s):
 
 
 #---
+def parse_f90var(tokens, t, prior_t):
+    """Not sure how this will work yet"""
+
+    pass
+
+
+#---
 def parse_f90idx(tokens, t, prior_t):
     """Parse Fortran vector indices into a tuple of Python indices."""
 
@@ -367,3 +379,11 @@ class NmlDict(OrderedDict):
     def write(self, path, force=False):
         """Wrapper to the ``write`` method"""
         write(self, path, force)
+
+
+#---
+class F90DerivedType(object):
+    """Fortran 90 derived type"""
+
+    def __init__(self):
+        f90attrs = {}
