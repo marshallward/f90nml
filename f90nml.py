@@ -120,9 +120,8 @@ def read(nml_fname, verbose=False):
                     v_vals = []
 
             # Set the next active variable
-            # TODO: Add '%' to the list
             if t in ('=', '(', '%'):
-                v_name, v_idx, v_value, t = parse_vname(tokens, t, prior_t)
+                v_name, v_idx, v_values, t = parse_vname(tokens, t, prior_t)
 
             # Finalise namelist group
             if t in ('/', '&'):
@@ -188,15 +187,15 @@ def parse_vname(tokens, t, prior_t):
 
     # Identify any derived type fields
     if t == '%':
-        v_value = parse_vname(tokens, t, prior_t)
+        v_att, v_att_idx, v_att_vals, t = parse_vname(tokens, t, prior_t)
     else:
-        v_value = parse_vvalue(tokens, t, prior_t)
+        v_values = parse_vvalues(tokens, t, prior_t)
 
-    return v_name, v_idx, v_value, t
+    return v_name, v_idx, v_values, t
 
 
 #---
-def parse_vvalue(tokens, t, prior_t):
+def parse_vvalues(tokens, t, prior_t):
     # TODO: write me (^_^)
     pass
 
