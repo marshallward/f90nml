@@ -121,24 +121,8 @@ def read(nml_fname, verbose=False):
 
             # Set the next active variable
             # TODO: Add '%' to the list
-            if t in ('=', '('):
-                v_name = prior_t
-                v_idx = None
-
-                # Parse the indices of the current variable
-                if t == '(':
-                    v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
-
-                    # TODO: Multidimensional support
-                    # TODO: End index support (currently ignored)
-                    i_s = 1 if not v_indices[0][0] else v_indices[0][0]
-                    i_r = 1 if not v_indices[0][2] else v_indices[0][2]
-                    v_idx = itertools.count(i_s, i_r)
-
-                # Identify any derived type fields
-                if t == '%':
-                    # TODO: Recurse into a new parsing of variable name
-                    pass
+            if t in ('=', '(', '%'):
+                v_name, v_idx, v_value, t = parse_vname(tokens, t, prior_t)
 
             # Finalise namelist group
             if t in ('/', '&'):
@@ -183,6 +167,38 @@ def write(nml, nml_fname, force=False):
         nml_file.write('/\n')
 
     nml_file.close()
+
+
+#---
+def parse_vname(tokens, t, prior_t):
+
+    v_name = prior_t
+
+    # Parse the indices of the current variable
+    if t == '(':
+        v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
+
+        # TODO: Multidimensional support
+        # TODO: End index support (currently ignored)
+        i_s = 1 if not v_indices[0][0] else v_indices[0][0]
+        i_r = 1 if not v_indices[0][2] else v_indices[0][2]
+        v_idx = itertools.count(i_s, i_r)
+    else:
+        v_idx = None
+
+    # Identify any derived type fields
+    if t == '%':
+        v_value = parse_vname(tokens, t, prior_t)
+    else:
+        v_value = parse_vvalue(tokens, t, prior_t)
+
+    return v_name, v_idx, v_value, t
+
+
+#---
+def parse_vvalue(tokens, t, prior_t):
+    # TODO: write me (^_^)
+    pass
 
 
 #---
