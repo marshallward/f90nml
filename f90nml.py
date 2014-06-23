@@ -85,25 +85,13 @@ def read(nml_fname, verbose=False):
                     else:
                         next_value, t = parse_f90val(tokens, t, prior_t)
 
-                    if v_idx:
+                    # Read v_vals if it already exists
+                    if v_name in g_vars:
+                        v_vals = g_vars[v_name]
+                        if type(v_vals) != list:
+                            v_vals = [v_vals]
 
-                        v_i = next(v_idx)
-
-                        if v_name in g_vars:
-                            v_vals = g_vars[v_name]
-                            if type(v_vals) != list:
-                                v_vals = [v_vals]
-
-                        try:
-                            # Default Fortran indexing starts at 1
-                            v_vals[v_i - 1] = next_value
-                        except IndexError:
-                            # Expand list to accomodate out-of-range indices
-                            size = len(v_vals)
-                            v_vals.extend(None for i in range(size, v_i))
-                            v_vals[v_i - 1] = next_value
-                    else:
-                        v_vals.append(next_value)
+                    append_value(v_vals, next_value, v_idx)
 
                 # Save then deactivate the current variable
                 # TODO: Add '%'
@@ -192,6 +180,24 @@ def parse_vname(tokens, t, prior_t):
         v_values = parse_vvalues(tokens, t, prior_t)
 
     return v_name, v_idx, v_values, t
+
+
+#---
+def append_value(v_values, next_value, v_idx=None):
+
+    if v_idx:
+        v_i = next(v_idx)
+
+        try:
+            # Default Fortran indexing starts at 1
+            v_values[v_i - 1] = next_value
+        except IndexError:
+            # Expand list to accommodate out-of-range indices
+            size = len(v_values)
+            v_values.extend(None for i in range(size, v_i))
+            v_values[v_i - 1] = next_value
+    else:
+        v_values.append(next_value)
 
 
 #---
