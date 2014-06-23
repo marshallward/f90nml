@@ -163,13 +163,17 @@ def parse_vname(tokens, t, prior_t):
 
     # Parse the indices of the current variable
     if t == '(':
-        v_name, v_indices, t = parse_f90idx(tokens, t, prior_t)
+        v_indices, t = parse_f90idx(tokens, t, prior_t)
 
         # TODO: Multidimensional support
-        # TODO: End index support (currently ignored)
         i_s = 1 if not v_indices[0][0] else v_indices[0][0]
+        i_e = v_indices[0][1]
         i_r = 1 if not v_indices[0][2] else v_indices[0][2]
-        v_idx = itertools.count(i_s, i_r)
+
+        if i_e:
+            v_idx = iter(range(i_s, i_e, i_r))
+        else:
+            v_idx = itertools.count(i_s, i_r)
     else:
         v_idx = None
 
@@ -344,7 +348,7 @@ def parse_f90idx(tokens, t, prior_t):
     if t == ':':
         t = next(tokens)
         try:
-            i_end = int(t)
+            i_end = 1 + int(t)
             t = next(tokens)
         except ValueError:
             if t == ':':
@@ -356,7 +360,7 @@ def parse_f90idx(tokens, t, prior_t):
     elif t in idx_end:
         # Replace index with single-index range
         if i_start:
-            i_end = i_start
+            i_end = 1 + i_start
 
     # Stride index
     if t == ':':
@@ -384,7 +388,7 @@ def parse_f90idx(tokens, t, prior_t):
     v_indices.append((idx_triplet))
     t = next(tokens)
 
-    return v_name, v_indices, t
+    return v_indices, t
 
 
 #---
