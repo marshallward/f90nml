@@ -64,52 +64,76 @@ def read(nml_fname, verbose=False):
             if verbose:
                 print('  tokens: {} {}'.format(prior_t, t))
 
-            while v_name:
+            #while v_name:
 
-                t, prior_t = next(tokens), t
+            #    t, prior_t = next(tokens), t
 
-                if verbose:
-                    print('    vstate: {} {} {}'.format(v_name, v_idx, v_vals))
-                    print('    tokens: {} {}'.format(prior_t, t))
+            #    if verbose:
+            #        print('    vstate: {} {} {}'.format(v_name, v_idx, v_vals))
+            #        print('    tokens: {} {}'.format(prior_t, t))
 
-                # Parse the prior token value
-                # TODO: Add '%' to first tuple
-                if (not t in ('(', '=') or prior_t == '=') \
-                        and not (prior_t, t) == (',', '/'):
-                    # Parse the variable string
-                    if prior_t in ('=', ','):
-                        if t in (',', '/', '&'):
-                            next_value = None
-                        else:
-                            continue
-                    else:
-                        next_value, t = parse_f90val(tokens, t, prior_t)
+            #    # Parse the prior token value
+            #    # TODO: Add '%' to first tuple
+            #    if (not t in ('(', '=') or prior_t == '=') \
+            #            and not (prior_t, t) == (',', '/'):
+            #        # Parse the variable string
+            #        if prior_t in ('=', ','):
+            #            if t in (',', '/', '&'):
+            #                next_value = None
+            #            else:
+            #                continue
+            #        else:
+            #            next_value, t = parse_f90val(tokens, t, prior_t)
 
-                    # Read v_vals if it already exists
-                    if v_name in g_vars:
-                        v_vals = g_vars[v_name]
-                        if type(v_vals) != list:
-                            v_vals = [v_vals]
+            #        # Read v_vals if it already exists
+            #        if v_name in g_vars:
+            #            v_vals = g_vars[v_name]
+            #            if type(v_vals) != list:
+            #                v_vals = [v_vals]
 
-                    append_value(v_vals, next_value, v_idx)
+            #        append_value(v_vals, next_value, v_idx)
 
-                # Save then deactivate the current variable
-                # TODO: Add '%'
-                if t in ('(', '=', '/', '&'):
+            #    # Save then deactivate the current variable
+            #    # TODO: Add '%'
+            #    if t in ('(', '=', '/', '&'):
 
-                    if len(v_vals) == 0:
-                        v_vals = None
-                    elif len(v_vals) == 1:
-                        v_vals = v_vals[0]
+            #        if len(v_vals) == 0:
+            #            v_vals = None
+            #        elif len(v_vals) == 1:
+            #            v_vals = v_vals[0]
 
-                    g_vars[v_name] = v_vals
+            #        g_vars[v_name] = v_vals
 
-                    v_name = None
-                    v_vals = []
+            #        v_name = None
+            #        v_vals = []
 
             # Set the next active variable
             if t in ('=', '(', '%'):
-                v_name, v_idx, v_values, t = parse_vname(tokens, t, prior_t)
+                v_name, v_idx, v_values, t = parse_f90var(tokens, t, prior_t)
+
+                if v_name in g_vars:
+                    v_prior_values = g_vars[v_name]
+                    if type(v_prior_values) != list:
+                        v_prior_values = [v_prior_values]
+
+                    # Merge with previously parsed values
+                    for i, v in enumerate(v_values):
+                        if v_idx: i = next(v_idx)
+                        v_values[i] = v if v else v_prior_values[i]
+
+                if len(v_values) == 0:
+                    v_values = None
+                elif len(v_values) == 1:
+                    v_values = v_values[0]
+
+                print(v_values)
+
+                g_vars[v_name] = v_values
+
+                # Deselect variable
+                v_name = None
+                v_idx = None
+                v_values = []
 
             # Finalise namelist group
             if t in ('/', '&'):
@@ -157,9 +181,10 @@ def write(nml, nml_fname, force=False):
 
 
 #---
-def parse_vname(tokens, t, prior_t):
+def parse_f90var(tokens, t, prior_t):
 
     v_name = prior_t
+    v_values = []
 
     # Parse the indices of the current variable
     if t == '(':
@@ -177,11 +202,31 @@ def parse_vname(tokens, t, prior_t):
     else:
         v_idx = None
 
-    # Identify any derived type fields
     if t == '%':
-        v_att, v_att_idx, v_att_vals, t = parse_vname(tokens, t, prior_t)
+        # Resolve the derived type
+
+        v_att, v_att_idx, v_att_vals, t = parse_f90var(tokens, t, prior_t)
+
+        # TODO: resolve indices
+        next_value = {v_att: v_att_vals}
+        append_value(v_values, next_value, v_idx)
+
     else:
-        v_values = parse_vvalues(tokens, t, prior_t)
+        assert t == '='
+        # Construct the variable array
+
+        t, prior_t = next(tokens), t
+        while not t in ('=', '(', '%'):
+
+            if prior_t in ('=', '%', ','):
+                if t in (',', '/', '&'):
+                    # Repeated commas indicate null values
+                    append_value(v_values, None)
+            else:
+                next_value, t = parse_f90val(tokens, t, prior_t)
+                append_value(v_values, next_value, v_idx)
+
+            t, prior_t = next(tokens), t
 
     return v_name, v_idx, v_values, t
 
@@ -202,12 +247,6 @@ def append_value(v_values, next_value, v_idx=None):
             v_values[v_i - 1] = next_value
     else:
         v_values.append(next_value)
-
-
-#---
-def parse_vvalues(tokens, t, prior_t):
-    # TODO: write me (^_^)
-    pass
 
 
 #---
@@ -313,13 +352,6 @@ def f90str(s):
         return s[1:-1]
 
     raise ValueError
-
-
-#---
-def parse_f90var(tokens, t, prior_t):
-    """Not sure how this will work yet"""
-
-    pass
 
 
 #---
