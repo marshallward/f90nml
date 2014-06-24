@@ -45,8 +45,6 @@ def read(nml_fname, verbose=False):
         g_vars = NmlDict()
 
         v_name = None
-        v_idx = None
-        v_vals = []
 
         # Current token is either a variable name or finalizer (/, &)
 
@@ -66,7 +64,8 @@ def read(nml_fname, verbose=False):
 
             # Set the next active variable
             if t in ('=', '(', '%'):
-                v_name, v_idx, v_values, t, prior_t = parse_f90var(tokens, t, prior_t)
+                v_name, v_values, t, prior_t = parse_f90var(tokens,
+                                                                   t, prior_t)
 
                 if v_name in g_vars:
                     v_prior_values = g_vars[v_name]
@@ -84,7 +83,6 @@ def read(nml_fname, verbose=False):
 
                 # Deselect variable
                 v_name = None
-                v_idx = None
                 v_values = []
 
             # Finalise namelist group
@@ -134,6 +132,7 @@ def write(nml, nml_fname, force=False):
 
 #---
 def parse_f90var(tokens, t, prior_t):
+    """Parse a variable and return its name and values."""
 
     v_name = prior_t
     v_values = []
@@ -156,7 +155,8 @@ def parse_f90var(tokens, t, prior_t):
 
     if t == '%':
         # Resolve the derived type
-        v_att, v_att_idx, v_att_vals, t, prior_t = parse_f90var(tokens, t, prior_t)
+        v_att, v_att_vals, t, prior_t = parse_f90var(tokens,
+                                                                t, prior_t)
 
         # TODO: resolve indices
         next_value = {v_att: v_att_vals}
@@ -184,11 +184,12 @@ def parse_f90var(tokens, t, prior_t):
             else:
                 t, prior_t = next(tokens), t
 
-    return v_name, v_idx, v_values, t, prior_t
+    return v_name, v_values, t, prior_t
 
 
 #---
 def append_value(v_values, next_value, v_idx=None):
+    """Update a list of parsed values with a new value."""
 
     if v_idx:
         v_i = next(v_idx)
@@ -381,13 +382,14 @@ def parse_f90idx(tokens, t, prior_t):
 
 #---
 def merge_values(src, new):
+    """Update a value list with a list of new or updated values."""
 
     l_min, l_max = (src, new) if len(src) < len(new) else (new, src)
 
     l_min.extend(None for i in range(len(l_min), len(l_max)))
 
-    for i, v in enumerate(new):
-        new[i] = v if v else src[i]
+    for i, val in enumerate(new):
+        new[i] = val if val else src[i]
 
     return new
 
