@@ -1,10 +1,10 @@
-"""f90nml.py
-Parse fortran namelist files into dicts of standard Python data types.
-Contact: Marshall Ward <python@marshallward.org>
----
-Distributed as part of f90nml, Copyright 2014 Marshall Ward
-Licensed under the Apache License, Version 2.0
-http://www.apache.org/licenses/LICENSE-2.0
+"""f90nml
+   ======
+
+   A Fortran 90 namelist parser and generator.
+
+   :copyright: Copyright 2014 Marshall Ward <python@marshallward.org>
+   :license: Apache License, Version 2.0, see LICENSE for details.
 """
 
 from collections import OrderedDict
@@ -113,20 +113,35 @@ def write(nml, nml_fname, force=False):
         nml_file.write('&{}\n'.format(grp))
 
         grp_vars = nml[grp]
-        for v_name in grp_vars.keys():
+        for v_name, v_val in grp_vars.items():
 
-            v_val = grp_vars[v_name]
-
-            if type(v_val) == list:
-                v_str = ', '.join([to_f90str(v) for v in v_val])
-            else:
-                v_str = to_f90str(v_val)
-
-            nml_file.write('    {} = {}\n'.format(v_name, v_str))
+            for v_str in var_strings(v_name, v_val):
+                nml_file.write('    {}\n'.format(v_str))
 
         nml_file.write('/\n')
 
     nml_file.close()
+
+
+#---
+def var_strings(v_name, v_values):
+
+    var_strs = []
+
+    if type(v_values) in (dict, NmlDict):
+
+        for f_name, f_vals in v_values.items():
+            var_strs.append('%'.join([v_name, var_strings(f_name, f_vals)[0]]))
+
+    else:
+        if type(v_values) == list:
+            v_vals = ', '.join([to_f90str(v) for v in v_values])
+        else:
+            v_vals = to_f90str(v_values)
+
+        var_strs.append('{} = {}'.format(v_name, v_vals))
+
+    return var_strs
 
 
 #---

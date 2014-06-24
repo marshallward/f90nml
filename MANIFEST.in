@@ -1,5 +1,5 @@
-include *.py
-include *.rst
+include f90nml.py
+include README.rst
 include LICENSE
 include NOTICE
 include MANIFEST.in
