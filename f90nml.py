@@ -53,7 +53,7 @@ def read(nml_fname, verbose=False):
         # Populate the namelist group
         while g_name:
 
-            if not v_name:
+            if not t in ('=', '%', '('):
                 t, prior_t = next(tokens), t
 
                 # Skip commas separating objects
@@ -64,69 +64,21 @@ def read(nml_fname, verbose=False):
             if verbose:
                 print('  tokens: {} {}'.format(prior_t, t))
 
-            #while v_name:
-
-            #    t, prior_t = next(tokens), t
-
-            #    if verbose:
-            #        print('    vstate: {} {} {}'.format(v_name, v_idx, v_vals))
-            #        print('    tokens: {} {}'.format(prior_t, t))
-
-            #    # Parse the prior token value
-            #    # TODO: Add '%' to first tuple
-            #    if (not t in ('(', '=') or prior_t == '=') \
-            #            and not (prior_t, t) == (',', '/'):
-            #        # Parse the variable string
-            #        if prior_t in ('=', ','):
-            #            if t in (',', '/', '&'):
-            #                next_value = None
-            #            else:
-            #                continue
-            #        else:
-            #            next_value, t = parse_f90val(tokens, t, prior_t)
-
-            #        # Read v_vals if it already exists
-            #        if v_name in g_vars:
-            #            v_vals = g_vars[v_name]
-            #            if type(v_vals) != list:
-            #                v_vals = [v_vals]
-
-            #        append_value(v_vals, next_value, v_idx)
-
-            #    # Save then deactivate the current variable
-            #    # TODO: Add '%'
-            #    if t in ('(', '=', '/', '&'):
-
-            #        if len(v_vals) == 0:
-            #            v_vals = None
-            #        elif len(v_vals) == 1:
-            #            v_vals = v_vals[0]
-
-            #        g_vars[v_name] = v_vals
-
-            #        v_name = None
-            #        v_vals = []
-
             # Set the next active variable
             if t in ('=', '(', '%'):
-                v_name, v_idx, v_values, t = parse_f90var(tokens, t, prior_t)
+                v_name, v_idx, v_values, t, prior_t = parse_f90var(tokens, t, prior_t)
 
                 if v_name in g_vars:
                     v_prior_values = g_vars[v_name]
                     if type(v_prior_values) != list:
                         v_prior_values = [v_prior_values]
 
-                    # Merge with previously parsed values
-                    for i, v in enumerate(v_values):
-                        if v_idx: i = next(v_idx)
-                        v_values[i] = v if v else v_prior_values[i]
+                    v_values = merge_values(v_prior_values, v_values)
 
                 if len(v_values) == 0:
                     v_values = None
                 elif len(v_values) == 1:
                     v_values = v_values[0]
-
-                print(v_values)
 
                 g_vars[v_name] = v_values
 
@@ -204,31 +156,35 @@ def parse_f90var(tokens, t, prior_t):
 
     if t == '%':
         # Resolve the derived type
-
-        v_att, v_att_idx, v_att_vals, t = parse_f90var(tokens, t, prior_t)
+        v_att, v_att_idx, v_att_vals, t, prior_t = parse_f90var(tokens, t, prior_t)
 
         # TODO: resolve indices
         next_value = {v_att: v_att_vals}
         append_value(v_values, next_value, v_idx)
 
     else:
-        assert t == '='
         # Construct the variable array
-
+        assert t == '='
         t, prior_t = next(tokens), t
-        while not t in ('=', '(', '%'):
 
+        # Add variables until next variable trigger (excepting complex tokens)
+        while not t in ('=', '(', '%') or (prior_t, t) == ('=', '('):
+
+            # First check for implicit null values
             if prior_t in ('=', '%', ','):
-                if t in (',', '/', '&'):
-                    # Repeated commas indicate null values
-                    append_value(v_values, None)
+                if t in (',', '/', '&') and not (prior_t, t) == (',', '/'):
+                    append_value(v_values, None, v_idx)
             else:
                 next_value, t = parse_f90val(tokens, t, prior_t)
                 append_value(v_values, next_value, v_idx)
 
-            t, prior_t = next(tokens), t
+            # Exit at end of namelist group; otherwise process next value
+            if t in ('/', '&'):
+                break
+            else:
+                t, prior_t = next(tokens), t
 
-    return v_name, v_idx, v_values, t
+    return v_name, v_idx, v_values, t, prior_t
 
 
 #---
@@ -424,6 +380,19 @@ def parse_f90idx(tokens, t, prior_t):
 
 
 #---
+def merge_values(src, new):
+
+    l_min, l_max = (src, new) if len(src) < len(new) else (new, src)
+
+    l_min.extend(None for i in range(len(l_min), len(l_max)))
+
+    for i, v in enumerate(new):
+        new[i] = v if v else src[i]
+
+    return new
+
+
+#---
 class NmlDict(OrderedDict):
     """Case-insensitive Python dict"""
     def __setitem__(self, key, value):
@@ -436,11 +405,3 @@ class NmlDict(OrderedDict):
     def write(self, path, force=False):
         """Wrapper to the ``write`` method"""
         write(self, path, force)
-
-
-#---
-class F90DerivedType(object):
-    """Fortran 90 derived type"""
-
-    def __init__(self):
-        f90attrs = {}
