@@ -35,6 +35,28 @@ This method will abort if the output file already exists.
 Additional Features
 -------------------
 
+Derived types
++++++++++++++
+
+Additional ``NmlDict``\ s are created to traverse user-defined types. For
+example, if you want to access ``z`` in the following namelist:
+
+.. code:: fortran
+
+   &dtype_nml
+      x%y%z = 1
+   /
+
+then ``z`` can be accessed in the equivalent namelist ``nml`` by typing
+
+.. code:: python
+
+   z = nml['dtype_nml']['x']['y']['z']
+
+
+Overwriting an existing file
+++++++++++++++++++++++++++++
+
 To overwrite an existing file when using the ``write`` method, use the
 ``force`` flag:
 
@@ -63,7 +85,6 @@ The following namelist features are currently not supported:
 * Repeated indexing (``v = r*c, r*``)
 * Upcast vector elements if components differ (``x(i) = 1, x(j) = 2.0``)
 * Escape on repeated quotes (``'This doesn''t parse correctly'``)
-* Type character resolver (``x%y = c``)
 * stdin/stdout support (``?``, ``?=``)
 
 
