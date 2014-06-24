@@ -64,8 +64,7 @@ def read(nml_fname, verbose=False):
 
             # Set the next active variable
             if t in ('=', '(', '%'):
-                v_name, v_values, t, prior_t = parse_f90var(tokens,
-                                                                   t, prior_t)
+                v_name, v_values, t, prior_t = parse_f90var(tokens, t, prior_t)
 
                 if v_name in g_vars:
                     v_prior_values = g_vars[v_name]
@@ -155,11 +154,20 @@ def parse_f90var(tokens, t, prior_t):
 
     if t == '%':
         # Resolve the derived type
-        v_att, v_att_vals, t, prior_t = parse_f90var(tokens,
-                                                                t, prior_t)
+        t, prior_t = next(tokens), t
+        t, prior_t = next(tokens), t
+        v_att, v_att_vals, t, prior_t = parse_f90var(tokens, t, prior_t)
 
         # TODO: resolve indices
-        next_value = {v_att: v_att_vals}
+        next_value = NmlDict()
+
+        if len(v_att_vals) == 0:
+            v_att_vals = None
+        elif len(v_att_vals) == 1:
+            v_att_vals = v_att_vals[0]
+
+        next_value[v_att] = v_att_vals
+
         append_value(v_values, next_value, v_idx)
 
     else:

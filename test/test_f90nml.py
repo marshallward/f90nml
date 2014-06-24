@@ -51,6 +51,12 @@ class Test(unittest.TestCase):
                             }
                          }
 
+        self.dtype_nml = {'dtype_nml':
+                            {'x':
+                                {'y': 1}
+                            }
+                         }
+
         self.comment_nml = {'comment_nml':
                             {'v_cmt_inline': 123,
                              'v_cmt_in_str': 'This token ! is not a comment',
@@ -84,6 +90,10 @@ class Test(unittest.TestCase):
     def test_float(self):
         test_nml = f90nml.read('float.nml')
         self.assertEqual(self.float_nml, test_nml)
+
+    def test_dtype(self):
+        test_nml = f90nml.read('dtype.nml')
+        self.assertEqual(self.dtype_nml, test_nml)
 
     def test_comment(self):
         test_nml = f90nml.read('comment.nml')
