@@ -52,8 +52,9 @@ class Test(unittest.TestCase):
                          }
 
         self.dtype_nml = {'dtype_nml':
-                            {'x':
-                                {'y': 1}
+                            {'dt_scalar': {'val': 1},
+                             'dt_stack': {'outer': {'inner': 2} },
+                             'dt_vector': {'vec': [1, 2, 3]}
                             }
                          }
 
