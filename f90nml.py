@@ -12,7 +12,7 @@ import itertools
 import os
 import shlex
 
-__version__ = '0.4'
+__version__ = '0.5'
 
 
 #---
