@@ -68,7 +68,7 @@ def read(nml_fname, verbose=False):
 
                 if v_name in g_vars:
                     v_prior_values = g_vars[v_name]
-                    if type(v_prior_values) != list:
+                    if not type(v_prior_values) is list:
                         v_prior_values = [v_prior_values]
 
                     v_values = merge_values(v_prior_values, v_values)
@@ -92,7 +92,21 @@ def read(nml_fname, verbose=False):
                     assert t.lower() == 'end'
 
                 # Append the grouplist to the namelist (including empty groups)
-                nmls[g_name] = g_vars
+                if g_name in nmls:
+                    g_update = nmls[g_name]
+
+                    # Update to list of groups
+                    if not type(g_update) is list:
+                        g_update = [g_update]
+
+                    g_update.append(g_vars)
+
+                else:
+                    g_update = g_vars
+
+                nmls[g_name] = g_update
+
+                # Reset state
                 g_name, g_vars = None, None
 
     nml_file.close()

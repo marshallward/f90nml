@@ -1,0 +1,7 @@
+&repeat_nml
+    x = 1
+/
+
+&repeat_nml
+    x = 2
+/
