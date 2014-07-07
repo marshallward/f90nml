@@ -12,7 +12,7 @@ import itertools
 import os
 import shlex
 
-__version__ = '0.5'
+__version__ = '0.6-test'
 
 
 #---
@@ -123,18 +123,28 @@ def write(nml, nml_fname, force=False):
 
     nml_file = open(nml_fname, 'w')
 
-    for grp in nml.keys():
-        nml_file.write('&{}\n'.format(grp))
+    for grp_name, grp_vars in nml.items():
 
-        grp_vars = nml[grp]
-        for v_name, v_val in grp_vars.items():
-
-            for v_str in var_strings(v_name, v_val):
-                nml_file.write('    {}\n'.format(v_str))
-
-        nml_file.write('/\n')
+        if type(grp_vars) is list:
+            for g_vars in grp_vars:
+                write_nmlgrp(grp_name, g_vars, nml_file)
+        else:
+            write_nmlgrp(grp_name, grp_vars, nml_file)
 
     nml_file.close()
+
+
+#---
+def write_nmlgrp(grp_name, grp_vars, nml_file):
+
+    nml_file.write('&{}\n'.format(grp_name))
+
+    for v_name, v_val in grp_vars.items():
+
+        for v_str in var_strings(v_name, v_val):
+            nml_file.write('    {}\n'.format(v_str))
+
+    nml_file.write('/\n')
 
 
 #---
