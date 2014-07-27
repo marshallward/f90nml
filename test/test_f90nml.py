@@ -58,12 +58,27 @@ class Test(unittest.TestCase):
                             }
                          }
 
+        self.bcast_nml = {'bcast_nml':
+                            {'x': [2.0, 2.0],
+                             'y': [None, None, None],
+                             'z': [True, True, True, True],
+                            },
+                          'bcast_endnull_nml':
+                            {'x': [2.0, 2.0],
+                             'y': [None, None, None],
+                            }
+                         }
+
         self.comment_nml = {'comment_nml':
                             {'v_cmt_inline': 123,
                              'v_cmt_in_str': 'This token ! is not a comment',
                              'v_cmt_after_str': 'This ! is not a comment',
                             }
                            }
+
+        self.grp_repeat_nml = {'grp_repeat_nml':
+                                [{'x': 1}, {'x': 2}]
+                              }
 
         self.f77_nml = {'f77_nml':
                             {'x': 123},
@@ -96,9 +111,17 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('dtype.nml')
         self.assertEqual(self.dtype_nml, test_nml)
 
+    def test_bcast(self):
+        test_nml = f90nml.read('bcast.nml')
+        self.assertEqual(self.bcast_nml, test_nml)
+
     def test_comment(self):
         test_nml = f90nml.read('comment.nml')
         self.assertEqual(self.comment_nml, test_nml)
+
+    def test_grp_repeat(self):
+        test_nml = f90nml.read('grp_repeat.nml')
+        self.assertEqual(self.grp_repeat_nml, test_nml)
 
     def test_f77(self):
         test_nml = f90nml.read('f77.nml')
