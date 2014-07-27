@@ -34,6 +34,13 @@ def read(nml_fname, verbose=False):
 
     for t in tokens:
 
+        # Check for classic group terminator
+        if t == 'end':
+            try:
+                t, prior_t = next(tokens), t
+            except StopIteration:
+                break
+
         # Ignore tokens outside of namelist groups
         while t != '&':
             t, prior_t = next(tokens), t
@@ -87,13 +94,6 @@ def read(nml_fname, verbose=False):
             # Finalise namelist group
             if t in ('/', '&'):
 
-                # Test for classic namelist finaliser
-                if t == '&':
-                    try:
-                        t, prior_t = next(tokens), t
-                    except StopIteration:
-                        pass
-
                 # Append the grouplist to the namelist (including empty groups)
                 if g_name in nmls:
                     g_update = nmls[g_name]
@@ -108,6 +108,9 @@ def read(nml_fname, verbose=False):
                     g_update = g_vars
 
                 nmls[g_name] = g_update
+
+                if verbose:
+                    print('{} saved with {}'.format(g_name, g_vars))
 
                 # Reset state
                 g_name, g_vars = None, None
