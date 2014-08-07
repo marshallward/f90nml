@@ -11,6 +11,7 @@ from collections import OrderedDict
 import itertools
 import os
 import shlex
+import textwrap
 
 __version__ = '0.6'
 
@@ -147,8 +148,11 @@ def write_nmlgrp(grp_name, grp_vars, nml_file):
 
     for v_name, v_val in grp_vars.items():
 
+        # Pad whitespace for variable name
+        name_pad = ' ' * len(v_name + ' = ')
+
         for v_str in var_strings(v_name, v_val):
-            entry_lines = textwrap.wrap(v_str, 68)
+            entry_lines = textwrap.wrap(v_str, 72, subsequent_indent=name_pad)
             for e_line in entry_lines:
                 nml_file.write('    {}\n'.format(e_line))
 
