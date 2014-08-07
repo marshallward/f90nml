@@ -3,7 +3,7 @@
 
    A Fortran 90 namelist parser and generator.
 
-   :copyright: Copyright 2014 Marshall Ward <python@marshallward.org>
+   :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
    :license: Apache License, Version 2.0, see LICENSE for details.
 """
 
@@ -12,7 +12,7 @@ import itertools
 import os
 import shlex
 
-__version__ = '0.6-test'
+__version__ = '0.6'
 
 
 #---
@@ -33,6 +33,13 @@ def read(nml_fname, verbose=False):
     nmls = NmlDict()
 
     for t in tokens:
+
+        # Check for classic group terminator
+        if t == 'end':
+            try:
+                t, prior_t = next(tokens), t
+            except StopIteration:
+                break
 
         # Ignore tokens outside of namelist groups
         while t != '&':
@@ -86,10 +93,6 @@ def read(nml_fname, verbose=False):
 
             # Finalise namelist group
             if t in ('/', '&'):
-                # Test for classic namelist finaliser
-                if t == '&':
-                    t, prior_t = next(tokens), t
-                    assert t.lower() == 'end'
 
                 # Append the grouplist to the namelist (including empty groups)
                 if g_name in nmls:
@@ -105,6 +108,9 @@ def read(nml_fname, verbose=False):
                     g_update = g_vars
 
                 nmls[g_name] = g_update
+
+                if verbose:
+                    print('{} saved with {}'.format(g_name, g_vars))
 
                 # Reset state
                 g_name, g_vars = None, None
@@ -213,22 +219,46 @@ def parse_f90var(tokens, t, prior_t):
 
     else:
         # Construct the variable array
+
         assert t == '='
+        n_vals = None
         t, prior_t = next(tokens), t
 
         # Add variables until next variable trigger (excepting complex tokens)
         while not t in ('=', '(', '%') or (prior_t, t) == ('=', '('):
 
+            # Check for repeated values
+            if t == '*':
+                n_vals, t = parse_f90val(tokens, t, prior_t)
+                assert type(n_vals) is int
+                t, prior_t = next(tokens), t
+            elif not n_vals:
+                n_vals = 1
+
             # First check for implicit null values
             if prior_t in ('=', '%', ','):
-                if t in (',', '/', '&') and not (prior_t, t) == (',', '/'):
-                    append_value(v_values, None, v_idx)
+                if t in (',', '/', '&') and not (
+                        prior_t == ',' and t in ('/', '&')):
+                    append_value(v_values, None, v_idx, n_vals)
+
+            elif prior_t == '*':
+
+                if not t in ('/', '&'):
+                    t, prior_t = next(tokens), t
+
+                if t == '=' or (t in ('/', '&') and prior_t == '*'):
+                    next_value = None
+                else:
+                    next_value, t = parse_f90val(tokens, t, prior_t)
+
+                append_value(v_values, next_value, v_idx, n_vals)
+
             else:
                 next_value, t = parse_f90val(tokens, t, prior_t)
-                append_value(v_values, next_value, v_idx)
+                append_value(v_values, next_value, v_idx, n_vals)
 
-            # Exit at end of namelist group; otherwise process next value
-            if t in ('/', '&'):
+            # Exit for end of nml group (/, &) or end of null broadcast (=)
+            if t in ('/', '&', '='):
                 break
             else:
                 t, prior_t = next(tokens), t
@@ -237,22 +267,23 @@ def parse_f90var(tokens, t, prior_t):
 
 
 #---
-def append_value(v_values, next_value, v_idx=None):
+def append_value(v_values, next_value, v_idx=None, n_vals=1):
     """Update a list of parsed values with a new value."""
 
-    if v_idx:
-        v_i = next(v_idx)
+    for _ in range(n_vals):
+        if v_idx:
+            v_i = next(v_idx)
 
-        try:
-            # Default Fortran indexing starts at 1
-            v_values[v_i - 1] = next_value
-        except IndexError:
-            # Expand list to accommodate out-of-range indices
-            size = len(v_values)
-            v_values.extend(None for i in range(size, v_i))
-            v_values[v_i - 1] = next_value
-    else:
-        v_values.append(next_value)
+            try:
+                # Default Fortran indexing starts at 1
+                v_values[v_i - 1] = next_value
+            except IndexError:
+                # Expand list to accommodate out-of-range indices
+                size = len(v_values)
+                v_values.extend(None for i in range(size, v_i))
+                v_values[v_i - 1] = next_value
+        else:
+            v_values.append(next_value)
 
 
 #---
