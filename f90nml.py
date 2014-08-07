@@ -142,7 +142,9 @@ def write_nmlgrp(grp_name, grp_vars, nml_file):
     for v_name, v_val in grp_vars.items():
 
         for v_str in var_strings(v_name, v_val):
-            nml_file.write('    {}\n'.format(v_str))
+            entry_lines = textwrap.wrap(v_str, 68)
+            for e_line in entry_lines:
+                nml_file.write('    {}\n'.format(e_line))
 
     nml_file.write('/\n')
 
