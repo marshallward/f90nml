@@ -68,7 +68,7 @@ def read(nml_fname, verbose=False):
 
             # Diagnostic testing
             if verbose:
-                print('  tokens: {} {}'.format(prior_t, t))
+                print('  tokens: {0} {1}'.format(prior_t, t))
 
             # Set the next active variable
             if t in ('=', '(', '%'):
@@ -111,7 +111,7 @@ def read(nml_fname, verbose=False):
                 nmls[g_name] = g_update
 
                 if verbose:
-                    print('{} saved with {}'.format(g_name, g_vars))
+                    print('{0} saved with {1}'.format(g_name, g_vars))
 
                 # Reset state
                 g_name, g_vars = None, None
@@ -126,7 +126,7 @@ def write(nml, nml_fname, force=False):
     """Output dict to a Fortran 90 namelist file."""
 
     if not force and os.path.isfile(nml_fname):
-        raise IOError('File {} already exists.'.format(nml_fname))
+        raise IOError('File {0} already exists.'.format(nml_fname))
 
     nml_file = open(nml_fname, 'w')
 
@@ -144,7 +144,7 @@ def write(nml, nml_fname, force=False):
 #---
 def write_nmlgrp(grp_name, grp_vars, nml_file):
 
-    nml_file.write('&{}\n'.format(grp_name))
+    nml_file.write('&{0}\n'.format(grp_name))
 
     for v_name, v_val in grp_vars.items():
 
@@ -154,7 +154,7 @@ def write_nmlgrp(grp_name, grp_vars, nml_file):
         for v_str in var_strings(v_name, v_val):
             entry_lines = textwrap.wrap(v_str, 72, subsequent_indent=name_pad)
             for e_line in entry_lines:
-                nml_file.write('    {}\n'.format(e_line))
+                nml_file.write('    {0}\n'.format(e_line))
 
     nml_file.write('/\n')
 
@@ -175,7 +175,7 @@ def var_strings(v_name, v_values):
         else:
             v_vals = to_f90str(v_values)
 
-        var_strs.append('{} = {}'.format(v_name, v_vals))
+        var_strs.append('{0} = {1}'.format(v_name, v_vals))
 
     return var_strs
 
@@ -299,15 +299,15 @@ def to_f90str(value):
     elif type(value) is float:
         return str(value)
     elif type(value) is bool:
-        return '.{}.'.format(str(value).lower())
+        return '.{0}.'.format(str(value).lower())
     elif type(value) is complex:
-        return '({}, {})'.format(value.real, value.imag)
+        return '({0}, {1})'.format(value.real, value.imag)
     elif type(value) is str:
-        return '\'{}\''.format(value)
+        return '\'{0}\''.format(value)
     elif value is None:
         return ''
     else:
-        raise ValueError('Type {} of {} cannot be converted to a Fortran type.'
+        raise ValueError('Type {0} of {1} cannot be converted to a Fortran type.'
                          ''.format(type(value), value))
 
 
@@ -328,7 +328,7 @@ def parse_f90val(tokens, t, s):
 
         t = next(tokens)
 
-        s = '({}, {})'.format(s_re, s_im)
+        s = '({0}, {1})'.format(s_re, s_im)
 
     recast_funcs = [int, f90float, f90complex, f90bool, f90str]
 
@@ -340,7 +340,7 @@ def parse_f90val(tokens, t, s):
             continue
 
     # If all test failed, then raise ValueError
-    raise ValueError('Could not convert {} to a Python data type.'.format(s))
+    raise ValueError('Could not convert {0} to a Python data type.'.format(s))
 
 
 #---
@@ -361,7 +361,7 @@ def f90complex(s):
         # NOTE: Failed float(str) will raise ValueError
         return complex(f90float(s_re), f90float(s_im))
     else:
-        raise ValueError('{} must be in complex number form (x, y)'.format(s))
+        raise ValueError('{0} must be in complex number form (x, y)'.format(s))
 
 
 #---
@@ -372,14 +372,14 @@ def f90bool(s):
     try:
         s_bool = s[1].lower() if s.startswith('.') else s[0].lower()
     except IndexError:
-        raise ValueError('{} is not a valid logical constant.'.format(s))
+        raise ValueError('{0} is not a valid logical constant.'.format(s))
 
     if s_bool == 't':
         return True
     elif s_bool == 'f':
         return False
     else:
-        raise ValueError('{} is not a valid logical constant.'.format(s))
+        raise ValueError('{0} is not a valid logical constant.'.format(s))
 
 
 #---
@@ -412,7 +412,7 @@ def parse_f90idx(tokens, t, prior_t):
         t = next(tokens)
     except ValueError:
         if t in idx_end:
-            raise ValueError('{} index cannot be empty.'
+            raise ValueError('{0} index cannot be empty.'
                              ''.format(v_name))
         elif not t == ':':
             raise
@@ -425,7 +425,7 @@ def parse_f90idx(tokens, t, prior_t):
             t = next(tokens)
         except ValueError:
             if t == ':':
-                raise ValueError('{} end index cannot be implicit '
+                raise ValueError('{0} end index cannot be implicit '
                                  'when using stride.'
                                  ''.format(v_name))
             elif not t in idx_end:
@@ -442,19 +442,19 @@ def parse_f90idx(tokens, t, prior_t):
             i_stride = int(t)
         except ValueError:
             if t == ')':
-                raise ValueError('{} stride index cannot be '
+                raise ValueError('{0} stride index cannot be '
                                  'implicit.'.format(v_name))
             else:
                 raise
 
         if i_stride == 0:
-            raise ValueError('{} stride index cannot be zero.'
+            raise ValueError('{0} stride index cannot be zero.'
                              ''.format(v_name))
 
         t = next(tokens)
 
     if not t in idx_end:
-        raise ValueError('{} index did not terminate '
+        raise ValueError('{0} index did not terminate '
                          'correctly.'.format(v_name))
 
     idx_triplet = (i_start, i_end, i_stride)
