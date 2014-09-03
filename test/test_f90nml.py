@@ -55,6 +55,12 @@ class Test(unittest.TestCase):
                             {'dt_scalar': {'val': 1},
                              'dt_stack': {'outer': {'inner': 2} },
                              'dt_vector': {'vec': [1, 2, 3]}
+                            },
+                          'dtype_multi_nml':
+                            {'dt': {'x': 1,
+                                    'y': 2,
+                                    'z': 3,
+                                   }
                             }
                          }
 

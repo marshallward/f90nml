@@ -86,7 +86,10 @@ def read(nml_fname, verbose=False):
                 elif len(v_values) == 1:
                     v_values = v_values[0]
 
-                g_vars[v_name] = v_values
+                if v_name in g_vars and type(g_vars[v_name]) is NmlDict:
+                    g_vars[v_name].update(v_values)
+                else:
+                    g_vars[v_name] = v_values
 
                 # Deselect variable
                 v_name = None
