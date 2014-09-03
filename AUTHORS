@@ -1,3 +1,7 @@
 f90nml was created and is maintained by Marshall Ward <python@marshallward.org>.
 
 Streamlined namelist output interface was contributed by Huziy Oleksandr.
+
+Improved python formatting support by barpaum*.
+
+*: github username

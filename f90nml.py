@@ -13,7 +13,7 @@ import os
 import shlex
 import textwrap
 
-__version__ = '0.6'
+__version__ = '0.6.1'
 
 
 #---
