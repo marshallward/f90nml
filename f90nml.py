@@ -13,7 +13,7 @@ import os
 import shlex
 import textwrap
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 
 
 #---
@@ -155,7 +155,9 @@ def write_nmlgrp(grp_name, grp_vars, nml_file):
         name_pad = ' ' * len(v_name + ' = ')
 
         for v_str in var_strings(v_name, v_val):
-            entry_lines = textwrap.wrap(v_str, 72, subsequent_indent=name_pad)
+            entry_lines = textwrap.wrap(v_str, 72, subsequent_indent=name_pad,
+                                                   break_long_words=False,
+                                                   break_on_hyphens=False)
             for e_line in entry_lines:
                 nml_file.write('    {0}\n'.format(e_line))
 
