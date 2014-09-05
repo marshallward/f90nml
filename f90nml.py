@@ -43,18 +43,14 @@ def read(nml_fname, verbose=False):
                 break
 
         # Ignore tokens outside of namelist groups
-        while t != '&':
+        while not t in ('&', '$'):
             t, prior_t = next(tokens), t
-
-        # Current token is now '&'
 
         # Create the next namelist
         g_name = next(tokens)
         g_vars = NmlDict()
 
         v_name = None
-
-        # Current token is either a variable name or finalizer (/, &)
 
         # Populate the namelist group
         while g_name:
@@ -96,7 +92,7 @@ def read(nml_fname, verbose=False):
                 v_values = []
 
             # Finalise namelist group
-            if t in ('/', '&'):
+            if t in ('/', '&', '$'):
 
                 # Append the grouplist to the namelist (including empty groups)
                 if g_name in nmls:
@@ -263,16 +259,16 @@ def parse_f90var(tokens, t, prior_t):
 
             # First check for implicit null values
             if prior_t in ('=', '%', ','):
-                if t in (',', '/', '&') and not (
-                        prior_t == ',' and t in ('/', '&')):
+                if t in (',', '/', '&', '$') and not (
+                        prior_t == ',' and t in ('/', '&', '$')):
                     append_value(v_values, None, v_idx, n_vals)
 
             elif prior_t == '*':
 
-                if not t in ('/', '&'):
+                if not t in ('/', '&', '$'):
                     t, prior_t = next(tokens), t
 
-                if t == '=' or (t in ('/', '&') and prior_t == '*'):
+                if t == '=' or (t in ('/', '&', '$') and prior_t == '*'):
                     next_value = None
                 else:
                     next_value, t = parse_f90val(tokens, t, prior_t)
@@ -283,8 +279,8 @@ def parse_f90var(tokens, t, prior_t):
                 next_value, t = parse_f90val(tokens, t, prior_t)
                 append_value(v_values, next_value, v_idx, n_vals)
 
-            # Exit for end of nml group (/, &) or end of null broadcast (=)
-            if t in ('/', '&', '='):
+            # Exit for end of nml group (/, &, $) or end of null broadcast (=)
+            if t in ('/', '&', '$', '='):
                 break
             else:
                 t, prior_t = next(tokens), t
