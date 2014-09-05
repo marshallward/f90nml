@@ -90,7 +90,11 @@ class Test(unittest.TestCase):
                             {'x': 123},
                         'next_f77_nml':
                             {'y': 'abc'},
-                        }
+                       }
+
+        self.dollar_nml = {'dollar_nml':
+                            {'v': 1.},
+                          }
 
 
     def test_empty(self):
@@ -132,6 +136,10 @@ class Test(unittest.TestCase):
     def test_f77(self):
         test_nml = f90nml.read('f77.nml')
         self.assertEqual(self.f77_nml, test_nml)
+
+    def test_dollar(self):
+        test_nml = f90nml.read('dollar.nml')
+        self.assertEqual(self.dollar_nml, test_nml)
 
 
 if __name__ == '__main__':
