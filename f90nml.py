@@ -6,12 +6,12 @@
    :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
    :license: Apache License, Version 2.0, see LICENSE for details.
 """
+from __future__ import print_function
 
 from collections import OrderedDict
 import itertools
 import os
 import shlex
-import textwrap
 
 __version__ = '0.7'
 
@@ -146,6 +146,7 @@ def write(nml, nml_fname, force=False):
 
 #---
 def write_nmlgrp(grp_name, grp_vars, nml_file):
+    """Write namelist group to target file"""
 
     nml_file.write('&{0}\n'.format(grp_name))
 
@@ -160,6 +161,7 @@ def write_nmlgrp(grp_name, grp_vars, nml_file):
 
 #---
 def var_strings(v_name, v_values, offset=0):
+    """Convert namelist variable to list of fixed-width strings"""
 
     var_strs = []
 
@@ -179,11 +181,9 @@ def var_strings(v_name, v_values, offset=0):
         val_line = ''
         for v_val in v_values:
 
-            # TODO: Calculate offsets for varnames
             if len(val_line) < 72 - len(v_name) - offset:
                 val_line += to_f90str(v_val) + ', '
 
-            # TODO: Calculate offsets for varnames
             if len(val_line) >= 72 - len(v_name) - offset:
                 val_strs.append(val_line)
                 val_line = ''
@@ -329,92 +329,96 @@ def to_f90str(value):
     elif value is None:
         return ''
     else:
-        raise ValueError('Type {0} of {1} cannot be converted to a Fortran type.'
-                         ''.format(type(value), value))
+        raise ValueError('Type {0} of {1} cannot be converted to a Fortran '
+                         'type.'.format(type(value), value))
 
 
 #---
-def parse_f90val(tokens, t, s):
+def parse_f90val(tokens, tok, v_str):
     """Convert string repr of Fortran type to equivalent Python type."""
-    assert type(s) is str
+    assert type(v_str) is str
 
     # Construct the complex string
-    if s == '(':
-        s_re = t
+    if v_str == '(':
+        v_re = tok
         next(tokens)
-        s_im = next(tokens)
+        v_im = next(tokens)
 
         # Bypass the right parenthesis
-        t = next(tokens)
-        assert t == ')'
+        tok = next(tokens)
+        assert tok == ')'
 
-        t = next(tokens)
+        tok = next(tokens)
 
-        s = '({0}, {1})'.format(s_re, s_im)
+        v_str = '({0}, {1})'.format(v_re, v_im)
 
     recast_funcs = [int, f90float, f90complex, f90bool, f90str]
 
     for f90type in recast_funcs:
         try:
-            value = f90type(s)
-            return value, t
+            value = f90type(v_str)
+            return value, tok
         except ValueError:
             continue
 
     # If all test failed, then raise ValueError
-    raise ValueError('Could not convert {0} to a Python data type.'.format(s))
+    raise ValueError('Could not convert {0} to a Python data type.'
+                     ''.format(v_str))
 
 
 #---
-def f90float(s):
+def f90float(v_str):
     """Convert string repr of Fortran floating point to Python double"""
 
-    return float(s.lower().replace('d', 'e'))
+    return float(v_str.lower().replace('d', 'e'))
 
 
 #---
-def f90complex(s):
+def f90complex(v_str):
     """Convert string repr of Fortran complex to Python complex."""
-    assert type(s) == str
+    assert type(v_str) == str
 
-    if s[0] == '(' and s[-1] == ')' and len(s.split(',')) == 2:
-        s_re, s_im = s[1:-1].split(',', 1)
+    if v_str[0] == '(' and v_str[-1] == ')' and len(v_str.split(',')) == 2:
+        v_re, v_im = v_str[1:-1].split(',', 1)
 
         # NOTE: Failed float(str) will raise ValueError
-        return complex(f90float(s_re), f90float(s_im))
+        return complex(f90float(v_re), f90float(v_im))
     else:
-        raise ValueError('{0} must be in complex number form (x, y)'.format(s))
+        raise ValueError('{0} must be in complex number form (x, y).'
+                         ''.format(v_str))
 
 
 #---
-def f90bool(s):
+def f90bool(v_str):
     """Convert string repr of Fortran logical to Python logical."""
-    assert type(s) == str
+    assert type(v_str) == str
 
     try:
-        s_bool = s[1].lower() if s.startswith('.') else s[0].lower()
+        if v_str.startswith('.'):
+            v_bool = v_str[1].lower()
+        else:
+            v_bool = v_str[0].lower()
     except IndexError:
-        raise ValueError('{0} is not a valid logical constant.'.format(s))
+        raise ValueError('{0} is not a valid logical constant.'.format(v_str))
 
-    if s_bool == 't':
+    if v_bool == 't':
         return True
-    elif s_bool == 'f':
+    elif v_bool == 'f':
         return False
     else:
-        raise ValueError('{0} is not a valid logical constant.'.format(s))
+        raise ValueError('{0} is not a valid logical constant.'.format(v_str))
 
 
 #---
-def f90str(s):
+def f90str(v_str):
     """Convert string repr of Fortran string to Python string."""
-    assert type(s) == str
+    assert type(v_str) == str
+    assert v_str[0] == v_str[-1]
 
-    f90quotes = ["'", '"']
-
-    if s[0] in f90quotes and s[-1] in f90quotes:
-        return s[1:-1]
-
-    raise ValueError
+    if v_str[0] in ("'", '"') and v_str[-1] in ("'", '"'):
+        return v_str[1:-1]
+    else:
+        raise ValueError
 
 
 #---
