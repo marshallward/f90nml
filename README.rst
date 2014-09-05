@@ -20,14 +20,14 @@ To read a Fortran namelist file as a ``dict``, use the ``read()`` method:
 
 .. code:: python
 
-   nml_dict = f90nml.read(nml_filename)
+   nml = f90nml.read(nml_filename)
 
 To output a Python ``dict`` as a Fortran namelist file, use the ``write()``
 method:
 
 .. code:: python
 
-   my_nml.write(output_filename)
+   nml.write(output_filename)
 
 This method will abort if the output file already exists.
 
