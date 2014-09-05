@@ -27,7 +27,7 @@ method:
 
 .. code:: python
 
-   f90nml.write(my_nml, output_filename)
+   my_nml.write(output_filename)
 
 This method will abort if the output file already exists.
 
@@ -62,7 +62,7 @@ To overwrite an existing file when using the ``write`` method, use the
 
 .. code:: python
 
-   f90nml.write(nml, nml_filename, force=True)
+   nml.write(nml_filename, force=True)
 
 
 Notes
