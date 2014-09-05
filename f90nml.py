@@ -151,36 +151,53 @@ def write_nmlgrp(grp_name, grp_vars, nml_file):
 
     for v_name, v_val in grp_vars.items():
 
-        # Pad whitespace for variable name
-        name_pad = ' ' * len(v_name + ' = ')
-
         for v_str in var_strings(v_name, v_val):
-            entry_lines = textwrap.wrap(v_str, 72, subsequent_indent=name_pad,
-                                                   break_long_words=False,
-                                                   break_on_hyphens=False)
-            for e_line in entry_lines:
-                nml_file.write('    {0}\n'.format(e_line))
+
+            nml_file.write('    {0}\n'.format(v_str))
 
     nml_file.write('/\n')
 
 
 #---
-def var_strings(v_name, v_values):
+def var_strings(v_name, v_values, offset=0):
 
     var_strs = []
 
     if type(v_values) in (dict, NmlDict):
 
         for f_name, f_vals in v_values.items():
-            var_strs.append('%'.join([v_name, var_strings(f_name, f_vals)[0]]))
-
+            v_strs = var_strings(f_name, f_vals, offset + 1 + len(v_name))
+            var_strs.append('%'.join([v_name, v_strs[0]]))
+            var_strs.extend(v_strs[1:])
     else:
-        if type(v_values) == list:
-            v_vals = ', '.join([to_f90str(v) for v in v_values])
-        else:
-            v_vals = to_f90str(v_values)
+        if not type(v_values) is list:
+            v_values = [v_values]
 
-        var_strs.append('{0} = {1}'.format(v_name, v_vals))
+        # Split into 72-character lines
+        val_strs = []
+
+        val_line = ''
+        for v_val in v_values:
+
+            # TODO: Calculate offsets for varnames
+            if len(val_line) < 72 - len(v_name) - offset:
+                val_line += to_f90str(v_val) + ', '
+
+            # TODO: Calculate offsets for varnames
+            if len(val_line) >= 72 - len(v_name) - offset:
+                val_strs.append(val_line)
+                val_line = ''
+
+        # Append any remaining values
+        if val_line:
+            val_strs.append(val_line[:-2])
+
+        # Complete the set of values
+        var_strs.append('{0} = {1}'.format(v_name, val_strs[0]))
+
+        for v_str in val_strs[1:]:
+            var_strs.append('{0}   {1}'
+                            ''.format((offset + len(v_name)) * ' ', v_str))
 
     return var_strs
 
