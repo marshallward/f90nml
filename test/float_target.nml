@@ -1,0 +1,11 @@
+&float_nml
+    v_float = 1.0
+    v_decimal_end = 1.0
+    v_negative = -1.0
+    v_single = 1.0
+    v_double = 1.0
+    v_single_upper = 1.0
+    v_double_upper = 1.0
+    v_positive_index = 10.0
+    v_negative_index = 0.1
+/

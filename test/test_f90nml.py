@@ -1,3 +1,4 @@
+import os
 import sys
 import unittest
 
@@ -100,46 +101,69 @@ class Test(unittest.TestCase):
     def test_empty(self):
         test_nml = f90nml.read('empty.nml')
         self.assertEqual(self.empty_nml, test_nml)
+        self.assert_write(test_nml, 'empty.nml')
 
     def test_null(self):
         test_nml = f90nml.read('null.nml')
         self.assertEqual(self.null_nml, test_nml)
+        self.assert_write(test_nml, 'null_target.nml')
 
     def test_types(self):
         test_nml = f90nml.read('types.nml')
         self.assertEqual(self.types_nml, test_nml)
+        self.assert_write(test_nml, 'types.nml')
 
     def test_vector(self):
         test_nml = f90nml.read('vector.nml')
         self.assertEqual(self.vector_nml, test_nml)
+        self.assert_write(test_nml, 'vector_target.nml')
 
     def test_float(self):
         test_nml = f90nml.read('float.nml')
         self.assertEqual(self.float_nml, test_nml)
+        self.assert_write(test_nml, 'float_target.nml')
 
     def test_dtype(self):
         test_nml = f90nml.read('dtype.nml')
         self.assertEqual(self.dtype_nml, test_nml)
+        self.assert_write(test_nml, 'dtype.nml')
 
     def test_bcast(self):
         test_nml = f90nml.read('bcast.nml')
         self.assertEqual(self.bcast_nml, test_nml)
+        self.assert_write(test_nml, 'bcast_target.nml')
 
     def test_comment(self):
         test_nml = f90nml.read('comment.nml')
         self.assertEqual(self.comment_nml, test_nml)
+        self.assert_write(test_nml, 'comment_target.nml')
 
     def test_grp_repeat(self):
         test_nml = f90nml.read('grp_repeat.nml')
         self.assertEqual(self.grp_repeat_nml, test_nml)
+        self.assert_write(test_nml, 'grp_repeat.nml')
 
     def test_f77(self):
         test_nml = f90nml.read('f77.nml')
         self.assertEqual(self.f77_nml, test_nml)
+        self.assert_write(test_nml, 'f77_target.nml')
 
     def test_dollar(self):
         test_nml = f90nml.read('dollar.nml')
         self.assertEqual(self.dollar_nml, test_nml)
+        self.assert_write(test_nml, 'dollar_target.nml')
+
+    def assert_write(self, nml, target_fname):
+
+        tmp_fname = 'tmp.nml'
+        f90nml.write(nml, tmp_fname)
+        try:
+            with open(tmp_fname) as tmp, open(target_fname) as target:
+                tmp_str = tmp.read()
+                target_str = target.read()
+                self.assertMultiLineEqual(tmp_str, target_str)
+        finally:
+            os.remove(tmp_fname)
 
 
 if __name__ == '__main__':

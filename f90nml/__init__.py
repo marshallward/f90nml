@@ -13,10 +13,11 @@ import itertools
 import os
 import shlex
 
-__version__ = '0.7'
+from f90nml import fpy
+
+__version__ = '0.8-dev'
 
 
-#---
 def read(nml_fname, verbose=False):
     """Parse a Fortran 90 namelist file and store the contents in a ``dict``.
 
@@ -178,7 +179,7 @@ def var_strings(v_name, v_values, offset=0):
         for v_val in v_values:
 
             if len(val_line) < 72 - len(v_name) - offset:
-                val_line += to_f90str(v_val) + ', '
+                val_line += fpy.f90repr(v_val) + ', '
 
             if len(val_line) >= 72 - len(v_name) - offset:
                 val_strs.append(val_line)
@@ -189,7 +190,7 @@ def var_strings(v_name, v_values, offset=0):
             val_strs.append(val_line[:-2])
 
         # Complete the set of values
-        var_strs.append('{0} = {1}'.format(v_name, val_strs[0]))
+        var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
 
         for v_str in val_strs[1:]:
             var_strs.append('{0}   {1}'
@@ -309,27 +310,6 @@ def append_value(v_values, next_value, v_idx=None, n_vals=1):
 
 
 #---
-def to_f90str(value):
-    """Convert primitive Python types to equivalent Fortran strings"""
-
-    if type(value) is int:
-        return str(value)
-    elif type(value) is float:
-        return str(value)
-    elif type(value) is bool:
-        return '.{0}.'.format(str(value).lower())
-    elif type(value) is complex:
-        return '({0}, {1})'.format(value.real, value.imag)
-    elif type(value) is str:
-        return '\'{0}\''.format(value)
-    elif value is None:
-        return ''
-    else:
-        raise ValueError('Type {0} of {1} cannot be converted to a Fortran '
-                         'type.'.format(type(value), value))
-
-
-#---
 def parse_f90val(tokens, tok, v_str):
     """Convert string repr of Fortran type to equivalent Python type."""
     assert type(v_str) is str
@@ -348,7 +328,7 @@ def parse_f90val(tokens, tok, v_str):
 
         v_str = '({0}, {1})'.format(v_re, v_im)
 
-    recast_funcs = [int, f90float, f90complex, f90bool, f90str]
+    recast_funcs = [int, fpy.pyfloat, fpy.pycomplex, fpy.pybool, fpy.pystr]
 
     for f90type in recast_funcs:
         try:
@@ -360,61 +340,6 @@ def parse_f90val(tokens, tok, v_str):
     # If all test failed, then raise ValueError
     raise ValueError('Could not convert {0} to a Python data type.'
                      ''.format(v_str))
-
-
-#---
-def f90float(v_str):
-    """Convert string repr of Fortran floating point to Python double"""
-
-    return float(v_str.lower().replace('d', 'e'))
-
-
-#---
-def f90complex(v_str):
-    """Convert string repr of Fortran complex to Python complex."""
-    assert type(v_str) == str
-
-    if v_str[0] == '(' and v_str[-1] == ')' and len(v_str.split(',')) == 2:
-        v_re, v_im = v_str[1:-1].split(',', 1)
-
-        # NOTE: Failed float(str) will raise ValueError
-        return complex(f90float(v_re), f90float(v_im))
-    else:
-        raise ValueError('{0} must be in complex number form (x, y).'
-                         ''.format(v_str))
-
-
-#---
-def f90bool(v_str):
-    """Convert string repr of Fortran logical to Python logical."""
-    assert type(v_str) == str
-
-    try:
-        if v_str.startswith('.'):
-            v_bool = v_str[1].lower()
-        else:
-            v_bool = v_str[0].lower()
-    except IndexError:
-        raise ValueError('{0} is not a valid logical constant.'.format(v_str))
-
-    if v_bool == 't':
-        return True
-    elif v_bool == 'f':
-        return False
-    else:
-        raise ValueError('{0} is not a valid logical constant.'.format(v_str))
-
-
-#---
-def f90str(v_str):
-    """Convert string repr of Fortran string to Python string."""
-    assert type(v_str) == str
-    assert v_str[0] == v_str[-1]
-
-    if v_str[0] in ("'", '"') and v_str[-1] in ("'", '"'):
-        return v_str[1:-1]
-    else:
-        raise ValueError
 
 
 #---

@@ -1,7 +1,6 @@
 &grp_repeat_nml
     x = 1
 /
-
 &grp_repeat_nml
     x = 2
 /

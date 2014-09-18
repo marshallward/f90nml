@@ -1,0 +1,6 @@
+&f77_nml
+    x = 123
+/
+&next_f77_nml
+    y = 'abc'
+/

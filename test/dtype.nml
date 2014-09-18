@@ -1,9 +1,8 @@
 &dtype_nml
     dt_scalar%val = 1
     dt_stack%outer%inner = 2
-    dt_vector%vec(:) = 1, 2, 3
+    dt_vector%vec = 1, 2, 3
 /
-
 &dtype_multi_nml
     dt%x = 1
     dt%y = 2

@@ -1,0 +1,12 @@
+&vector_nml
+    v = 1, 2, 3, 4, 5
+    v_idx = 1, 2, 3, 4
+    v_idx_ooo = 1, 2, 3, 4
+    v_range = 1, 2, 3, 4
+    v_implicit_start = 1, 2, 3, 4
+    v_implicit_end = 1, 2, 3, 4
+    v_implicit_all = 1, 2, 3, 4
+    v_null_start = , 2, 3, 4
+    v_null_end = 1, 2, 3,
+    v_null_interior = 1, 2, , 4
+/
