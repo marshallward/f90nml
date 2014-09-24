@@ -84,7 +84,9 @@ class Test(unittest.TestCase):
                            }
 
         self.grp_repeat_nml = {'grp_repeat_nml':
-                                [{'x': 1}, {'x': 2}]
+                                [{'x': 1}, {'x': 2}],
+                               'case_check_nml':
+                                [{'y': 1}, {'y': 2}],
                               }
 
         self.f77_nml = {'f77_nml':
@@ -141,7 +143,7 @@ class Test(unittest.TestCase):
     def test_grp_repeat(self):
         test_nml = f90nml.read('grp_repeat.nml')
         self.assertEqual(self.grp_repeat_nml, test_nml)
-        self.assert_write(test_nml, 'grp_repeat.nml')
+        self.assert_write(test_nml, 'grp_repeat_target.nml')
 
     def test_f77(self):
         test_nml = f90nml.read('f77.nml')

@@ -96,7 +96,7 @@ def read(nml_fname, verbose=False):
             if t in ('/', '&', '$'):
 
                 # Append the grouplist to the namelist (including empty groups)
-                if g_name in nmls:
+                if g_name.lower() in nmls:
                     g_update = nmls[g_name]
 
                     # Update to list of groups
@@ -193,8 +193,7 @@ def var_strings(v_name, v_values, offset=0):
         var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
 
         for v_str in val_strs[1:]:
-            var_strs.append('{0}   {1}'
-                            ''.format((offset + len(v_name)) * ' ', v_str))
+            var_strs.append(' ' * (3 + offset + len(v_name)) + v_str)
 
     return var_strs
 

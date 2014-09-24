@@ -4,9 +4,9 @@
 &grp_repeat_nml
     x = 2
 /
-&CASE_CHECK_nml
+&case_check_nml
     y = 1
 /
-&CASE_CHECK_nml
+&case_check_nml
     y = 2
 /
