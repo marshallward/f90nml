@@ -337,6 +337,7 @@ def parse_f90val(tokens, tok, v_str):
             continue
 
     # If all test failed, then raise ValueError
+    # NOTE: I don't think this can happen anymore; string is now default
     raise ValueError('Could not convert {0} to a Python data type.'
                      ''.format(v_str))
 

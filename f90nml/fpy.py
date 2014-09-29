@@ -72,9 +72,12 @@ def pybool(v_str):
 def pystr(v_str):
     """Convert string repr of Fortran string to Python string."""
     assert type(v_str) == str
-    assert v_str[0] == v_str[-1]
+    #assert v_str[0] == v_str[-1]
 
-    if v_str[0] in ("'", '"') and v_str[-1] in ("'", '"'):
+    if v_str[0] in ("'", '"') and v_str[0] == v_str[-1]:
         return v_str[1:-1]
     else:
-        raise ValueError
+        return v_str
+
+    #else:
+    #    raise ValueError
