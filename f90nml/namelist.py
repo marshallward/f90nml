@@ -15,9 +15,6 @@ import shlex
 
 from f90nml import fpy
 
-__version__ = '0.8-dev'
-
-
 def read(nml_fname, verbose=False):
     """Parse a Fortran 90 namelist file and store the contents in a ``dict``.
 
@@ -96,7 +93,7 @@ def read(nml_fname, verbose=False):
             if t in ('/', '&', '$'):
 
                 # Append the grouplist to the namelist (including empty groups)
-                if g_name.lower() in nmls:
+                if g_name in nmls:
                     g_update = nmls[g_name]
 
                     # Update to list of groups
@@ -428,12 +425,17 @@ def merge_values(src, new):
 #---
 class NmlDict(OrderedDict):
     """Case-insensitive Python dict"""
-    def __setitem__(self, key, value):
-        super(NmlDict, self).__setitem__(key.lower(), value)
+    def __contains__(self, key):
+        return super(NmlDict, self).__contains__(key.lower())
+
+    def __delitem__(self, key):
+        return super(NmlDict, self).__delitem__(key.lower())
 
     def __getitem__(self, key):
         return super(NmlDict, self).__getitem__(key.lower())
 
+    def __setitem__(self, key, value):
+        super(NmlDict, self).__setitem__(key.lower(), value)
 
     def write(self, path, force=False):
         """Wrapper to the ``write`` method"""
