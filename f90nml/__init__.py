@@ -9,4 +9,11 @@
 __version__ = '0.8-dev'
 
 # Legacy API
-from f90nml.namelist import read, write
+from f90nml.namelist import write
+
+from f90nml.parser import Parser
+def read(nml_fname, verbose=False):
+
+    parser = Parser(verbose)
+    nml = parser.read(nml_fname)
+    return nml
