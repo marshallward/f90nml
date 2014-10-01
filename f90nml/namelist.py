@@ -15,22 +15,7 @@ from f90nml import fpy
 
 
 def write(nml, nml_fname, force=False):
-    """Output dict to a Fortran 90 namelist file."""
-
-    if not force and os.path.isfile(nml_fname):
-        raise IOError('File {0} already exists.'.format(nml_fname))
-
-    nml_file = open(nml_fname, 'w')
-
-    for grp_name, grp_vars in nml.items():
-
-        if type(grp_vars) is list:
-            for g_vars in grp_vars:
-                write_nmlgrp(grp_name, g_vars, nml_file)
-        else:
-            write_nmlgrp(grp_name, grp_vars, nml_file)
-
-    nml_file.close()
+    nml.write(nml_fname, force)
 
 
 def write_nmlgrp(grp_name, grp_vars, nml_file):
@@ -90,6 +75,7 @@ def var_strings(v_name, v_values, offset=0):
 
 class NmlDict(OrderedDict):
     """Case-insensitive Python dict"""
+
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
 
@@ -102,6 +88,17 @@ class NmlDict(OrderedDict):
     def __setitem__(self, key, value):
         super(NmlDict, self).__setitem__(key.lower(), value)
 
-    def write(self, path, force=False):
-        """Wrapper to the ``write`` method"""
-        write(self, path, force)
+
+    def write(self, nml_path, force=False):
+        """Output dict to a Fortran 90 namelist file."""
+
+        if not force and os.path.isfile(nml_path):
+            raise IOError('File {0} already exists.'.format(nml_path))
+
+        with open(nml_path, 'w') as nml_file:
+            for grp_name, grp_vars in self.items():
+                if type(grp_vars) is list:
+                    for g_vars in grp_vars:
+                        write_nmlgrp(grp_name, g_vars, nml_file)
+                else:
+                    write_nmlgrp(grp_name, grp_vars, nml_file)
