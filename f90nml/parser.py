@@ -51,8 +51,7 @@ class Parser(object):
             # Check for classic group terminator
             if self.token == 'end':
                 try:
-                    #self.update_tokens()
-                    self.token, self.prior_token = next(self.tokens), self.token
+                    self.update_tokens()
                 except StopIteration:
                     break
 
