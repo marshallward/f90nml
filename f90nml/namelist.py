@@ -14,10 +14,6 @@ import os
 from f90nml import fpy
 
 
-def write(nml, nml_fname, force=False):
-    nml.write(nml_fname, force)
-
-
 def write_nmlgrp(grp_name, grp_vars, nml_file):
     """Write namelist group to target file"""
 
