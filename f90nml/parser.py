@@ -1,7 +1,11 @@
 """f90nml.parser
    =============
 
-   TODO
+   Fortran namelist parser and tokenizer to convert contents into a hierarchy
+   of dicts containing intrinsic Python data types.
+
+   :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
+   :license: Apache License, Version 2.0, see LICENSE for details.
 """
 import itertools
 import shlex
