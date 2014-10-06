@@ -9,6 +9,7 @@
 """
 import itertools
 import shlex
+from string import whitespace
 
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import NmlDict
@@ -38,6 +39,7 @@ class Parser(object):
 
         f90lex = shlex.shlex(nml_file)
         f90lex.commenters = '!'
+        f90lex.whitespace = ''
         f90lex.wordchars += '.-+'       # Include floating point tokens
 
         self.tokens = iter(f90lex)
@@ -55,11 +57,17 @@ class Parser(object):
                     break
 
             # Ignore tokens outside of namelist groups
-            while not self.token in ('&', '$'):
-                self.update_tokens()
+            while not self.token in tuple('&$'):
+                try:
+                    self.update_tokens()
+                except StopIteration:
+                    break
 
             # Create the next namelist
-            g_name = next(self.tokens)
+            try:
+                g_name = next(self.tokens)
+            except StopIteration:
+                break
             g_vars = NmlDict()
 
             v_name = None
@@ -76,8 +84,8 @@ class Parser(object):
 
                 # Diagnostic testing
                 if self.verbose:
-                    print('  tokens: {0} {1}'.format(self.prior_token,
-                                                     self.token))
+                    print('  tokens: {0} {1}'.format(repr(self.prior_token),
+                                                     repr(self.token)))
 
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
@@ -298,8 +306,13 @@ class Parser(object):
         # Construct the complex string
         if v_str == '(':
             v_re = tok
-            next(self.tokens)
-            v_im = next(self.tokens)
+            #next(self.tokens)
+            #v_im = next(self.tokens)
+            self.update_tokens()
+            assert self.token == ','
+
+            self.update_tokens()
+            v_im = self.token
 
             # Bypass the right parenthesis
             tok = next(self.tokens)
@@ -327,7 +340,18 @@ class Parser(object):
 
     def update_tokens(self):
         """Update tokens to the next available values."""
-        self.token, self.prior_token = next(self.tokens), self.token
+        next_token = next(self.tokens)
+        while next_token in whitespace:
+            next_token = next(self.tokens)
+
+        self.token, self.prior_token = next_token, self.token
+
+
+    def token_diag(self):
+        """Diagnostic for current state of tokens."""
+        if self.verbose:
+            print('  tokens: {0} {1}'.format(repr(self.prior_token),
+                                             repr(self.token)))
 
 
 # Support functions
