@@ -242,10 +242,10 @@ class Parser(object):
         i_start = i_end = i_stride = None
 
         # Start index
-        self.token = next(self.tokens)
+        self.update_tokens()
         try:
             i_start = int(self.token)
-            self.token = next(self.tokens)
+            self.update_tokens()
         except ValueError:
             if self.token in (',', ')'):
                 raise ValueError('{0} index cannot be empty.'.format(v_name))
@@ -254,10 +254,10 @@ class Parser(object):
 
         # End index
         if self.token == ':':
-            self.token = next(self.tokens)
+            self.update_tokens()
             try:
                 i_end = 1 + int(self.token)
-                self.token = next(self.tokens)
+                self.update_tokens()
             except ValueError:
                 if self.token == ':':
                     raise ValueError('{0} end index cannot be implicit '
@@ -271,7 +271,7 @@ class Parser(object):
 
         # Stride index
         if self.token == ':':
-            self.token = next(self.tokens)
+            self.update_tokens()
             try:
                 i_stride = int(self.token)
             except ValueError:
@@ -285,7 +285,7 @@ class Parser(object):
                 raise ValueError('{0} stride index cannot be zero.'
                                  ''.format(v_name))
 
-            self.token = next(self.tokens)
+            self.update_tokens()
 
         if not self.token in (',', ')'):
             raise ValueError('{0} index did not terminate '
@@ -293,7 +293,7 @@ class Parser(object):
 
         idx_triplet = (i_start, i_end, i_stride)
         v_indices.append((idx_triplet))
-        self.token = next(self.tokens)
+        self.update_tokens()
 
         return v_indices
 
@@ -301,25 +301,21 @@ class Parser(object):
     def parse_value(self):
         """Convert string repr of Fortran type to equivalent Python type."""
         v_str = self.prior_token
-        tok = self.token
 
         # Construct the complex string
         if v_str == '(':
-            v_re = tok
-            #next(self.tokens)
-            #v_im = next(self.tokens)
+            v_re = self.token
+
             self.update_tokens()
             assert self.token == ','
 
             self.update_tokens()
             v_im = self.token
 
-            # Bypass the right parenthesis
-            tok = next(self.tokens)
-            assert tok == ')'
+            self.update_tokens()
+            assert self.token == ')'
 
-            tok = next(self.tokens)
-
+            self.update_tokens()
             v_str = '({0}, {1})'.format(v_re, v_im)
 
         recast_funcs = [int, pyfloat, pycomplex, pybool, pystr]
@@ -327,7 +323,6 @@ class Parser(object):
         for f90type in recast_funcs:
             try:
                 value = f90type(v_str)
-                self.token = tok
                 return value
             except ValueError:
                 continue
