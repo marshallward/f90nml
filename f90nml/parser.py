@@ -38,7 +38,6 @@ class Parser(object):
 
         f90lex = shlex.shlex(nml_file)
         f90lex.commenters = '!'
-        f90lex.escaledquotes = '\'"'
         f90lex.wordchars += '.-+'       # Include floating point tokens
 
         self.tokens = iter(f90lex)
