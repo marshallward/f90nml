@@ -49,25 +49,21 @@ class Parser(object):
         for token in self.tokens:
             self.token = token
 
-            # Check for classic group terminator
-            if self.token == 'end':
-                try:
-                    self.update_tokens()
-                except StopIteration:
-                    break
-
-            # Ignore tokens outside of namelist groups
-            while not self.token in tuple('&$'):
-                try:
-                    self.update_tokens()
-                except StopIteration:
-                    break
-
-            # Create the next namelist
             try:
+                # Check for classic group terminator
+                if self.token == 'end':
+                    self.update_tokens()
+
+                # Ignore tokens outside of namelist groups
+                while not self.token in tuple('&$'):
+                    self.update_tokens()
+
+                # Create the next namelist
                 g_name = next(self.tokens)
+
             except StopIteration:
                 break
+
             g_vars = NmlDict()
 
             v_name = None
