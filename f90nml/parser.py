@@ -183,6 +183,7 @@ class Parser(object):
 
             assert self.token == '='
             n_vals = None
+            prior_ws_sep = ws_sep = False
             self.update_tokens()
 
             # Add variables until next variable trigger
@@ -219,13 +220,21 @@ class Parser(object):
 
                 else:
                     next_value = self.parse_value()
-                    append_value(v_values, next_value, v_idx, n_vals)
+
+                    # Check for escaped strings
+                    # XXX: How to distinguish quote type??
+                    if (v_values and type(v_values[-1]) is str
+                        and type(next_value) is str and not prior_ws_sep):
+                        v_values[-1] = '\''.join([v_values[-1], next_value])
+                    else:
+                        append_value(v_values, next_value, v_idx, n_vals)
 
                 # Exit for end of nml group (/, &, $) or null broadcast (=)
                 if self.token in ('/', '&', '$', '='):
                     break
                 else:
-                    self.update_tokens()
+                    prior_ws_sep = ws_sep
+                    ws_sep = self.update_tokens()
 
         return v_name, v_values
 
@@ -331,11 +340,15 @@ class Parser(object):
 
     def update_tokens(self):
         """Update tokens to the next available values."""
+        ws_sep = False
         next_token = next(self.tokens)
         while next_token in whitespace:
+            ws_sep = True
             next_token = next(self.tokens)
 
         self.token, self.prior_token = next_token, self.token
+
+        return ws_sep
 
 
 # Support functions
