@@ -222,12 +222,14 @@ class Parser(object):
                     next_value = self.parse_value()
 
                     # Check for escaped strings
-                    # XXX: How to distinguish quote type??
-                    if (v_values and type(v_values[-1]) is str
-                        and type(next_value) is str and not prior_ws_sep):
-                        v_values[-1] = '\''.join([v_values[-1], next_value])
+                    if (v_values and (type(v_values[-1]) is str)
+                            and type(next_value) is str and not prior_ws_sep):
+                        v_values[-1] = self.prior_token[0].join([v_values[-1],
+                                                                 next_value])
                     else:
                         append_value(v_values, next_value, v_idx, n_vals)
+
+
 
                 # Exit for end of nml group (/, &, $) or null broadcast (=)
                 if self.token in ('/', '&', '$', '='):
