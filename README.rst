@@ -82,7 +82,6 @@ The following namelist features are currently not supported:
 
 * Multidimensional vector assignment (``v(:,:) = 1, 2, 3, 4``)
 * Upcast vector elements if components differ (``x(i) = 1, x(j) = 2.0``)
-* Escape on repeated quotes (``'This doesn''t parse correctly'``)
 * stdin/stdout support (``?``, ``?=``)
 
 
