@@ -160,10 +160,11 @@ class Test(unittest.TestCase):
         tmp_fname = 'tmp.nml'
         f90nml.write(nml, tmp_fname)
         try:
-            with open(tmp_fname) as tmp, open(target_fname) as target:
-                tmp_str = tmp.read()
-                target_str = target.read()
-                self.assertMultiLineEqual(tmp_str, target_str)
+            with open(tmp_fname) as tmp:
+                with open(target_fname) as target:
+                    tmp_str = tmp.read()
+                    target_str = target.read()
+                    self.assertEqual(tmp_str, target_str)
         finally:
             os.remove(tmp_fname)
 
