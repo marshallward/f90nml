@@ -52,6 +52,13 @@ class Test(unittest.TestCase):
                             }
                          }
 
+        self.string_nml = {'string_nml':
+                            {'str_basic': 'hello',
+                             'single_esc_delim': "a 'single' delimiter",
+                             'double_esc_delim': 'a "double" delimiter',
+                            }
+                        }
+
         self.dtype_nml = {'dtype_nml':
                             {'dt_scalar': {'val': 1},
                              'dt_stack': {'outer': {'inner': 2} },
@@ -124,6 +131,12 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('float.nml')
         self.assertEqual(self.float_nml, test_nml)
         self.assert_write(test_nml, 'float_target.nml')
+
+    def test_string(self):
+        test_nml = f90nml.read('string.nml')
+        self.assertEqual(self.string_nml, test_nml)
+        # TODO: string output
+        #self.assert_write(test_nml, 'string_target.nml')
 
     def test_dtype(self):
         test_nml = f90nml.read('dtype.nml')

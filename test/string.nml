@@ -1,0 +1,5 @@
+&string_nml
+    str_basic = 'hello'
+    single_esc_delim = 'a ''single'' delimiter'
+    double_esc_delim = "a ""double"" delimiter"
+/

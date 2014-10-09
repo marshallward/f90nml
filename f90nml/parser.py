@@ -9,6 +9,7 @@
 """
 import itertools
 import shlex
+from string import whitespace
 
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import NmlDict
@@ -38,6 +39,7 @@ class Parser(object):
 
         f90lex = shlex.shlex(nml_file)
         f90lex.commenters = '!'
+        f90lex.whitespace = ''
         f90lex.wordchars += '.-+'       # Include floating point tokens
 
         self.tokens = iter(f90lex)
@@ -47,19 +49,21 @@ class Parser(object):
         for token in self.tokens:
             self.token = token
 
-            # Check for classic group terminator
-            if self.token == 'end':
-                try:
+            try:
+                # Check for classic group terminator
+                if self.token == 'end':
                     self.update_tokens()
-                except StopIteration:
-                    break
 
-            # Ignore tokens outside of namelist groups
-            while not self.token in ('&', '$'):
-                self.update_tokens()
+                # Ignore tokens outside of namelist groups
+                while not self.token in tuple('&$'):
+                    self.update_tokens()
 
-            # Create the next namelist
-            g_name = next(self.tokens)
+                # Create the next namelist
+                g_name = next(self.tokens)
+
+            except StopIteration:
+                break
+
             g_vars = NmlDict()
 
             v_name = None
@@ -76,8 +80,8 @@ class Parser(object):
 
                 # Diagnostic testing
                 if self.verbose:
-                    print('  tokens: {0} {1}'.format(self.prior_token,
-                                                     self.token))
+                    print('  tokens: {0} {1}'.format(repr(self.prior_token),
+                                                     repr(self.token)))
 
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
@@ -179,6 +183,7 @@ class Parser(object):
 
             assert self.token == '='
             n_vals = None
+            prior_ws_sep = ws_sep = False
             self.update_tokens()
 
             # Add variables until next variable trigger
@@ -215,13 +220,23 @@ class Parser(object):
 
                 else:
                     next_value = self.parse_value()
-                    append_value(v_values, next_value, v_idx, n_vals)
+
+                    # Check for escaped strings
+                    if (v_values and (type(v_values[-1]) is str)
+                            and type(next_value) is str and not prior_ws_sep):
+                        v_values[-1] = self.prior_token[0].join([v_values[-1],
+                                                                 next_value])
+                    else:
+                        append_value(v_values, next_value, v_idx, n_vals)
+
+
 
                 # Exit for end of nml group (/, &, $) or null broadcast (=)
                 if self.token in ('/', '&', '$', '='):
                     break
                 else:
-                    self.update_tokens()
+                    prior_ws_sep = ws_sep
+                    ws_sep = self.update_tokens()
 
         return v_name, v_values
 
@@ -234,10 +249,10 @@ class Parser(object):
         i_start = i_end = i_stride = None
 
         # Start index
-        self.token = next(self.tokens)
+        self.update_tokens()
         try:
             i_start = int(self.token)
-            self.token = next(self.tokens)
+            self.update_tokens()
         except ValueError:
             if self.token in (',', ')'):
                 raise ValueError('{0} index cannot be empty.'.format(v_name))
@@ -246,10 +261,10 @@ class Parser(object):
 
         # End index
         if self.token == ':':
-            self.token = next(self.tokens)
+            self.update_tokens()
             try:
                 i_end = 1 + int(self.token)
-                self.token = next(self.tokens)
+                self.update_tokens()
             except ValueError:
                 if self.token == ':':
                     raise ValueError('{0} end index cannot be implicit '
@@ -263,7 +278,7 @@ class Parser(object):
 
         # Stride index
         if self.token == ':':
-            self.token = next(self.tokens)
+            self.update_tokens()
             try:
                 i_stride = int(self.token)
             except ValueError:
@@ -277,7 +292,7 @@ class Parser(object):
                 raise ValueError('{0} stride index cannot be zero.'
                                  ''.format(v_name))
 
-            self.token = next(self.tokens)
+            self.update_tokens()
 
         if not self.token in (',', ')'):
             raise ValueError('{0} index did not terminate '
@@ -285,7 +300,7 @@ class Parser(object):
 
         idx_triplet = (i_start, i_end, i_stride)
         v_indices.append((idx_triplet))
-        self.token = next(self.tokens)
+        self.update_tokens()
 
         return v_indices
 
@@ -293,20 +308,21 @@ class Parser(object):
     def parse_value(self):
         """Convert string repr of Fortran type to equivalent Python type."""
         v_str = self.prior_token
-        tok = self.token
 
         # Construct the complex string
         if v_str == '(':
-            v_re = tok
-            next(self.tokens)
-            v_im = next(self.tokens)
+            v_re = self.token
 
-            # Bypass the right parenthesis
-            tok = next(self.tokens)
-            assert tok == ')'
+            self.update_tokens()
+            assert self.token == ','
 
-            tok = next(self.tokens)
+            self.update_tokens()
+            v_im = self.token
 
+            self.update_tokens()
+            assert self.token == ')'
+
+            self.update_tokens()
             v_str = '({0}, {1})'.format(v_re, v_im)
 
         recast_funcs = [int, pyfloat, pycomplex, pybool, pystr]
@@ -314,12 +330,11 @@ class Parser(object):
         for f90type in recast_funcs:
             try:
                 value = f90type(v_str)
-                self.token = tok
                 return value
             except ValueError:
                 continue
 
-        # If all test fail, then raise ValueError
+        # If all tests fail, then raise ValueError
         # NOTE: I don't think this can happen anymore; string is now default
         raise ValueError('Could not convert {0} to a Python data type.'
                          ''.format(v_str))
@@ -327,7 +342,15 @@ class Parser(object):
 
     def update_tokens(self):
         """Update tokens to the next available values."""
-        self.token, self.prior_token = next(self.tokens), self.token
+        ws_sep = False
+        next_token = next(self.tokens)
+        while next_token in whitespace:
+            ws_sep = True
+            next_token = next(self.tokens)
+
+        self.token, self.prior_token = next_token, self.token
+
+        return ws_sep
 
 
 # Support functions
