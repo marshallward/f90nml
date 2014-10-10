@@ -154,7 +154,7 @@ class Parser(object):
             if i_e:
                 v_idx = iter(range(i_s, i_e, i_r))
             else:
-                v_idx = itertools.count(i_s, i_r)
+                v_idx = (i_s + i_r * k for k in itertools.count())
         else:
             v_idx = None
 
