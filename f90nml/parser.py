@@ -68,16 +68,9 @@ class Parser(object):
                 while not self.token in tuple('&$'):
                     self.update_tokens()
 
-                # Write group token
-                if self.patch:
-                    self.pfile.write(self.token)
-
                 # Create the next namelist
-                g_name = next(self.tokens)
-
-                # Force modern namelist group token
-                if self.patch:
-                    self.pfile.write(g_name)
+                self.update_tokens()
+                g_name = self.token
 
             except StopIteration:
                 break
@@ -364,9 +357,13 @@ class Parser(object):
         ws_sep = False
         next_token = next(self.tokens)
 
+        # TODO: conditional
+        if True and self.patch:
+            self.pfile.write(self.token)
+
         while next_token in tuple(whitespace + '!'):
 
-            if self.pfile:
+            if self.patch:
                 if next_token == '!':
                     while not next_token == '\n':
                         self.pfile.write(next_token)
