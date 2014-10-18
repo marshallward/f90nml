@@ -17,7 +17,7 @@ from f90nml.namelist import NmlDict
 class Parser(object):
     """shlex-based Fortran namelist parser."""
 
-    def __init__(self, verbose=False, patch=False):
+    def __init__(self, verbose=False, patch=None):
 
         # Token management
         self.tokens = None
@@ -68,12 +68,16 @@ class Parser(object):
                 while not self.token in tuple('&$'):
                     self.update_tokens()
 
+                # Write group token
+                if self.patch:
+                    self.pfile.write(self.token)
+
                 # Create the next namelist
                 g_name = next(self.tokens)
 
                 # Force modern namelist group token
                 if self.patch:
-                    self.pfile.write('&' + g_name)
+                    self.pfile.write(g_name)
 
             except StopIteration:
                 break
