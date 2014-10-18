@@ -17,7 +17,7 @@ from f90nml.namelist import NmlDict
 class Parser(object):
     """shlex-based Fortran namelist parser."""
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, patch=False):
 
         # Token management
         self.tokens = None
@@ -26,6 +26,10 @@ class Parser(object):
 
         # Debugging
         self.verbose = verbose
+
+        # Patching
+        self.patch = patch
+        self.pfile = None
 
 
     def read(self, nml_fname):
@@ -37,10 +41,16 @@ class Parser(object):
 
         nml_file = open(nml_fname, 'r')
 
+        if self.patch:
+            self.pfile = open(nml_fname + '~', 'w')
+
         f90lex = shlex.shlex(nml_file)
-        f90lex.commenters = '!'
         f90lex.whitespace = ''
         f90lex.wordchars += '.-+'       # Include floating point tokens
+        if self.patch:
+            f90lex.commenters = ''
+        else:
+            f90lex.commenters = '!'
 
         self.tokens = iter(f90lex)
 
@@ -342,9 +352,15 @@ class Parser(object):
 
     def update_tokens(self):
         """Update tokens to the next available values."""
+
         ws_sep = False
         next_token = next(self.tokens)
+
         while next_token in whitespace:
+
+            if self.pfile:
+                self.pfile.write(next_token)
+
             ws_sep = True
             next_token = next(self.tokens)
 

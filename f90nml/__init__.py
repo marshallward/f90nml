@@ -23,3 +23,6 @@ def write(nml, nml_fname, force=False):
 
     >>> f90nml.write(nml, 'data.nml')"""
     nml.write(nml_fname, force)
+
+def patch(nml_fname, nmls, verbose=False):
+    return Parser(verbose, patch=True).read(nml_fname)
