@@ -356,9 +356,13 @@ class Parser(object):
         ws_sep = False
         next_token = next(self.tokens)
 
-        while next_token in whitespace:
+        while next_token in tuple(whitespace + '!'):
 
             if self.pfile:
+                if next_token == '!':
+                    while not next_token == '\n':
+                        self.pfile.write(next_token)
+                        next_token = next(self.tokens)
                 self.pfile.write(next_token)
 
             ws_sep = True
