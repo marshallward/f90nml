@@ -71,6 +71,10 @@ class Parser(object):
                 # Create the next namelist
                 g_name = next(self.tokens)
 
+                # Force modern namelist group token
+                if self.patch:
+                    self.pfile.write('&' + g_name)
+
             except StopIteration:
                 break
 
