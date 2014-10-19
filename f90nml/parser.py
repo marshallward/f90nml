@@ -94,8 +94,8 @@ class Parser(object):
                     # Set the next active variable
                     if self.token in ('=', '(', '%'):
 
-                        nml_patch = self.patch.get(g_name, {})
-                        v_name, v_values = self.parse_variable(patch=nml_patch)
+                        grp_patch = self.patch.get(g_name, {})
+                        v_name, v_values = self.parse_variable(patch_nml=grp_patch)
 
                         if v_name in g_vars:
                             v_prior_values = g_vars[v_name]
@@ -151,11 +151,13 @@ class Parser(object):
         return nmls
 
 
-    def parse_variable(self, patch={}):
+    def parse_variable(self, patch_nml={}):
         """Parse a variable and return its name and values."""
 
         v_name = self.prior_token
         v_values = []
+
+        write_token = not v_name in patch_nml
 
         if self.token == '(':
 
@@ -201,65 +203,71 @@ class Parser(object):
             prior_ws_sep = ws_sep = False
             self.update_tokens()
 
-            if v_name in patch:
-                # TODO: Convert to fortran repr
-                v_values = f90repr(patch.get(v_name))
-                self.pfile.write(v_values)
+            if v_name in patch_nml:
+                patch_values = f90repr(patch_nml.get(v_name))
+                if not type(patch_values) is list:
+                    patch_values = [patch_values]
 
-                self.update_tokens(write_token=False)
+                for p_val in patch_values:
+                    self.pfile.write(p_val)
 
-            else:
-                # Add variables until next variable trigger
-                while (not self.token in ('=', '(', '%')
-                       or (self.prior_token, self.token) == ('=', '(')):
+            # Add variables until next variable trigger
+            while (not self.token in ('=', '(', '%')
+                   or (self.prior_token, self.token) == ('=', '(')):
 
-                    # Check for repeated values
-                    if self.token == '*':
-                        n_vals = self.parse_value()
-                        assert type(n_vals) is int
-                        self.update_tokens()
-                    elif not n_vals:
-                        n_vals = 1
+                # Check for repeated values
+                if self.token == '*':
+                    n_vals = self.parse_value(write_token)
+                    assert type(n_vals) is int
+                    self.update_tokens(write_token)
+                elif not n_vals:
+                    n_vals = 1
 
-                    # First check for implicit null values
-                    if self.prior_token in ('=', '%', ','):
-                        if (self.token in (',', '/', '&', '$')
-                                and not (self.prior_token == ','
-                                         and self.token in ('/', '&', '$'))):
-                            append_value(v_values, None, v_idx, n_vals)
+                # First check for implicit null values
+                if self.prior_token in ('=', '%', ','):
+                    if (self.token in (',', '/', '&', '$')
+                            and not (self.prior_token == ','
+                                     and self.token in ('/', '&', '$'))):
+                        append_value(v_values, None, v_idx, n_vals)
 
-                    elif self.prior_token == '*':
+                elif self.prior_token == '*':
 
-                        if not self.token in ('/', '&', '$'):
-                            self.update_tokens()
+                    if not self.token in ('/', '&', '$'):
+                        self.update_tokens(write_token)
 
-                        if (self.token == '=' or (self.token in ('/', '&', '$')
-                                                  and self.prior_token == '*')):
-                            next_value = None
-                        else:
-                            next_value = self.parse_value()
+                    if (self.token == '=' or (self.token in ('/', '&', '$')
+                                              and self.prior_token == '*')):
+                        next_value = None
+                    else:
+                        next_value = self.parse_value(write_token)
 
+                    append_value(v_values, next_value, v_idx, n_vals)
+
+                else:
+                    next_value = self.parse_value(write_token)
+
+                    # Finished reading old value, we can again write tokens
+                    write_token = True
+
+                    # Check for escaped strings
+                    if (v_values and (type(v_values[-1]) is str)
+                            and type(next_value) is str and not prior_ws_sep):
+                        v_values[-1] = self.prior_token[0].join([v_values[-1],
+                                                                 next_value])
+                    else:
                         append_value(v_values, next_value, v_idx, n_vals)
 
-                    else:
-                        next_value = self.parse_value()
+                # Exit for end of nml group (/, &, $) or null broadcast (=)
+                if self.token in ('/', '&', '$', '='):
+                    break
+                else:
+                    prior_ws_sep = ws_sep
+                    ws_sep = self.update_tokens(write_token)
 
-                        # Check for escaped strings
-                        if (v_values and (type(v_values[-1]) is str)
-                                and type(next_value) is str and not prior_ws_sep):
-                            v_values[-1] = self.prior_token[0].join([v_values[-1],
-                                                                     next_value])
-                        else:
-                            append_value(v_values, next_value, v_idx, n_vals)
-
-                    # Exit for end of nml group (/, &, $) or null broadcast (=)
-                    if self.token in ('/', '&', '$', '='):
-                        break
-                    else:
-                        prior_ws_sep = ws_sep
-                        ws_sep = self.update_tokens()
-
-        return v_name, v_values
+        if v_name in patch_nml:
+            return v_name, patch_values
+        else:
+            return v_name, v_values
 
 
     def parse_index(self):
@@ -326,7 +334,7 @@ class Parser(object):
         return v_indices
 
 
-    def parse_value(self):
+    def parse_value(self, write_token=True):
         """Convert string repr of Fortran type to equivalent Python type."""
         v_str = self.prior_token
 
@@ -334,16 +342,16 @@ class Parser(object):
         if v_str == '(':
             v_re = self.token
 
-            self.update_tokens()
+            self.update_tokens(write_token)
             assert self.token == ','
 
-            self.update_tokens()
+            self.update_tokens(write_token)
             v_im = self.token
 
-            self.update_tokens()
+            self.update_tokens(write_token)
             assert self.token == ')'
 
-            self.update_tokens()
+            self.update_tokens(write_token)
             v_str = '({0}, {1})'.format(v_re, v_im)
 
         recast_funcs = [int, pyfloat, pycomplex, pybool, pystr]
@@ -367,7 +375,6 @@ class Parser(object):
         ws_sep = False
         next_token = next(self.tokens)
 
-        # TODO: conditional
         if self.patch and write_token:
             self.pfile.write(self.token)
 
