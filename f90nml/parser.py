@@ -17,7 +17,7 @@ from f90nml.namelist import NmlDict
 class Parser(object):
     """shlex-based Fortran namelist parser."""
 
-    def __init__(self, verbose=False, patch=None):
+    def __init__(self, verbose=False, patch={}):
 
         # Token management
         self.tokens = None
@@ -56,9 +56,9 @@ class Parser(object):
 
         nmls = NmlDict()
 
-        for token in self.tokens:
-            self.token = token
-
+        # TODO: Replace "while True" with an update_token() iterator
+        self.update_tokens(write_token=False)
+        while True:
             try:
                 # Check for classic group terminator
                 if self.token == 'end':
@@ -72,84 +72,86 @@ class Parser(object):
                 self.update_tokens()
                 g_name = self.token
 
-            except StopIteration:
-                break
+                g_vars = NmlDict()
 
-            g_vars = NmlDict()
+                v_name = None
 
-            v_name = None
+                # Populate the namelist group
+                while g_name:
 
-            # Populate the namelist group
-            while g_name:
-
-                if not self.token in ('=', '%', '('):
-                    self.update_tokens()
-
-                    # Skip commas separating objects
-                    if self.token == ',':
+                    if not self.token in ('=', '%', '('):
                         self.update_tokens()
 
-                # Diagnostic testing
-                if self.verbose:
-                    print('  tokens: {0} {1}'.format(repr(self.prior_token),
-                                                     repr(self.token)))
+                        # Skip commas separating objects
+                        if self.token == ',':
+                            self.update_tokens()
 
-                # Set the next active variable
-                if self.token in ('=', '(', '%'):
-
-                    nml_patch = self.patch.get(g_name, {})
-                    v_name, v_values = self.parse_variable(patch=nml_patch)
-
-                    if v_name in g_vars:
-                        v_prior_values = g_vars[v_name]
-                        if not type(v_prior_values) is list:
-                            v_prior_values = [v_prior_values]
-
-                        v_values = merge_values(v_prior_values, v_values)
-
-                    if len(v_values) == 0:
-                        v_values = None
-                    elif len(v_values) == 1:
-                        v_values = v_values[0]
-
-                    if v_name in g_vars and type(g_vars[v_name]) is NmlDict:
-                        g_vars[v_name].update(v_values)
-                    else:
-                        g_vars[v_name] = v_values
-
-                    # Deselect variable
-                    v_name = None
-                    v_values = []
-
-                # Finalise namelist group
-                if self.token in ('/', '&', '$'):
-
-                    # Append the grouplist to the namelist
-                    if g_name in nmls:
-                        g_update = nmls[g_name]
-
-                        # Update to list of groups
-                        if not type(g_update) is list:
-                            g_update = [g_update]
-
-                        g_update.append(g_vars)
-
-                    else:
-                        g_update = g_vars
-
-                    nmls[g_name] = g_update
-
+                    # Diagnostic testing
                     if self.verbose:
-                        print('{0} saved with {1}'.format(g_name, g_vars))
+                        print('  tokens: {0} {1}'.format(repr(self.prior_token),
+                                                         repr(self.token)))
 
-                    # Reset state
-                    g_name, g_vars = None, None
+                    # Set the next active variable
+                    if self.token in ('=', '(', '%'):
+
+                        nml_patch = self.patch.get(g_name, {})
+                        v_name, v_values = self.parse_variable(patch=nml_patch)
+
+                        if v_name in g_vars:
+                            v_prior_values = g_vars[v_name]
+                            if not type(v_prior_values) is list:
+                                v_prior_values = [v_prior_values]
+
+                            v_values = merge_values(v_prior_values, v_values)
+
+                        if len(v_values) == 0:
+                            v_values = None
+                        elif len(v_values) == 1:
+                            v_values = v_values[0]
+
+                        if v_name in g_vars and type(g_vars[v_name]) is NmlDict:
+                            g_vars[v_name].update(v_values)
+                        else:
+                            g_vars[v_name] = v_values
+
+                        # Deselect variable
+                        v_name = None
+                        v_values = []
+
+                    # Finalise namelist group
+                    if self.token in ('/', '&', '$'):
+
+                        # Append the grouplist to the namelist
+                        if g_name in nmls:
+                            g_update = nmls[g_name]
+
+                            # Update to list of groups
+                            if not type(g_update) is list:
+                                g_update = [g_update]
+
+                            g_update.append(g_vars)
+
+                        else:
+                            g_update = g_vars
+
+                        nmls[g_name] = g_update
+
+                        if self.verbose:
+                            print('{0} saved with {1}'.format(g_name, g_vars))
+
+                        # Reset state
+                        g_name, g_vars = None, None
+
+                self.update_tokens()
+
+            except StopIteration:
+                break
 
         nml_file.close()
         return nmls
 
 
-    def parse_variable(self, patch=None):
+    def parse_variable(self, patch={}):
         """Parse a variable and return its name and values."""
 
         v_name = self.prior_token
@@ -249,8 +251,6 @@ class Parser(object):
                                                                      next_value])
                         else:
                             append_value(v_values, next_value, v_idx, n_vals)
-
-
 
                     # Exit for end of nml group (/, &, $) or null broadcast (=)
                     if self.token in ('/', '&', '$', '='):
