@@ -11,7 +11,7 @@ import itertools
 import shlex
 from string import whitespace
 
-from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
+from f90nml.fpy import pyfloat, pycomplex, pybool, pystr, f90repr
 from f90nml.namelist import NmlDict
 
 class Parser(object):
@@ -203,7 +203,7 @@ class Parser(object):
 
             if v_name in patch:
                 # TODO: Convert to fortran repr
-                v_values = repr(patch.get(v_name))
+                v_values = f90repr(patch.get(v_name))
                 self.pfile.write(v_values)
 
                 self.update_tokens(write_token=False)
