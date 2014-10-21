@@ -28,11 +28,10 @@ class Parser(object):
         self.verbose = verbose
 
         # Patching
-        self.patch = patch
         self.pfile = None
 
 
-    def read(self, nml_fname):
+    def read(self, nml_fname, nml_patch=None):
         """Parse a Fortran 90 namelist file and store the contents.
 
         >>> from f90nml.parser import Parser
@@ -41,13 +40,15 @@ class Parser(object):
 
         nml_file = open(nml_fname, 'r')
 
-        if self.patch:
+        if not nml_patch:
+            nml_patch = {}
+        else:
             self.pfile = open(nml_fname + '~', 'w')
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
         f90lex.wordchars += '.-+'       # Include floating point tokens
-        if self.patch:
+        if nml_patch:
             f90lex.commenters = ''
         else:
             f90lex.commenters = '!'
@@ -78,7 +79,7 @@ class Parser(object):
             g_vars = NmlDict()
             v_name = None
 
-            grp_patch = self.patch.get(g_name, {})
+            grp_patch = nml_patch.get(g_name, {})
 
             # Populate the namelist group
             while g_name:
@@ -387,12 +388,12 @@ class Parser(object):
         ws_sep = False
         next_token = next(self.tokens)
 
-        if self.patch and write_token:
+        if self.pfile and write_token:
             self.pfile.write(self.token)
 
         while next_token in tuple(whitespace + '!'):
 
-            if self.patch:
+            if self.pfile:
                 if next_token == '!':
                     while not next_token == '\n':
                         self.pfile.write(next_token)
