@@ -24,5 +24,5 @@ def write(nml, nml_fname, force=False):
     >>> f90nml.write(nml, 'data.nml')"""
     nml.write(nml_fname, force)
 
-def patch(nml_fname, nml_patch, verbose=False):
-    return Parser(verbose, patch=nml_patch).read(nml_fname)
+def patch(nml_fname, nml_patch, out_fname=None, verbose=False):
+    return Parser(verbose).read(nml_fname, nml_patch, out_fname)

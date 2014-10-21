@@ -17,7 +17,7 @@ from f90nml.namelist import NmlDict, var_strings
 class Parser(object):
     """shlex-based Fortran namelist parser."""
 
-    def __init__(self, verbose=False, patch={}):
+    def __init__(self, verbose=False):
 
         # Token management
         self.tokens = None
@@ -31,7 +31,7 @@ class Parser(object):
         self.pfile = None
 
 
-    def read(self, nml_fname, nml_patch=None):
+    def read(self, nml_fname, nml_patch=None, patch_fname=None):
         """Parse a Fortran 90 namelist file and store the contents.
 
         >>> from f90nml.parser import Parser
@@ -43,7 +43,13 @@ class Parser(object):
         if not nml_patch:
             nml_patch = {}
         else:
-            self.pfile = open(nml_fname + '~', 'w')
+            if not patch_fname:
+                patch_fname = nml_fname + '~'
+            elif nml_fname == patch_fname:
+                raise ValueError('f90nml: error: Patch filepath cannot be the '
+                                 'same as the original filepath.')
+
+            self.pfile = open(patch_fname, 'w')
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
