@@ -25,4 +25,7 @@ def write(nml, nml_fname, force=False):
     nml.write(nml_fname, force)
 
 def patch(nml_fname, nml_patch, out_fname=None, verbose=False):
+    """Create a new namelist based on an input namelist and reference dict.
+
+    >>> f90nml.patch('data.nml', nml_patch, 'patched_data.nml')"""
     return Parser(verbose).read(nml_fname, nml_patch, out_fname)
