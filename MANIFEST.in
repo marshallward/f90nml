@@ -1,5 +1,9 @@
-include f90nml.py
-include README.rst
+recursive-include f90nml *.py
+recursive-include test *.py *.nml
+recusive-include docs/source *.txt
+include docs/Makefile
+include AUTHORS
 include LICENSE
-include NOTICE
 include MANIFEST.in
+include NOTICE
+include README.rst
