@@ -22,14 +22,26 @@ To read a Fortran namelist file as a ``dict``, use the ``read()`` method:
 
    nml = f90nml.read(nml_filename)
 
-To output a Python ``dict`` as a Fortran namelist file, use the ``write()``
-method:
+To save a ``dict`` as a Fortran namelist file, use the ``write()`` method:
 
 .. code:: python
 
    nml.write(output_filename)
 
 This method will abort if the output file already exists.
+
+To patch an existing file against a ``dict``, use the ``patch()`` method:
+
+.. code:: python
+
+   nml.patch(input_filename, nml_patch, output_filename)
+
+Namelist fields in ``input_filename`` will be checked against ``nml_patch`` and
+updated with new values. Fields in ``nml_patch`` which do not exist in
+``input_filename`` will be appended to the namelist groups.
+
+The ``patch()`` method currently does not allow patching of vectors or user
+types (``%``), but may be included in the future.
 
 
 Additional Features
