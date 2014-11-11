@@ -1,6 +1,5 @@
-recursive-include f90nml *.py
-recursive-include test *.py *.nml
-recusive-include docs/source *.txt
+recursive-include test *.nml
+recursive-include docs/source *
 include docs/Makefile
 include AUTHORS
 include LICENSE

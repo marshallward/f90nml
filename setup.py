@@ -16,7 +16,7 @@ setup(
     author_email = 'python@marshallward.org',
     url = 'http://github.com/marshallward/f90nml',
 
-    py_modules = ['f90nml'],
+    packages = ['f90nml'],
 
     classifiers = [
         'Development Status :: 3 - Alpha',
