@@ -56,6 +56,7 @@ class Test(unittest.TestCase):
                             {'str_basic': 'hello',
                              'single_esc_delim': "a 'single' delimiter",
                              'double_esc_delim': 'a "double" delimiter',
+                             'double_nested': "''x'' \"y\""
                             }
                         }
 
@@ -135,8 +136,7 @@ class Test(unittest.TestCase):
     def test_string(self):
         test_nml = f90nml.read('string.nml')
         self.assertEqual(self.string_nml, test_nml)
-        # TODO: string output
-        #self.assert_write(test_nml, 'string_target.nml')
+        self.assert_write(test_nml, 'string_target.nml')
 
     def test_dtype(self):
         test_nml = f90nml.read('dtype.nml')

@@ -20,7 +20,7 @@ def f90repr(value):
     elif type(value) is complex:
         return '({0}, {1})'.format(value.real, value.imag)
     elif type(value) is str:
-        return '\'{0}\''.format(value)
+        return repr(value).replace("\\'", "''").replace('\\"', '""')
     elif value is None:
         return ''
     else:
