@@ -28,7 +28,7 @@ To save a ``dict`` as a Fortran namelist file, use the ``write()`` method:
 
    nml.write(output_filename)
 
-This method will abort if the output file already exists.
+The ``write()`` method will abort if the output file already exists.
 
 To patch an existing file against a ``dict``, use the ``patch()`` method:
 
@@ -37,8 +37,10 @@ To patch an existing file against a ``dict``, use the ``patch()`` method:
    nml.patch(input_filename, nml_patch, output_filename)
 
 Namelist fields in ``input_filename`` will be checked against ``nml_patch`` and
-updated with new values. Fields in ``nml_patch`` which do not exist in
-``input_filename`` will be appended to the namelist groups.
+updated with new values.  Fields in ``nml_patch`` which do not exist in
+``input_filename`` will be appended to the namelist groups.  The function
+returns the updated namelist ``dict`` and saves the patched namelist file to
+``output_filename``.
 
 The ``patch()`` method currently does not allow patching of vectors or user
 types (``%``), but may be included in the future.
