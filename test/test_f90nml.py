@@ -56,7 +56,10 @@ class Test(unittest.TestCase):
                             {'str_basic': 'hello',
                              'single_esc_delim': "a 'single' delimiter",
                              'double_esc_delim': 'a "double" delimiter',
-                             'double_nested': "''x'' \"y\""
+                             'double_nested': "''x'' \"y\"",
+                             'str_list': ['a', 'b', 'c'],
+                             'slist_no_space': ['a', 'b', 'c'],
+                             'slist_no_quote': ['a', 'b', 'c'],
                             }
                         }
 

@@ -271,8 +271,14 @@ class Parser(object):
                     # Check for escaped strings
                     if (v_values and (type(v_values[-1]) is str)
                             and type(next_value) is str and not prior_ws_sep):
-                        v_values[-1] = self.prior_token[0].join([v_values[-1],
-                                                                 next_value])
+
+                        if self.prior_token[0] in ("'", '"'):
+                            quote_char = self.prior_token[0]
+                        else:
+                            quote_char = ''
+
+                        v_values[-1] = quote_char.join([v_values[-1],
+                                                        next_value])
                     else:
                         append_value(v_values, next_value, v_idx, n_vals)
 
@@ -396,6 +402,10 @@ class Parser(object):
 
         if self.pfile and write_token:
             self.pfile.write(self.token)
+
+        # Commas between values are interpreted as whitespace
+        if self.token == ',':
+            ws_sep = True
 
         while next_token in tuple(whitespace + '!'):
 
