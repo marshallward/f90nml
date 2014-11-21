@@ -1,7 +1,7 @@
-"""f90nml
-   ======
+"""f90nml.namelist
+   ===============
 
-   A Fortran 90 namelist parser and generator.
+   Tools for creating Fortran namelist files from Python ``dict``s.
 
    :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
    :license: Apache License, Version 2.0, see LICENSE for details.
