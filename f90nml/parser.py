@@ -196,9 +196,7 @@ class Parser(object):
 
             # TODO: resolve indices
             next_value = NmlDict()
-
             next_value[v_att] = v_att_vals
-
             append_value(v_values, next_value, v_idx)
 
         else:
@@ -467,6 +465,8 @@ def merge_dicts(src, patch):
         if key in src:
             if isinstance(src[key], dict) and isinstance(patch[key], dict):
                 merge_dicts(src[key], patch[key])
+            else:
+                src[key] = merge_values(src[key], patch[key])
         else:
             src[key] = patch[key]
 
@@ -474,6 +474,7 @@ def merge_dicts(src, patch):
 
 
 def delist(values):
+    """Reduce lists of zero or one elements to individual values."""
     assert isinstance(values, list)
 
     if not values:
@@ -482,4 +483,3 @@ def delist(values):
         return values[0]
     else:
         return values
-
