@@ -3,21 +3,16 @@
     dt_stack%outer%inner = 2
     dt_vector%vec = 1, 2, 3
 /
-
 &dtype_multi_nml
     dt%x = 1
     dt%y = 2
     dt%z = 3
 /
-
 &dtype_nested_nml
     f%g%x = 1
     f%g%y = 2
     f%g%z = 3
 /
-
 &dtype_field_idx_nml
-    f%x(1) = 1
-    f%x(2) = 2
-    f%x(3) = 3
+    f%x = 1, 2, 3
 /

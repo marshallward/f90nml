@@ -80,6 +80,9 @@ class Test(unittest.TestCase):
                                          'z': 3,
                                          }
                                   }
+                            },
+                          'dtype_field_idx_nml':
+                            {'f': {'x': [1, 2, 3]}
                             }
                          }
 
@@ -151,7 +154,7 @@ class Test(unittest.TestCase):
     def test_dtype(self):
         test_nml = f90nml.read('dtype.nml')
         self.assertEqual(self.dtype_nml, test_nml)
-        self.assert_write(test_nml, 'dtype.nml')
+        self.assert_write(test_nml, 'dtype_target.nml')
 
     def test_bcast(self):
         test_nml = f90nml.read('bcast.nml')
