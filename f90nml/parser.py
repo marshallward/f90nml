@@ -109,20 +109,13 @@ class Parser(object):
 
                     if v_name in g_vars:
                         v_prior_values = g_vars[v_name]
-                        if not type(v_prior_values) is list:
-                            v_prior_values = [v_prior_values]
-
                         v_values = merge_values(v_prior_values, v_values)
-
-                    if len(v_values) == 0:
-                        v_values = None
-                    elif len(v_values) == 1:
-                        v_values = v_values[0]
 
                     if v_name in g_vars and type(g_vars[v_name]) is NmlDict:
                         g_vars[v_name].update(v_values)
                     else:
                         g_vars[v_name] = v_values
+
                     # Deselect variable
                     v_name = None
                     v_values = []
@@ -203,11 +196,6 @@ class Parser(object):
 
             # TODO: resolve indices
             next_value = NmlDict()
-
-            if len(v_att_vals) == 0:
-                v_att_vals = None
-            elif len(v_att_vals) == 1:
-                v_att_vals = v_att_vals[0]
 
             next_value[v_att] = v_att_vals
 
@@ -290,9 +278,9 @@ class Parser(object):
                     ws_sep = self.update_tokens(write_token)
 
         if patch_values:
-            return v_name, patch_values
+            return v_name, delist(patch_values)
         else:
-            return v_name, v_values
+            return v_name, delist(v_values)
 
 
     def parse_index(self):
@@ -446,6 +434,20 @@ def append_value(v_values, next_value, v_idx=None, n_vals=1):
 
 
 def merge_values(src, new):
+
+    if isinstance(src, dict) and isinstance(new, dict):
+        return merge_dicts(src, new)
+
+    else:
+        if not isinstance(src, list):
+            src = [src]
+        if not isinstance(new, list):
+            new = [new]
+
+        return merge_lists(src, new)
+
+
+def merge_lists(src, new):
     """Update a value list with a list of new or updated values."""
 
     l_min, l_max = (src, new) if len(src) < len(new) else (new, src)
@@ -456,3 +458,28 @@ def merge_values(src, new):
         new[i] = val if val else src[i]
 
     return new
+
+
+def merge_dicts(src, patch):
+    """Merge contents of dict `patch` into `src`."""
+
+    for key in patch:
+        if key in src:
+            if isinstance(src[key], dict) and isinstance(patch[key], dict):
+                merge_dicts(src[key], patch[key])
+        else:
+            src[key] = patch[key]
+
+    return src
+
+
+def delist(values):
+    assert isinstance(values, list)
+
+    if not values:
+        return None
+    elif len(values) == 1:
+        return values[0]
+    else:
+        return values
+

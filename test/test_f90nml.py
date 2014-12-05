@@ -73,6 +73,13 @@ class Test(unittest.TestCase):
                                     'y': 2,
                                     'z': 3,
                                    }
+                            },
+                          'dtype_nested_nml':
+                            {'f': {'g': {'x': 1,
+                                         'y': 2,
+                                         'z': 3,
+                                         }
+                                  }
                             }
                          }
 

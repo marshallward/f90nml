@@ -33,12 +33,11 @@ def var_strings(v_name, v_values, offset=0):
 
     var_strs = []
 
-    if type(v_values) in (dict, NmlDict):
-
+    if isinstance(v_values, dict):
         for f_name, f_vals in v_values.items():
-            v_strs = var_strings(f_name, f_vals, offset + 1 + len(v_name))
-            var_strs.append('%'.join([v_name, v_strs[0]]))
-            var_strs.extend(v_strs[1:])
+            v_title = '%'.join([v_name, f_name])
+            v_strs = var_strings(v_title, f_vals, offset + 1 + len(v_name))
+            var_strs.extend(v_strs)
     else:
         if not type(v_values) is list:
             v_values = [v_values]
