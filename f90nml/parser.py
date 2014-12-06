@@ -453,7 +453,7 @@ def merge_lists(src, new):
     l_min.extend(None for i in range(len(l_min), len(l_max)))
 
     for i, val in enumerate(new):
-        new[i] = val if val else src[i]
+        new[i] = val if val is not None else src[i]
 
     return new
 

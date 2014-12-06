@@ -36,6 +36,7 @@ class Test(unittest.TestCase):
                              'v_null_start': [None, 2, 3, 4],
                              'v_null_interior': [1, 2, None, 4],
                              'v_null_end': [1, 2, 3, None],
+                             'v_zero': [1, 0, 3],
                             }
                           }
 

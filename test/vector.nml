@@ -27,4 +27,9 @@
     v_null_start = ,2,3,4
     v_null_end = 1,2,3,,
     v_null_interior = 1,2,,4
+
+    ! Zero merge_list check
+    v_zero(1) = 1
+    v_zero(2) = 0
+    v_zero(3) = 3
 /
