@@ -16,3 +16,11 @@
 &dtype_field_idx_nml
     f%x = 1, 2, 3
 /
+&dtype_vec_nml
+    a%b(1)%c = 1
+    a%b(1)%d = 2
+    a%b(2)%c = 3
+    a%b(2)%d = 4
+    a%b(3)%c = 5
+    a%b(3)%d = 6
+/

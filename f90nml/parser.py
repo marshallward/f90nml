@@ -105,8 +105,8 @@ class Parser(object):
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
 
-                    v_name, v_values = self.parse_variable(patch_nml=grp_patch)
-
+                    v_name, v_values = self.parse_variable(g_vars,
+                                                           patch_nml=grp_patch)
                     if v_name in g_vars:
                         v_prior_values = g_vars[v_name]
                         v_values = merge_values(v_prior_values, v_values)
@@ -160,7 +160,7 @@ class Parser(object):
         return nmls
 
 
-    def parse_variable(self, patch_nml={}):
+    def parse_variable(self, parent, patch_nml={}):
         """Parse a variable and return its name and values."""
 
         v_name = self.prior_token
@@ -190,13 +190,18 @@ class Parser(object):
 
             # Resolve the derived type
 
-            self.update_tokens()
-            self.update_tokens()
-            v_att, v_att_vals = self.parse_variable()
+            v_parent = parent[v_name] if parent and v_name in parent else []
 
-            # TODO: resolve indices
-            next_value = NmlDict()
-            next_value[v_att] = v_att_vals
+            self.update_tokens()
+            self.update_tokens()
+            v_att, v_att_vals = self.parse_variable(v_parent)
+
+            if v_idx and v_att in parent:
+                next_value = v_att_vals
+            else:
+                next_value = NmlDict()
+                next_value[v_att] = v_att_vals
+
             append_value(v_values, next_value, v_idx)
 
         else:
@@ -435,7 +440,6 @@ def merge_values(src, new):
 
     if isinstance(src, dict) and isinstance(new, dict):
         return merge_dicts(src, new)
-
     else:
         if not isinstance(src, list):
             src = [src]
@@ -453,7 +457,12 @@ def merge_lists(src, new):
     l_min.extend(None for i in range(len(l_min), len(l_max)))
 
     for i, val in enumerate(new):
-        new[i] = val if val is not None else src[i]
+        if isinstance(val, dict) and isinstance(src[i], dict):
+            new[i] = merge_dicts(src[i], val)
+        elif val is not None:
+            new[i] = val
+        else:
+            new[i] = src[i]
 
     return new
 
