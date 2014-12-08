@@ -204,4 +204,6 @@ class Test(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    if os.path.isfile('tmp.nml'):
+        os.remove('tmp.nml')
     unittest.main()
