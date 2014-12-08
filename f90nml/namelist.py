@@ -33,14 +33,11 @@ def var_strings(v_name, v_values, offset=0):
 
     var_strs = []
 
-    print('write', v_name, v_values)
-
     # Parse derived type contents
     if isinstance(v_values, dict):
         for f_name, f_vals in v_values.items():
             v_title = '%'.join([v_name, f_name])
-
-            v_offset = offset + 1 + len(v_title)
+            v_offset = offset + len(v_title)
 
             v_strs = var_strings(v_title, f_vals, v_offset)
             var_strs.extend(v_strs)
@@ -48,7 +45,11 @@ def var_strings(v_name, v_values, offset=0):
     # Parse an array of derived types
     elif isinstance(v_values, list) and all(isinstance(v, dict)
                                             for v in v_values):
-        print('oops, skipping...')
+        for idx, val in enumerate(v_values, start=1):
+            v_title = v_name + '({})'.format(idx)
+            v_offset = offset + len(v_title)
+            v_strs = var_strings(v_title, val, v_offset)
+            var_strs.extend(v_strs)
 
     else:
         if not type(v_values) is list:
