@@ -46,7 +46,7 @@ def var_strings(v_name, v_values, offset=0):
     elif isinstance(v_values, list) and all(isinstance(v, dict)
                                             for v in v_values):
         for idx, val in enumerate(v_values, start=1):
-            v_title = v_name + '({})'.format(idx)
+            v_title = v_name + '({0})'.format(idx)
             v_offset = offset + len(v_title)
             v_strs = var_strings(v_title, val, v_offset)
             var_strs.extend(v_strs)
