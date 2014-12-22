@@ -128,6 +128,14 @@ class Test(unittest.TestCase):
                             {'v': 1.},
                           }
 
+        self.multiline_nml = {'multiline_nml':
+                                {'x': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                       1, 1, 1, 1, 1, 1, 1, 1]
+                                }
+                             }
+
 
     def test_empty(self):
         test_nml = f90nml.read('empty.nml')
@@ -188,6 +196,11 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('dollar.nml')
         self.assertEqual(self.dollar_nml, test_nml)
         self.assert_write(test_nml, 'dollar_target.nml')
+
+    def test_multiline(self):
+        test_nml = f90nml.read('multiline.nml')
+        self.assertEqual(self.multiline_nml, test_nml)
+        self.assert_write(test_nml, 'multiline.nml')
 
     def test_write_existing_file(self):
         tmp_fname = 'tmp.nml'
