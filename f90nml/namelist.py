@@ -8,8 +8,11 @@
 """
 from __future__ import print_function
 
-from collections import OrderedDict
 import os
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 from f90nml import fpy
 
