@@ -14,7 +14,6 @@ before_script:
     - cd test
     - pip install -r test_requirements.txt
 script:
-    - coverage run test_f90nml.py
-    #- python test_f90nml.py
+    - coverage run --source f90nml test_f90nml.py
 after_success:
     - coveralls
