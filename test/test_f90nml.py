@@ -189,6 +189,13 @@ class Test(unittest.TestCase):
         self.assertEqual(self.dollar_nml, test_nml)
         self.assert_write(test_nml, 'dollar_target.nml')
 
+    def test_write_existing_file(self):
+        tmp_fname = 'tmp.nml'
+        open(tmp_fname, 'w').close()
+        test_nml = f90nml.read('empty.nml')
+        self.assertRaises(IOError, test_nml.write, tmp_fname)
+        os.remove(tmp_fname)
+
     def assert_write(self, nml, target_fname):
 
         tmp_fname = 'tmp.nml'
