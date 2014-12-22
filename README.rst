@@ -4,6 +4,9 @@ f90nml
 
 A Python module for parsing Fortran namelist files
 
+.. image:: https://travis-ci.org/marshallward/f90nml.svg?branch=master
+    :target: https://travis-ci.org/marshallward/f90nml
+
 
 About f90nml
 ============
