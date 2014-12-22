@@ -1,6 +1,6 @@
 language: python
 python:
-    #- "2.6"
+    #- "2.6"    # Fix OrderedDict issue
     - "2.7"
     - "3.2"
     - "3.3"
@@ -9,6 +9,3 @@ install: pip install .
 script:
     - cd test
     - python test_f90nml.py
-#branches:
-#    only:
-#        - master
