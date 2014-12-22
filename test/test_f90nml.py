@@ -209,6 +209,11 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, test_nml.write, tmp_fname)
         os.remove(tmp_fname)
 
+    def test_pop_key(self):
+        test_nml = f90nml.read('empty.nml')
+        test_nml.pop('empty_nml')
+        self.assertEqual(test_nml, f90nml.namelist.NmlDict())
+
     def assert_write(self, nml, target_fname):
 
         tmp_fname = 'tmp.nml'
