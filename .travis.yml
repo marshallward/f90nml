@@ -5,7 +5,13 @@ python:
     - "3.2"
     - "3.3"
     - "3.4"
-install: pip install .
-script:
+install:
+    - pip install .
+before_script:
     - cd test
-    - python test_f90nml.py
+    - pip install -r test_requirements.txt
+script:
+    - coverage run test_f90nml.py
+    #- python test_f90nml.py
+after_success:
+    - coveralls
