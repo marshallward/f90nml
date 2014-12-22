@@ -6,4 +6,4 @@ python:
     - "3.3"
     - "3.4"
 install: pip install .
-script: python tests/test_f90nml.py
+script: python test/test_f90nml.py
