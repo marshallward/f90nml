@@ -63,6 +63,8 @@ class Test(unittest.TestCase):
 
         self.string_nml = {'string_nml':
                             {'str_basic': 'hello',
+                             'str_no_delim': 'hello',
+                             'str_no_delim_no_esc': "a''b",
                              'single_esc_delim': "a 'single' delimiter",
                              'double_esc_delim': 'a "double" delimiter',
                              'double_nested': "''x'' \"y\"",

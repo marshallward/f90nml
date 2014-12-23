@@ -261,11 +261,7 @@ class Parser(object):
                     if (v_values and (type(v_values[-1]) is str)
                             and type(next_value) is str and not prior_ws_sep):
 
-                        if self.prior_token[0] in ("'", '"'):
-                            quote_char = self.prior_token[0]
-                        else:
-                            quote_char = ''
-
+                        quote_char = self.prior_token[0]
                         v_values[-1] = quote_char.join([v_values[-1],
                                                         next_value])
                     else:
