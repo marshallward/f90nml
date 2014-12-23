@@ -185,7 +185,10 @@ class Parser(object):
 
             # Resolve the derived type
 
-            v_parent = parent[v_name] if parent and v_name in parent else []
+            if parent and v_name in parent:
+                v_parent = parent[v_name]
+            else:
+                v_parent = []
 
             self.update_tokens()
             self.update_tokens()

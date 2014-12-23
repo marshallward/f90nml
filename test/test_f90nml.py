@@ -263,7 +263,6 @@ class Test(unittest.TestCase):
         self.assertEqual(f90repr(1+2j), '(1.0, 2.0)')
         self.assertEqual(f90repr(True), '.true.')
         self.assertEqual(f90repr(False), '.false.')
-        self.assertEqual(f90repr(False), '.false.')
         self.assertEqual(f90repr('abc'), "'abc'")
 
         for ptype in ({}, [], set()):
@@ -280,7 +279,6 @@ class Test(unittest.TestCase):
             self.assertRaises(ValueError, pybool, fstr)
 
     def assert_write(self, nml, target_fname):
-
         tmp_fname = 'tmp.nml'
         f90nml.write(nml, tmp_fname)
         try:
