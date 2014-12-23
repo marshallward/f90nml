@@ -136,6 +136,10 @@ class Test(unittest.TestCase):
                                 }
                              }
 
+        self.ext_token_nml = {'ext_token_nml':
+                                {'x': 1}
+                             }
+
     def test_empty(self):
         test_nml = f90nml.read('empty.nml')
         self.assertEqual(self.empty_nml, test_nml)
@@ -200,6 +204,10 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('multiline.nml')
         self.assertEqual(self.multiline_nml, test_nml)
         self.assert_write(test_nml, 'multiline.nml')
+
+    def test_ext_token(self):
+        test_nml = f90nml.read('ext_token.nml')
+        self.assertEqual(self.ext_token_nml, test_nml)
 
     def test_write_existing_file(self):
         tmp_fname = 'tmp.nml'
