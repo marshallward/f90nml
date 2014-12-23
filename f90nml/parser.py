@@ -381,11 +381,6 @@ class Parser(object):
             except ValueError:
                 continue
 
-        # If all tests fail, then raise ValueError
-        # NOTE: I don't think this can happen anymore; string is now default
-        raise ValueError('Could not convert {0} to a Python data type.'
-                         ''.format(v_str))
-
 
     def update_tokens(self, write_token=True):
         """Update tokens to the next available values."""
