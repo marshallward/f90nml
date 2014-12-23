@@ -240,6 +240,11 @@ class Test(unittest.TestCase):
         finally:
             os.remove('types.nml~')
 
+    def test_no_selfpatch(self):
+        patch_nml = f90nml.read('types_patch.nml')
+        self.assertRaises(ValueError, f90nml.patch,
+                          'types.nml', patch_nml, 'types.nml')
+
     def assert_write(self, nml, target_fname):
 
         tmp_fname = 'tmp.nml'

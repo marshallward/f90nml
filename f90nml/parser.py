@@ -47,9 +47,9 @@ class Parser(object):
             if not patch_fname:
                 patch_fname = nml_fname + '~'
             elif nml_fname == patch_fname:
+                nml_file.close()
                 raise ValueError('f90nml: error: Patch filepath cannot be the '
                                  'same as the original filepath.')
-
             self.pfile = open(patch_fname, 'w')
         else:
             nml_patch = {}
