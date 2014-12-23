@@ -150,6 +150,23 @@ class Test(unittest.TestCase):
                                 {'x': 1}
                              }
 
+    # Support functions
+    def assert_file_equal(self, source_fname, target_fname):
+        with open(source_fname) as source:
+            with open(target_fname) as target:
+                source_str = source.read()
+                target_str = target.read()
+                self.assertEqual(source_str, target_str)
+
+    def assert_write(self, nml, target_fname):
+        tmp_fname = 'tmp.nml'
+        f90nml.write(nml, tmp_fname)
+        try:
+            self.assert_file_equal(tmp_fname, target_fname)
+        finally:
+            os.remove(tmp_fname)
+
+    # Tests
     def test_empty(self):
         test_nml = f90nml.read('empty.nml')
         self.assertEqual(self.empty_nml, test_nml)
@@ -259,7 +276,15 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.patch,
                           'types.nml', patch_nml, 'types.nml')
 
-    def test_index(self):
+    def test_comment_patch(self):
+        nml = {'comment_nml': {'v_cmt_inline': 456}}
+        try:
+            f90nml.patch('comment.nml', nml, 'tmp.nml')
+            self.assert_file_equal('comment_patch.nml', 'tmp.nml')
+        finally:
+            os.remove('tmp.nml')
+
+    def test_index_syntax(self):
         self.assertRaises(ValueError, f90nml.read, 'index_empty.nml')
         self.assertRaises(ValueError, f90nml.read, 'index_bad.nml')
         self.assertRaises(ValueError, f90nml.read, 'index_bad_start.nml')
@@ -289,18 +314,6 @@ class Test(unittest.TestCase):
 
         for fstr in ('g', '.', 'xyz'):
             self.assertRaises(ValueError, pybool, fstr)
-
-    def assert_write(self, nml, target_fname):
-        tmp_fname = 'tmp.nml'
-        f90nml.write(nml, tmp_fname)
-        try:
-            with open(tmp_fname) as tmp:
-                with open(target_fname) as target:
-                    tmp_str = tmp.read()
-                    target_str = target.read()
-                    self.assertEqual(tmp_str, target_str)
-        finally:
-            os.remove(tmp_fname)
 
 
 if __name__ == '__main__':
