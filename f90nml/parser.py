@@ -18,15 +18,12 @@ from f90nml.namelist import NmlDict, var_strings
 class Parser(object):
     """shlex-based Fortran namelist parser."""
 
-    def __init__(self, verbose=False):
+    def __init__(self):
 
         # Token management
         self.tokens = None
         self.token = None
         self.prior_token = None
-
-        # Debugging
-        self.verbose = verbose
 
         # Patching
         self.pfile = None
@@ -100,11 +97,6 @@ class Parser(object):
                     if self.token == ',':
                         self.update_tokens()
 
-                # Diagnostic testing
-                if self.verbose:
-                    print('  tokens: {0} {1}'.format(repr(self.prior_token),
-                                                     repr(self.token)))
-
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
 
@@ -147,9 +139,6 @@ class Parser(object):
                         g_update = g_vars
 
                     nmls[g_name] = g_update
-
-                    if self.verbose:
-                        print('{0} saved with {1}'.format(g_name, g_vars))
 
                     # Reset state
                     g_name, g_vars = None, None
