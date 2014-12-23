@@ -4,6 +4,7 @@ import unittest
 
 sys.path.insert(1, '../')
 import f90nml
+from f90nml.fpy import f90repr, pybool
 
 class Test(unittest.TestCase):
 
@@ -256,15 +257,27 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.patch,
                           'types.nml', patch_nml, 'types.nml')
 
+    def test_f90repr(self):
+        self.assertEqual(f90repr(1), '1')
+        self.assertEqual(f90repr(1.), '1.0')
+        self.assertEqual(f90repr(1+2j), '(1.0, 2.0)')
+        self.assertEqual(f90repr(True), '.true.')
+        self.assertEqual(f90repr(False), '.false.')
+        self.assertEqual(f90repr(False), '.false.')
+        self.assertEqual(f90repr('abc'), "'abc'")
+
+        for ptype in ({}, [], set()):
+            self.assertRaises(ValueError, f90repr, ptype)
+
     def test_pybool(self):
         for fstr_true in ('true', 'ture', 't', '.t'):
-            self.assertEqual(f90nml.fpy.pybool(fstr_true), True)
+            self.assertEqual(pybool(fstr_true), True)
 
         for fstr_false in ('false', 'flase', 'f', '.f'):
-            self.assertEqual(f90nml.fpy.pybool(fstr_false), False)
+            self.assertEqual(pybool(fstr_false), False)
 
         for fstr in ('g', '.', 'xyz'):
-            self.assertRaises(ValueError, f90nml.fpy.pybool, fstr)
+            self.assertRaises(ValueError, pybool, fstr)
 
     def assert_write(self, nml, target_fname):
 
