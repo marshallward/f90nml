@@ -231,6 +231,15 @@ class Test(unittest.TestCase):
         finally:
             os.remove('tmp.nml')
 
+    def test_default_patch(self):
+        patch_nml = f90nml.read('types_patch.nml')
+        f90nml.patch('types.nml', patch_nml)
+        test_nml = f90nml.read('types.nml~')
+        try:
+            self.assertEqual(test_nml, patch_nml)
+        finally:
+            os.remove('types.nml~')
+
     def assert_write(self, nml, target_fname):
 
         tmp_fname = 'tmp.nml'
