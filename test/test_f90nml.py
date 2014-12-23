@@ -256,6 +256,16 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.patch,
                           'types.nml', patch_nml, 'types.nml')
 
+    def test_pybool(self):
+        for fstr_true in ('true', 'ture', 't', '.t'):
+            self.assertEqual(f90nml.fpy.pybool(fstr_true), True)
+
+        for fstr_false in ('false', 'flase', 'f', '.f'):
+            self.assertEqual(f90nml.fpy.pybool(fstr_false), False)
+
+        for fstr in ('g', '.', 'xyz'):
+            self.assertRaises(ValueError, f90nml.fpy.pybool, fstr)
+
     def assert_write(self, nml, target_fname):
 
         tmp_fname = 'tmp.nml'
