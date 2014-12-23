@@ -16,6 +16,12 @@ class Test(unittest.TestCase):
                             {'null_comma': None}
                         }
 
+        self.unset_nml = {'unset_nml':
+                            {'x': None,
+                             'y': None
+                            }
+                         }
+
         self.types_nml = {'types_nml':
                             {'v_integer': 1,
                              'v_float': 1.0,
@@ -150,6 +156,10 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('null.nml')
         self.assertEqual(self.null_nml, test_nml)
         self.assert_write(test_nml, 'null_target.nml')
+
+    def test_unset(self):
+        test_nml = f90nml.read('unset.nml')
+        self.assertEqual(self.unset_nml, test_nml)
 
     def test_types(self):
         test_nml = f90nml.read('types.nml')
