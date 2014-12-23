@@ -1,0 +1,8 @@
+&types_nml
+    v_integer = 2
+    v_float = 2.0
+    v_complex = (2.0, 3.0)
+    v_logical = .false.
+    v_string = 'Goodbye'
+    v_new = 123
+/

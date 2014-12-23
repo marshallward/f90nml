@@ -136,7 +136,6 @@ class Test(unittest.TestCase):
                                 }
                              }
 
-
     def test_empty(self):
         test_nml = f90nml.read('empty.nml')
         self.assertEqual(self.empty_nml, test_nml)
@@ -213,6 +212,15 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('empty.nml')
         test_nml.pop('empty_nml')
         self.assertEqual(test_nml, f90nml.namelist.NmlDict())
+
+    def test_patch(self):
+        patch_nml = f90nml.read('types_patch.nml')
+        f90nml.patch('types.nml', patch_nml, 'tmp.nml')
+        test_nml = f90nml.read('tmp.nml')
+        try:
+            self.assertEqual(test_nml, patch_nml)
+        finally:
+            os.remove('tmp.nml')
 
     def assert_write(self, nml, target_fname):
 

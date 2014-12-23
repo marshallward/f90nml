@@ -7,6 +7,7 @@
    :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
    :license: Apache License, Version 2.0, see LICENSE for details.
 """
+import copy
 import itertools
 import shlex
 from string import whitespace
@@ -31,7 +32,7 @@ class Parser(object):
         self.pfile = None
 
 
-    def read(self, nml_fname, nml_patch=None, patch_fname=None):
+    def read(self, nml_fname, nml_patch_in=None, patch_fname=None):
         """Parse a Fortran 90 namelist file and store the contents.
 
         >>> from f90nml.parser import Parser
@@ -40,9 +41,9 @@ class Parser(object):
 
         nml_file = open(nml_fname, 'r')
 
-        if not nml_patch:
-            nml_patch = {}
-        else:
+        if nml_patch_in:
+            nml_patch = copy.deepcopy(nml_patch_in)
+
             if not patch_fname:
                 patch_fname = nml_fname + '~'
             elif nml_fname == patch_fname:
@@ -50,6 +51,8 @@ class Parser(object):
                                  'same as the original filepath.')
 
             self.pfile = open(patch_fname, 'w')
+        else:
+            nml_patch = {}
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
@@ -72,7 +75,7 @@ class Parser(object):
                     self.update_tokens()
 
                 # Ignore tokens outside of namelist groups
-                while not self.token in tuple('&$'):
+                while not self.token in ('&', '$'):
                     self.update_tokens()
 
             except StopIteration:
@@ -157,6 +160,9 @@ class Parser(object):
                 break
 
         nml_file.close()
+        if self.pfile:
+            self.pfile.close()
+
         return nmls
 
 
