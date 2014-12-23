@@ -100,8 +100,15 @@ class Parser(object):
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
 
-                    v_name, v_values = self.parse_variable(g_vars,
+                    try:
+                        v_name, v_values = self.parse_variable(g_vars,
                                                            patch_nml=grp_patch)
+                    except ValueError:
+                        nml_file.close()
+                        if self.pfile:
+                            self.pfile.close()
+                        raise
+
                     if v_name in g_vars:
                         v_prior_values = g_vars[v_name]
                         v_values = merge_values(v_prior_values, v_values)
@@ -192,6 +199,7 @@ class Parser(object):
 
             self.update_tokens()
             self.update_tokens()
+
             v_att, v_att_vals = self.parse_variable(v_parent)
 
             if v_idx and v_att in parent:

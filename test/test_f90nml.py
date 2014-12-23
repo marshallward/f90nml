@@ -259,6 +259,16 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.patch,
                           'types.nml', patch_nml, 'types.nml')
 
+    def test_index(self):
+        self.assertRaises(ValueError, f90nml.read, 'index_empty.nml')
+        self.assertRaises(ValueError, f90nml.read, 'index_bad.nml')
+        self.assertRaises(ValueError, f90nml.read, 'index_bad_start.nml')
+        self.assertRaises(ValueError, f90nml.read, 'index_empty_end.nml')
+        self.assertRaises(ValueError, f90nml.read, 'index_bad_end.nml')
+        self.assertRaises(ValueError, f90nml.read, 'index_empty_stride.nml')
+        self.assertRaises(ValueError, f90nml.read, 'index_bad_stride.nml')
+        self.assertRaises(ValueError, f90nml.read, 'index_zero_stride.nml')
+
     def test_f90repr(self):
         self.assertEqual(f90repr(1), '1')
         self.assertEqual(f90repr(1.), '1.0')
