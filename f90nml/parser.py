@@ -202,12 +202,8 @@ class Parser(object):
 
             v_att, v_att_vals = self.parse_variable(v_parent)
 
-            if v_idx and v_att in parent:
-                next_value = v_att_vals
-            else:
-                next_value = NmlDict()
-                next_value[v_att] = v_att_vals
-
+            next_value = NmlDict()
+            next_value[v_att] = v_att_vals
             append_value(v_values, next_value, v_idx)
 
         else:
@@ -461,7 +457,7 @@ def merge_lists(src, new):
         else:
             new[i] = src[i]
 
-    return new
+    return delist(new)
 
 
 def merge_dicts(src, patch):
