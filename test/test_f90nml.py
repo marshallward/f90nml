@@ -316,7 +316,7 @@ class Test(unittest.TestCase):
             self.assertRaises(ValueError, pybool, fstr)
 
     def test_close_patch_on_error(self):
-        patch = {'tmp_nml': {'tmp_val', 0}}
+        patch = {'tmp_nml': {'tmp_val': 0}}
         self.assertRaises(ValueError, f90nml.patch, 'index_empty.nml', patch)
 
 
