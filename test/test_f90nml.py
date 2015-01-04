@@ -317,7 +317,9 @@ class Test(unittest.TestCase):
 
     def test_close_patch_on_error(self):
         patch = {'tmp_nml': {'tmp_val': 0}}
-        self.assertRaises(ValueError, f90nml.patch, 'index_empty.nml', patch)
+        self.assertRaises(ValueError, f90nml.patch, 'index_empty.nml', patch,
+                                                    'tmp.nml')
+        os.remove('tmp.nml')
 
 
 if __name__ == '__main__':
