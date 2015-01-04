@@ -93,10 +93,6 @@ class Parser(object):
                 if not self.token in ('=', '%', '('):
                     self.update_tokens()
 
-                    # Skip commas separating objects
-                    if self.token == ',':
-                        self.update_tokens()
-
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
 
