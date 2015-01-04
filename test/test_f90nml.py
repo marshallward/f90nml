@@ -315,6 +315,10 @@ class Test(unittest.TestCase):
         for fstr in ('g', '.', 'xyz'):
             self.assertRaises(ValueError, pybool, fstr)
 
+    def test_close_patch_on_error(self):
+        patch = {'tmp_nml': {'tmp_val', 0}}
+        self.assertRaises(ValueError, f90nml.patch, 'index_empty.nml', patch)
+
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
