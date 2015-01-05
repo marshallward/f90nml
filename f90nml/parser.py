@@ -15,6 +15,7 @@ from string import whitespace
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr, f90repr
 from f90nml.namelist import NmlDict, var_strings
 
+
 class Parser(object):
     """shlex-based Fortran namelist parser."""
 
@@ -27,7 +28,6 @@ class Parser(object):
 
         # Patching
         self.pfile = None
-
 
     def read(self, nml_fname, nml_patch_in=None, patch_fname=None):
         """Parse a Fortran 90 namelist file and store the contents.
@@ -72,7 +72,7 @@ class Parser(object):
                     self.update_tokens()
 
                 # Ignore tokens outside of namelist groups
-                while not self.token in ('&', '$'):
+                while self.token not in ('&', '$'):
                     self.update_tokens()
 
             except StopIteration:
@@ -90,15 +90,14 @@ class Parser(object):
             # Populate the namelist group
             while g_name:
 
-                if not self.token in ('=', '%', '('):
+                if self.token not in ('=', '%', '('):
                     self.update_tokens()
 
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
 
                     try:
-                        v_name, v_values = self.parse_variable(g_vars,
-                                                           patch_nml=grp_patch)
+                        v_name, v_values = self.parse_variable(g_vars, patch_nml=grp_patch)
                     except ValueError:
                         nml_file.close()
                         if self.pfile:
@@ -157,7 +156,6 @@ class Parser(object):
 
         return nmls
 
-
     def parse_variable(self, parent, patch_nml=None):
         """Parse a variable and return its name and values."""
 
@@ -169,7 +167,7 @@ class Parser(object):
 
         # Patch state
         patch_values = None
-        write_token = not v_name in patch_nml
+        write_token = v_name not in patch_nml
 
         if self.token == '(':
 
@@ -223,7 +221,7 @@ class Parser(object):
                     self.pfile.write(p_val)
 
             # Add variables until next variable trigger
-            while (not self.token in ('=', '(', '%')
+            while (self.token not in ('=', '(', '%')
                    or (self.prior_token, self.token) == ('=', '(')):
 
                 # Check for repeated values
@@ -243,7 +241,7 @@ class Parser(object):
 
                 elif self.prior_token == '*':
 
-                    if not self.token in ('/', '&', '$'):
+                    if self.token not in ('/', '&', '$'):
                         self.update_tokens(write_token)
 
                     if (self.token == '=' or (self.token in ('/', '&', '$')
@@ -282,7 +280,6 @@ class Parser(object):
         else:
             return v_name, delist(v_values)
 
-
     def parse_index(self):
         """Parse Fortran vector indices into a tuple of Python indices."""
 
@@ -311,7 +308,7 @@ class Parser(object):
                 if self.token == ':':
                     raise ValueError('{0} end index cannot be implicit '
                                      'when using stride.'.format(v_name))
-                elif not self.token in (',', ')'):
+                elif self.token not in (',', ')'):
                     raise
         elif self.token in (',', ')'):
             # Replace index with single-index range
@@ -336,7 +333,7 @@ class Parser(object):
 
             self.update_tokens()
 
-        if not self.token in (',', ')'):
+        if self.token not in (',', ')'):
             raise ValueError('{0} index did not terminate '
                              'correctly.'.format(v_name))
 
@@ -345,7 +342,6 @@ class Parser(object):
         self.update_tokens()
 
         return v_indices
-
 
     def parse_value(self, write_token=True):
         """Convert string repr of Fortran type to equivalent Python type."""
@@ -375,7 +371,6 @@ class Parser(object):
                 return value
             except ValueError:
                 continue
-
 
     def update_tokens(self, write_token=True):
         """Update tokens to the next available values."""
