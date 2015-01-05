@@ -158,8 +158,11 @@ class Parser(object):
         return nmls
 
 
-    def parse_variable(self, parent, patch_nml={}):
+    def parse_variable(self, parent, patch_nml=None):
         """Parse a variable and return its name and values."""
+
+        if not patch_nml:
+            patch_nml = {}
 
         v_name = self.prior_token
         v_values = []
@@ -426,6 +429,7 @@ def append_value(v_values, next_value, v_idx=None, n_vals=1):
 
 
 def merge_values(src, new):
+    """Merge two lists or dicts into a single element."""
 
     if isinstance(src, dict) and isinstance(new, dict):
         return merge_dicts(src, new)
