@@ -99,6 +99,7 @@ class NmlDict(OrderedDict):
     def __setitem__(self, key, value, dict_setitem=dict.__setitem__):
         super(NmlDict, self).__setitem__(key.lower(), value, dict_setitem)
 
+
     def write(self, nml_path, force=False):
         """Output dict to a Fortran 90 namelist file."""
 
