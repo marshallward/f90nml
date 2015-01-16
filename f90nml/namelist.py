@@ -40,9 +40,8 @@ def var_strings(v_name, v_values, offset=0):
     if isinstance(v_values, dict):
         for f_name, f_vals in v_values.items():
             v_title = '%'.join([v_name, f_name])
-            v_offset = offset + len(v_title)
 
-            v_strs = var_strings(v_title, f_vals, v_offset)
+            v_strs = var_strings(v_title, f_vals, len(v_title))
             var_strs.extend(v_strs)
 
     # Parse an array of derived types
@@ -50,8 +49,8 @@ def var_strings(v_name, v_values, offset=0):
                                             for v in v_values):
         for idx, val in enumerate(v_values, start=1):
             v_title = v_name + '({0})'.format(idx)
-            v_offset = offset + len(v_title)
-            v_strs = var_strings(v_title, val, v_offset)
+
+            v_strs = var_strings(v_title, val, len(v_title))
             var_strs.extend(v_strs)
 
     else:
