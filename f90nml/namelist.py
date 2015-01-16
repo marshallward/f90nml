@@ -33,6 +33,7 @@ def write_nmlgrp(grp_name, grp_vars, nml_file):
 
 def var_strings(v_name, v_values, offset=0):
     """Convert namelist variable to list of fixed-width strings"""
+    # TODO: I think "offset" may be replaced by len(v_name), and can be removed
 
     var_strs = []
 
@@ -63,10 +64,10 @@ def var_strings(v_name, v_values, offset=0):
         val_line = ''
         for v_val in v_values:
 
-            if len(val_line) < 72 - len(v_name) - offset:
+            if len(val_line) < 72 - offset:
                 val_line += fpy.f90repr(v_val) + ', '
 
-            if len(val_line) >= 72 - len(v_name) - offset:
+            if len(val_line) >= 72 - offset:
                 val_strs.append(val_line)
                 val_line = ''
 
