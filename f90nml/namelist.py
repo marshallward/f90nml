@@ -90,14 +90,14 @@ class NmlDict(OrderedDict):
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
 
-    def __delitem__(self, key, dict_delitem=dict.__delitem__):
-        return super(NmlDict, self).__delitem__(key.lower(), dict_delitem)
+    def __delitem__(self, key):
+        return super(NmlDict, self).__delitem__(key.lower())
 
     def __getitem__(self, key):
         return super(NmlDict, self).__getitem__(key.lower())
 
-    def __setitem__(self, key, value, dict_setitem=dict.__setitem__):
-        super(NmlDict, self).__setitem__(key.lower(), value, dict_setitem)
+    def __setitem__(self, key, value):
+        super(NmlDict, self).__setitem__(key.lower(), value)
 
 
     def write(self, nml_path, force=False):
