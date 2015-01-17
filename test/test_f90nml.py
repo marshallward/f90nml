@@ -101,6 +101,12 @@ class Test(unittest.TestCase):
                                          {'c': 5, 'd': 6}
                                         ]
                                   }
+                            },
+                          'dtype_sparse_vec_nml':
+                            {'a': {'b': [None,
+                                         {'c': 2}
+                                        ]
+                                  }
                             }
                          }
 

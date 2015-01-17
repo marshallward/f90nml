@@ -46,9 +46,14 @@ def var_strings(v_name, v_values, offset=0):
             var_strs.extend(v_strs)
 
     # Parse an array of derived types
-    elif isinstance(v_values, list) and all(isinstance(v, dict)
-                                            for v in v_values):
+    elif (isinstance(v_values, list)
+            and any(isinstance(v, dict) for v in v_values)
+            and all((isinstance(v, dict) or v is None) for v in v_values)):
         for idx, val in enumerate(v_values, start=1):
+
+            if val is None:
+                continue
+
             v_title = v_name + '({0})'.format(idx)
 
             v_strs = var_strings(v_title, val, len(v_title))

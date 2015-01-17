@@ -24,3 +24,6 @@
     a%b(3)%c = 5
     a%b(3)%d = 6
 /
+&dtype_sparse_vec_nml
+    a%b(2)%c = 2
+/
