@@ -31,9 +31,8 @@ def write_nmlgrp(grp_name, grp_vars, nml_file):
     nml_file.write('/\n')
 
 
-def var_strings(v_name, v_values, offset=0):
+def var_strings(v_name, v_values):
     """Convert namelist variable to list of fixed-width strings"""
-    # TODO: I think "offset" may be replaced by len(v_name), and can be removed
 
     var_strs = []
 
@@ -42,7 +41,7 @@ def var_strings(v_name, v_values, offset=0):
         for f_name, f_vals in v_values.items():
             v_title = '%'.join([v_name, f_name])
 
-            v_strs = var_strings(v_title, f_vals, len(v_title))
+            v_strs = var_strings(v_title, f_vals)
             var_strs.extend(v_strs)
 
     # Parse an array of derived types
@@ -56,7 +55,7 @@ def var_strings(v_name, v_values, offset=0):
 
             v_title = v_name + '({0})'.format(idx)
 
-            v_strs = var_strings(v_title, val, len(v_title))
+            v_strs = var_strings(v_title, val)
             var_strs.extend(v_strs)
 
     else:
@@ -69,10 +68,10 @@ def var_strings(v_name, v_values, offset=0):
         val_line = ''
         for v_val in v_values:
 
-            if len(val_line) < 72 - offset:
+            if len(val_line) < 72 - len(v_name):
                 val_line += fpy.f90repr(v_val) + ', '
 
-            if len(val_line) >= 72 - offset:
+            if len(val_line) >= 72 - len(v_name):
                 val_strs.append(val_line)
                 val_line = ''
 
@@ -84,7 +83,7 @@ def var_strings(v_name, v_values, offset=0):
         var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
 
         for v_str in val_strs[1:]:
-            var_strs.append(' ' * (3 + offset + len(v_name)) + v_str)
+            var_strs.append(' ' * (3 + len(v_name)) + v_str)
 
     return var_strs
 
