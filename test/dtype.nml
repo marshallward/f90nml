@@ -34,3 +34,7 @@
 &dtype_sparse_vec_nml
     a%b(2)%c = 2
 /
+
+&dtype_single_value_vec_nml
+    a(1)%b = 1
+/

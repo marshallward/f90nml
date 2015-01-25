@@ -107,7 +107,9 @@ class Test(unittest.TestCase):
                                          {'c': 2}
                                         ]
                                   }
-                            }
+                            },
+                          'dtype_single_value_vec_nml':
+                            {'a': [{'b': 1}]}
                          }
 
         self.bcast_nml = {'bcast_nml':

@@ -113,7 +113,7 @@ f90nml_ is distributed under the `Apache 2.0 License`_.
 
 Contact
 =======
-Marshall Ward <python@marshallward.org>
+Marshall Ward <f90nml@marshallward.org>
 
 
 .. _f90nml:

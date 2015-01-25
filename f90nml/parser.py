@@ -278,9 +278,12 @@ class Parser(object):
                     ws_sep = self.update_tokens(write_token)
 
         if patch_values:
-            return v_name, delist(patch_values)
-        else:
-            return v_name, delist(v_values)
+            v_values = patch_values
+
+        if not v_idx:
+            v_values = delist(v_values)
+
+        return v_name, v_values
 
 
     def parse_index(self):
