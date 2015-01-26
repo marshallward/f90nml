@@ -45,6 +45,8 @@ class Test(unittest.TestCase):
                              'v_null_end': [1, 2, 3, None],
                              'v_zero': [1, 0, 3],
                              'v_stride': [1, None, 3, None, 5, None, 7],
+                             'v_single': [1],
+                             'v_implicit_merge': [1, 2],
                             }
                           }
 

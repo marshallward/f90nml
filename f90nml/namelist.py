@@ -46,8 +46,8 @@ def var_strings(v_name, v_values):
 
     # Parse an array of derived types
     elif (isinstance(v_values, list)
-            and any(isinstance(v, dict) for v in v_values)
-            and all((isinstance(v, dict) or v is None) for v in v_values)):
+          and any(isinstance(v, dict) for v in v_values)
+          and all((isinstance(v, dict) or v is None) for v in v_values)):
         for idx, val in enumerate(v_values, start=1):
 
             if val is None:
