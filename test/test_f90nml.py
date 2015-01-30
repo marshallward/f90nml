@@ -111,7 +111,13 @@ class Test(unittest.TestCase):
                                   }
                             },
                           'dtype_single_value_vec_nml':
-                            {'a': [{'b': 1}]}
+                            {'a': [{'b': 1}]},
+                          'dtype_single_vec_merge_nml':
+                            {'a': {'b': [{'c': 1,
+                                          'd': 2}
+                                        ]
+                                  }
+                            }
                          }
 
         self.bcast_nml = {'bcast_nml':

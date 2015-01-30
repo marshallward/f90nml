@@ -456,7 +456,7 @@ def merge_lists(src, new):
         else:
             new[i] = src[i]
 
-    return delist(new)
+    return new
 
 
 def merge_dicts(src, patch):

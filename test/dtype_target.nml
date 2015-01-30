@@ -30,3 +30,7 @@
 &dtype_single_value_vec_nml
     a(1)%b = 1
 /
+&dtype_single_vec_merge_nml
+    a%b(1)%c = 1
+    a%b(1)%d = 2
+/
