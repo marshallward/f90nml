@@ -42,4 +42,8 @@
     ! Implicit merge
     v_implicit_merge(2) = 2
     v_implicit_merge = 1
+
+    ! Explicit merge
+    v_explicit_merge = 1
+    v_explicit_merge(2) = 2
 /

@@ -47,6 +47,7 @@ class Test(unittest.TestCase):
                              'v_stride': [1, None, 3, None, 5, None, 7],
                              'v_single': [1],
                              'v_implicit_merge': [1, 2],
+                             'v_explicit_merge': [1, 2],
                             }
                           }
 
