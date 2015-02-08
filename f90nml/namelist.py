@@ -98,8 +98,8 @@ def var_strings(v_name, v_values):
 class NmlDict(OrderedDict):
     """Case-insensitive Python dict"""
 
-    def __init__(self):
-        super(NmlDict, self).__init__()
+    def __init__(self, *args, **kwds):
+        super(NmlDict, self).__init__(*args, **kwds)
         self.indent = None
 
     def __contains__(self, key):
