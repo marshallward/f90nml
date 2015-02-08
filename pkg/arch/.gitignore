@@ -1,0 +1,5 @@
+python-f90nml-*.pkg.tar.xz
+python-f90nml-*.src.tar.gz
+/python-f90nml*
+/pkg
+/src

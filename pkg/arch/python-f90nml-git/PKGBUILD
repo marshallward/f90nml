@@ -1,6 +1,7 @@
-# Maintainer: Marshall Ward <marshall.ward@gmail.com>
+# Maintainer: Marshall Ward <f90nml@marshallward.org>
+
 pkgname=python-f90nml-git
-pkgver=0.10.2
+pkgver=0.11
 pkgrel=1
 pkgdesc="A Fortran namelist parser for Python"
 arch=('any')
