@@ -17,18 +17,25 @@ except ImportError:
 from f90nml import fpy
 
 
-def write_nmlgrp(grp_name, grp_vars, nml_file):
-    """Write namelist group to target file"""
+def parse_indent(indent=None):
+    """Set the namelist variable indent to either the number of spaces (if an
+    integer) or to the string input itself (if whitespace)"""
 
-    nml_file.write('&{0}\n'.format(grp_name))
+    if indent:
+        if isinstance(indent, str):
+            if indent.isspace():
+                s_indent = indent
+            else:
+                raise ValueError('String indents can only contain '
+                                 'whitespace.')
+        elif isinstance(indent, int):
+            s_indent = indent * ' '
+        else:
+            raise TypeError('indent must either be an integer or string')
+    else:
+        s_indent = 4 * ' '
 
-    for v_name, v_val in grp_vars.items():
-
-        for v_str in var_strings(v_name, v_val):
-
-            nml_file.write('    {0}\n'.format(v_str))
-
-    nml_file.write('/\n')
+    return s_indent
 
 
 def var_strings(v_name, v_values):
@@ -91,6 +98,10 @@ def var_strings(v_name, v_values):
 class NmlDict(OrderedDict):
     """Case-insensitive Python dict"""
 
+    def __init__(self):
+        super(NmlDict, self).__init__()
+        self.indent = None
+
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
 
@@ -103,16 +114,32 @@ class NmlDict(OrderedDict):
     def __setitem__(self, key, value):
         super(NmlDict, self).__setitem__(key.lower(), value)
 
-    def write(self, nml_path, force=False):
+    def write(self, nml_path, force=False, indent=None):
         """Output dict to a Fortran 90 namelist file."""
 
         if not force and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
 
+        # Set formatting attributes
+        self.indent = parse_indent(indent)
+
         with open(nml_path, 'w') as nml_file:
             for grp_name, grp_vars in self.items():
                 if type(grp_vars) is list:
                     for g_vars in grp_vars:
-                        write_nmlgrp(grp_name, g_vars, nml_file)
+                        self.write_nmlgrp(grp_name, g_vars, nml_file)
                 else:
-                    write_nmlgrp(grp_name, grp_vars, nml_file)
+                    self.write_nmlgrp(grp_name, grp_vars, nml_file)
+
+    def write_nmlgrp(self, grp_name, grp_vars, nml_file):
+        """Write namelist group to target file"""
+
+        nml_file.write('&{0}\n'.format(grp_name))
+
+        for v_name, v_val in grp_vars.items():
+
+            for v_str in var_strings(v_name, v_val):
+
+                nml_file.write(self.indent + '{0}\n'.format(v_str))
+
+        nml_file.write('/\n')
