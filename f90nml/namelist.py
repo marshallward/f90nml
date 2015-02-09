@@ -134,12 +134,10 @@ class NmlDict(OrderedDict):
     def write_nmlgrp(self, grp_name, grp_vars, nml_file):
         """Write namelist group to target file"""
 
-        nml_file.write('&{0}\n'.format(grp_name))
+        print('&{0}'.format(grp_name), file=nml_file)
 
         for v_name, v_val in grp_vars.items():
-
             for v_str in var_strings(v_name, v_val):
+                print(self.indent + '{0}'.format(v_str), file=nml_file)
 
-                nml_file.write(self.indent + '{0}\n'.format(v_str))
-
-        nml_file.write('/\n')
+        print('/', file=nml_file)
