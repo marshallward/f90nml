@@ -38,7 +38,7 @@ def parse_indent(indent=None):
     return s_indent
 
 
-def var_strings(v_name, v_values):
+def var_strings(v_name, v_values, end_comma=False):
     """Convert namelist variable to list of fixed-width strings"""
 
     var_strs = []
@@ -48,7 +48,7 @@ def var_strings(v_name, v_values):
         for f_name, f_vals in v_values.items():
             v_title = '%'.join([v_name, f_name])
 
-            v_strs = var_strings(v_title, f_vals)
+            v_strs = var_strings(v_title, f_vals, end_comma)
             var_strs.extend(v_strs)
 
     # Parse an array of derived types
@@ -84,7 +84,10 @@ def var_strings(v_name, v_values):
 
         # Append any remaining values
         if val_line:
-            val_strs.append(val_line[:-2])
+            if end_comma or (len(v_values) > 1 and v_values[-1] is None):
+                val_strs.append(val_line[:])
+            else:
+                val_strs.append(val_line[:-2])
 
         # Complete the set of values
         var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
@@ -101,6 +104,7 @@ class NmlDict(OrderedDict):
     def __init__(self, *args, **kwds):
         super(NmlDict, self).__init__(*args, **kwds)
         self.indent = None
+        self.end_comma = False
 
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
@@ -114,7 +118,7 @@ class NmlDict(OrderedDict):
     def __setitem__(self, key, value):
         super(NmlDict, self).__setitem__(key.lower(), value)
 
-    def write(self, nml_path, force=False, indent=None):
+    def write(self, nml_path, force=False, indent=None, end_comma=None):
         """Output dict to a Fortran 90 namelist file."""
 
         if not force and os.path.isfile(nml_path):
@@ -122,6 +126,10 @@ class NmlDict(OrderedDict):
 
         # Set formatting attributes
         self.indent = parse_indent(indent)
+        if end_comma:
+            if not isinstance(end_comma, bool):
+                raise TypeError('end_comma argument must be a logical type.')
+            self.end_comma = end_comma
 
         with open(nml_path, 'w') as nml_file:
             for grp_name, grp_vars in self.items():
@@ -137,7 +145,8 @@ class NmlDict(OrderedDict):
         print('&{0}'.format(grp_name), file=nml_file)
 
         for v_name, v_val in grp_vars.items():
-            for v_str in var_strings(v_name, v_val):
-                print(self.indent + '{0}'.format(v_str), file=nml_file)
+            for v_str in var_strings(v_name, v_val, self.end_comma):
+                nml_line = self.indent + '{0}'.format(v_str)
+                print(nml_line, file=nml_file)
 
         print('/', file=nml_file)

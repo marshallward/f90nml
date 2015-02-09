@@ -7,7 +7,7 @@
     v_implicit_end = 1, 2, 3, 4
     v_implicit_all = 1, 2, 3, 4
     v_null_start = , 2, 3, 4
-    v_null_end = 1, 2, 3,
+    v_null_end = 1, 2, 3, ,
     v_null_interior = 1, 2, , 4
     v_zero = 1, 0, 3
     v_stride = 1, , 3, , 5, , 7
