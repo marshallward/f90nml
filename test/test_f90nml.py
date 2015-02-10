@@ -175,9 +175,9 @@ class Test(unittest.TestCase):
                 target_str = target.read()
                 self.assertEqual(source_str, target_str)
 
-    def assert_write(self, nml, target_fname, indent=None):
+    def assert_write(self, nml, target_fname, indent=None, end_comma=False):
         tmp_fname = 'tmp.nml'
-        f90nml.write(nml, tmp_fname, indent=indent)
+        f90nml.write(nml, tmp_fname, indent=indent, end_comma=end_comma)
         try:
             self.assert_file_equal(tmp_fname, target_fname)
         finally:
@@ -346,6 +346,12 @@ class Test(unittest.TestCase):
                           test_nml, 'tmp.nml', indent='xyz')
         self.assertRaises(TypeError, f90nml.write,
                           test_nml, 'tmp.nml', indent=[1, 2, 3])
+
+    def test_end_comma(self):
+        test_nml = f90nml.read('types.nml')
+        self.assert_write(test_nml, 'types_end_comma.nml', end_comma=True)
+        self.assertRaises(TypeError, f90nml.write,
+                          test_nml, 'tmp.nml', end_comma='xyz')
 
 
 if __name__ == '__main__':
