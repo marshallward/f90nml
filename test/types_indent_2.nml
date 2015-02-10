@@ -1,0 +1,7 @@
+&types_nml
+  v_integer = 1
+  v_float = 1.0
+  v_complex = (1.0, 2.0)
+  v_logical = .true.
+  v_string = 'Hello'
+/

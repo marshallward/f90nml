@@ -20,11 +20,11 @@ def read(nml_fname):
     return Parser().read(nml_fname)
 
 
-def write(nml, nml_fname, force=False):
+def write(nml, nml_fname, force=False, indent=None, end_comma=False):
     """Output namelist (nml) to a Fortran 90 namelist file (data.nml).
 
     >>> f90nml.write(nml, 'data.nml')"""
-    nml.write(nml_fname, force)
+    nml.write(nml_fname, force, indent=indent, end_comma=end_comma)
 
 
 def patch(nml_fname, nml_patch, out_fname=None):
