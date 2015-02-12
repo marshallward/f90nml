@@ -13,7 +13,7 @@ setup(
     description = 'Fortran 90 namelist parser',
     long_description = project_readme,
     author = 'Marshall Ward',
-    author_email = 'python@marshallward.org',
+    author_email = 'f90nml@marshallward.org',
     url = 'http://github.com/marshallward/f90nml',
 
     packages = ['f90nml'],
