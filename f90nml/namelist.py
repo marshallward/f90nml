@@ -134,7 +134,8 @@ class NmlDict(OrderedDict):
                 nml_line = self.indent + '{0}'.format(v_str)
                 print(nml_line, file=nml_file)
 
-        print('/\n', file=nml_file)
+        print('/', file=nml_file)
+        print(file=nml_file)
 
     def var_strings(self, v_name, v_values):
         """Convert namelist variable to list of fixed-width strings"""
