@@ -347,6 +347,7 @@ class Test(unittest.TestCase):
         test_nml.indent = '\t'
         self.assert_write(test_nml, 'types_indent_tab.nml')
 
+        self.assertRaises(ValueError, setattr, test_nml, 'indent', -4)
         self.assertRaises(ValueError, setattr, test_nml, 'indent', 'xyz')
         self.assertRaises(TypeError, setattr, test_nml, 'indent', [1, 2, 3])
 
@@ -356,6 +357,11 @@ class Test(unittest.TestCase):
         self.assert_write(test_nml, 'types_end_comma.nml')
 
         self.assertRaises(TypeError, setattr, test_nml, 'end_comma', 'xyz')
+
+    def test_colwidth(self):
+        test_nml = f90nml.read('types.nml')
+        self.assertRaises(ValueError, setattr, test_nml, 'colwidth', -1)
+        self.assertRaises(TypeError, setattr, test_nml, 'colwidth', 'xyz')
 
 
 if __name__ == '__main__':
