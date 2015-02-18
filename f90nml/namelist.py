@@ -110,11 +110,19 @@ class NmlDict(OrderedDict):
 
         with open(nml_path, 'w') as nml_file:
             for grp_name, grp_vars in self.items():
+
+
+                # Check for repeated namelist records (saved as lists)
                 if type(grp_vars) is list:
                     for g_vars in grp_vars:
                         self.write_nmlgrp(grp_name, g_vars, nml_file)
                 else:
                     self.write_nmlgrp(grp_name, grp_vars, nml_file)
+
+        if self.items():
+            with open(nml_path, 'rb+') as nml_file:
+                nml_file.seek(-1, os.SEEK_END)
+                nml_file.truncate()
 
     def write_nmlgrp(self, grp_name, grp_vars, nml_file):
         """Write namelist group to target file"""
@@ -126,7 +134,7 @@ class NmlDict(OrderedDict):
                 nml_line = self.indent + '{0}'.format(v_str)
                 print(nml_line, file=nml_file)
 
-        print('/', file=nml_file)
+        print('/\n', file=nml_file)
 
     def var_strings(self, v_name, v_values):
         """Convert namelist variable to list of fixed-width strings"""
