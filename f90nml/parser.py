@@ -236,8 +236,8 @@ class Parser(object):
                 # First check for implicit null values
                 if self.prior_token in ('=', '%', ','):
                     if (self.token in (',', '/', '&', '$') and
-                        not (self.prior_token == ',' and
-                             self.token in ('/', '&', '$'))):
+                            not (self.prior_token == ',' and
+                                 self.token in ('/', '&', '$'))):
                         append_value(v_values, None, v_idx, n_vals)
 
                 elif self.prior_token == '*':

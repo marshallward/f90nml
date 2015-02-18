@@ -85,7 +85,7 @@ class NmlDict(OrderedDict):
         super(NmlDict, self).__init__(*args, **kwds)
 
         # Formatting properties
-        self._columns = 72
+        self._colwidth = 72
         self._indent = 4 * ' '
         self._end_comma = False
 
@@ -105,13 +105,15 @@ class NmlDict(OrderedDict):
 
     @property
     def colwidth(self):
+        """Return the target column width of the namelist file."""
         return self._colwidth
 
     @colwidth.setter
     def colwidth(self, width):
+        """Validate and set the column width."""
         if isinstance(width, int):
             if width >= 0:
-                self._colwidth = colwidth
+                self._colwidth = width
             else:
                 raise ValueError('Column width must be nonnegative.')
         else:
@@ -119,10 +121,14 @@ class NmlDict(OrderedDict):
 
     @property
     def indent(self):
+        """Return the indentation string within namelist group entries."""
         return self._indent
 
     @indent.setter
     def indent(self, value):
+        """Validate and set the indent width, either as an explicit whitespace
+        string or by the number of whitespace characters.
+        """
 
         # Explicit indent setting
         if isinstance(value, str):
@@ -145,10 +151,12 @@ class NmlDict(OrderedDict):
 
     @property
     def end_comma(self):
+        """Return True if entries are terminated with commas."""
         return self._end_comma
 
     @end_comma.setter
     def end_comma(self, value):
+        """Validate and set the comma termination flag."""
         if not isinstance(value, bool):
             raise TypeError('end_comma argument must be a logical type.')
         self._end_comma = value
