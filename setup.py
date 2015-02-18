@@ -1,4 +1,14 @@
-from distutils.core import setup
+"""setup.py
+   ========
+   Installation script for f90nml
+
+   Additional configuration settings are in ``setup.cfg``.
+"""
+
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 project_name = 'f90nml'
 project_version = __import__(project_name).__version__
