@@ -16,29 +16,8 @@ except ImportError:
 
 from f90nml import fpy
 
-
-def parse_indent(indent=None):
-    """Set the namelist variable indent to either the number of spaces (if an
-    integer) or to the string input itself (if whitespace)"""
-
-    if indent:
-        if isinstance(indent, str):
-            if indent.isspace():
-                s_indent = indent
-            else:
-                raise ValueError('String indents can only contain '
-                                 'whitespace.')
-        elif isinstance(indent, int):
-            s_indent = indent * ' '
-        else:
-            raise TypeError('indent must either be an integer or string')
-    else:
-        s_indent = 4 * ' '
-
-    return s_indent
-
-
-def var_strings(v_name, v_values, end_comma=False):
+# TODO: Integrate into NmlDict (without breaking f90nml.patch)
+def var_strings(v_name, v_values, end_comma=False, colwidth=72):
     """Convert namelist variable to list of fixed-width strings"""
 
     var_strs = []
@@ -69,16 +48,16 @@ def var_strings(v_name, v_values, end_comma=False):
         if not type(v_values) is list:
             v_values = [v_values]
 
-        # Split into 72-character lines
+        # Split output across multiple lines (if necessary)
         val_strs = []
 
         val_line = ''
         for v_val in v_values:
 
-            if len(val_line) < 72 - len(v_name):
+            if len(val_line) < colwidth - len(v_name):
                 val_line += fpy.f90repr(v_val) + ', '
 
-            if len(val_line) >= 72 - len(v_name):
+            if len(val_line) >= colwidth - len(v_name):
                 val_strs.append(val_line)
                 val_line = ''
 
@@ -103,8 +82,11 @@ class NmlDict(OrderedDict):
 
     def __init__(self, *args, **kwds):
         super(NmlDict, self).__init__(*args, **kwds)
-        self.indent = None
-        self.end_comma = False
+
+        # Formatting properties
+        self._columns = 72
+        self._indent = 4 * ' '
+        self._end_comma = False
 
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
@@ -118,18 +100,65 @@ class NmlDict(OrderedDict):
     def __setitem__(self, key, value):
         super(NmlDict, self).__setitem__(key.lower(), value)
 
-    def write(self, nml_path, force=False, indent=None, end_comma=None):
+    # Format configuration
+
+    @property
+    def colwidth(self):
+        return self._colwidth
+
+    @colwidth.setter
+    def colwidth(self, width):
+        if isinstance(width, int):
+            if width >= 0:
+                self._colwidth = colwidth
+            else:
+                raise ValueError('Column width must be nonnegative.')
+        else:
+            raise TypeError('Column width must be a nonnegative integer.')
+
+    @property
+    def indent(self):
+        return self._indent
+
+    @indent.setter
+    def indent(self, value):
+
+        # Explicit indent setting
+        if isinstance(value, str):
+            if value.isspace():
+                self._indent = value
+            else:
+                raise ValueError('String indentation can only contain '
+                                 'whitespace.')
+
+        # Set indent width
+        elif isinstance(value, int):
+            if value >= 0:
+                self._indent = value * ' '
+            else:
+                raise ValueError('Indentation spacing must be nonnegative.')
+
+        else:
+            raise TypeError('Indentation must be specified by string or space '
+                            'width.')
+
+    @property
+    def end_comma(self):
+        return self._end_comma
+
+    @end_comma.setter
+    def end_comma(self, value):
+        if not isinstance(value, bool):
+            raise TypeError('end_comma argument must be a logical type.')
+        self._end_comma = value
+
+    # File output
+
+    def write(self, nml_path, force=False):
         """Output dict to a Fortran 90 namelist file."""
 
         if not force and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
-
-        # Set formatting attributes
-        self.indent = parse_indent(indent)
-        if end_comma:
-            if not isinstance(end_comma, bool):
-                raise TypeError('end_comma argument must be a logical type.')
-            self.end_comma = end_comma
 
         with open(nml_path, 'w') as nml_file:
             for grp_name, grp_vars in self.items():

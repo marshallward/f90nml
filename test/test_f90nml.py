@@ -175,9 +175,9 @@ class Test(unittest.TestCase):
                 target_str = target.read()
                 self.assertEqual(source_str, target_str)
 
-    def assert_write(self, nml, target_fname, indent=None, end_comma=False):
+    def assert_write(self, nml, target_fname):
         tmp_fname = 'tmp.nml'
-        f90nml.write(nml, tmp_fname, indent=indent, end_comma=end_comma)
+        f90nml.write(nml, tmp_fname)
         try:
             self.assert_file_equal(tmp_fname, target_fname)
         finally:
@@ -340,18 +340,28 @@ class Test(unittest.TestCase):
 
     def test_indent(self):
         test_nml = f90nml.read('types.nml')
-        self.assert_write(test_nml, 'types_indent_2.nml', indent=2)
-        self.assert_write(test_nml, 'types_indent_tab.nml', indent='\t')
-        self.assertRaises(ValueError, f90nml.write,
-                          test_nml, 'tmp.nml', indent='xyz')
-        self.assertRaises(TypeError, f90nml.write,
-                          test_nml, 'tmp.nml', indent=[1, 2, 3])
+
+        test_nml.indent = 2
+        self.assert_write(test_nml, 'types_indent_2.nml')
+
+        test_nml.indent = '\t'
+        self.assert_write(test_nml, 'types_indent_tab.nml')
+
+        self.assertRaises(ValueError, setattr, test_nml, 'indent', -4)
+        self.assertRaises(ValueError, setattr, test_nml, 'indent', 'xyz')
+        self.assertRaises(TypeError, setattr, test_nml, 'indent', [1, 2, 3])
 
     def test_end_comma(self):
         test_nml = f90nml.read('types.nml')
-        self.assert_write(test_nml, 'types_end_comma.nml', end_comma=True)
-        self.assertRaises(TypeError, f90nml.write,
-                          test_nml, 'tmp.nml', end_comma='xyz')
+        test_nml.end_comma = True
+        self.assert_write(test_nml, 'types_end_comma.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'end_comma', 'xyz')
+
+    def test_colwidth(self):
+        test_nml = f90nml.read('types.nml')
+        self.assertRaises(ValueError, setattr, test_nml, 'colwidth', -1)
+        self.assertRaises(TypeError, setattr, test_nml, 'colwidth', 'xyz')
 
 
 if __name__ == '__main__':
