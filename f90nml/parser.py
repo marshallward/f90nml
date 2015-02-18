@@ -13,7 +13,7 @@ import shlex
 from string import whitespace
 
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr, f90repr
-from f90nml.namelist import NmlDict, var_strings
+from f90nml.namelist import NmlDict
 
 
 class Parser(object):
@@ -124,7 +124,7 @@ class Parser(object):
                     # Append any remaining patched variables
                     for v_name, v_val in grp_patch.items():
                         g_vars[v_name] = v_val
-                        v_strs = var_strings(v_name, v_val)
+                        v_strs = nmls.var_strings(v_name, v_val)
                         for v_str in v_strs:
                             self.pfile.write('    {0}\n'.format(v_str))
 

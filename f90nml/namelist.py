@@ -17,67 +17,6 @@ except ImportError:
 from f90nml import fpy
 
 
-# TODO: Integrate into NmlDict (without breaking f90nml.patch)
-def var_strings(v_name, v_values, end_comma=False, colwidth=72):
-    """Convert namelist variable to list of fixed-width strings"""
-
-    var_strs = []
-
-    # Parse derived type contents
-    if isinstance(v_values, dict):
-        for f_name, f_vals in v_values.items():
-            v_title = '%'.join([v_name, f_name])
-
-            v_strs = var_strings(v_title, f_vals, end_comma)
-            var_strs.extend(v_strs)
-
-    # Parse an array of derived types
-    elif (isinstance(v_values, list) and
-          any(isinstance(v, dict) for v in v_values) and
-          all((isinstance(v, dict) or v is None) for v in v_values)):
-        for idx, val in enumerate(v_values, start=1):
-
-            if val is None:
-                continue
-
-            v_title = v_name + '({0})'.format(idx)
-
-            v_strs = var_strings(v_title, val)
-            var_strs.extend(v_strs)
-
-    else:
-        if not type(v_values) is list:
-            v_values = [v_values]
-
-        # Split output across multiple lines (if necessary)
-        val_strs = []
-
-        val_line = ''
-        for v_val in v_values:
-
-            if len(val_line) < colwidth - len(v_name):
-                val_line += fpy.f90repr(v_val) + ', '
-
-            if len(val_line) >= colwidth - len(v_name):
-                val_strs.append(val_line)
-                val_line = ''
-
-        # Append any remaining values
-        if val_line:
-            if end_comma or (len(v_values) > 1 and v_values[-1] is None):
-                val_strs.append(val_line)
-            else:
-                val_strs.append(val_line[:-2])
-
-        # Complete the set of values
-        var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
-
-        for v_str in val_strs[1:]:
-            var_strs.append(' ' * (3 + len(v_name)) + v_str)
-
-    return var_strs
-
-
 class NmlDict(OrderedDict):
     """Case-insensitive Python dict"""
 
@@ -183,8 +122,68 @@ class NmlDict(OrderedDict):
         print('&{0}'.format(grp_name), file=nml_file)
 
         for v_name, v_val in grp_vars.items():
-            for v_str in var_strings(v_name, v_val, self.end_comma):
+            for v_str in self.var_strings(v_name, v_val):
                 nml_line = self.indent + '{0}'.format(v_str)
                 print(nml_line, file=nml_file)
 
         print('/', file=nml_file)
+
+    def var_strings(self, v_name, v_values):
+        """Convert namelist variable to list of fixed-width strings"""
+
+        var_strs = []
+
+        # Parse derived type contents
+        if isinstance(v_values, dict):
+            for f_name, f_vals in v_values.items():
+                v_title = '%'.join([v_name, f_name])
+
+                v_strs = self.var_strings(v_title, f_vals)
+                var_strs.extend(v_strs)
+
+        # Parse an array of derived types
+        elif (isinstance(v_values, list) and
+              any(isinstance(v, dict) for v in v_values) and
+              all((isinstance(v, dict) or v is None) for v in v_values)):
+            for idx, val in enumerate(v_values, start=1):
+
+                if val is None:
+                    continue
+
+                v_title = v_name + '({0})'.format(idx)
+
+                v_strs = self.var_strings(v_title, val)
+                var_strs.extend(v_strs)
+
+        else:
+            if not type(v_values) is list:
+                v_values = [v_values]
+
+            # Split output across multiple lines (if necessary)
+            val_strs = []
+
+            val_line = ''
+            for v_val in v_values:
+
+                if len(val_line) < self.colwidth - len(v_name):
+                    val_line += fpy.f90repr(v_val) + ', '
+
+                if len(val_line) >= self.colwidth - len(v_name):
+                    val_strs.append(val_line)
+                    val_line = ''
+
+            # Append any remaining values
+            if val_line:
+                if (self.end_comma or
+                        (len(v_values) > 1 and v_values[-1] is None)):
+                    val_strs.append(val_line)
+                else:
+                    val_strs.append(val_line[:-2])
+
+            # Complete the set of values
+            var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
+
+            for v_str in val_strs[1:]:
+                var_strs.append(' ' * (3 + len(v_name)) + v_str)
+
+        return var_strs
