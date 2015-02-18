@@ -16,6 +16,7 @@ except ImportError:
 
 from f90nml import fpy
 
+
 # TODO: Integrate into NmlDict (without breaking f90nml.patch)
 def var_strings(v_name, v_values, end_comma=False, colwidth=72):
     """Convert namelist variable to list of fixed-width strings"""
@@ -31,9 +32,9 @@ def var_strings(v_name, v_values, end_comma=False, colwidth=72):
             var_strs.extend(v_strs)
 
     # Parse an array of derived types
-    elif (isinstance(v_values, list)
-          and any(isinstance(v, dict) for v in v_values)
-          and all((isinstance(v, dict) or v is None) for v in v_values)):
+    elif (isinstance(v_values, list) and
+          any(isinstance(v, dict) for v in v_values) and
+          all((isinstance(v, dict) or v is None) for v in v_values)):
         for idx, val in enumerate(v_values, start=1):
 
             if val is None:

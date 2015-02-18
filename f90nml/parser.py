@@ -222,8 +222,8 @@ class Parser(object):
                     self.pfile.write(p_val)
 
             # Add variables until next variable trigger
-            while (self.token not in ('=', '(', '%')
-                   or (self.prior_token, self.token) == ('=', '(')):
+            while (self.token not in ('=', '(', '%') or
+                   (self.prior_token, self.token) == ('=', '(')):
 
                 # Check for repeated values
                 if self.token == '*':
@@ -235,9 +235,9 @@ class Parser(object):
 
                 # First check for implicit null values
                 if self.prior_token in ('=', '%', ','):
-                    if (self.token in (',', '/', '&', '$')
-                            and not (self.prior_token == ','
-                                     and self.token in ('/', '&', '$'))):
+                    if (self.token in (',', '/', '&', '$') and
+                        not (self.prior_token == ',' and
+                             self.token in ('/', '&', '$'))):
                         append_value(v_values, None, v_idx, n_vals)
 
                 elif self.prior_token == '*':
@@ -245,8 +245,8 @@ class Parser(object):
                     if self.token not in ('/', '&', '$'):
                         self.update_tokens(write_token)
 
-                    if (self.token == '=' or (self.token in ('/', '&', '$')
-                                              and self.prior_token == '*')):
+                    if (self.token == '=' or (self.token in ('/', '&', '$') and
+                                              self.prior_token == '*')):
                         next_value = None
                     else:
                         next_value = self.parse_value(write_token)
@@ -260,8 +260,8 @@ class Parser(object):
                     write_token = True
 
                     # Check for escaped strings
-                    if (v_values and (type(v_values[-1]) is str)
-                            and type(next_value) is str and not prior_ws_sep):
+                    if (v_values and (type(v_values[-1]) is str) and
+                            type(next_value) is str and not prior_ws_sep):
 
                         quote_char = self.prior_token[0]
                         v_values[-1] = quote_char.join([v_values[-1],

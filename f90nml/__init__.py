@@ -6,11 +6,9 @@
    :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
    :license: Apache License, Version 2.0, see LICENSE for details.
 """
-__version__ = '0.12-dev'
-
 from f90nml.parser import Parser
 
-# Legacy API functions
+__version__ = '0.12-dev'
 
 
 def read(nml_fname):
