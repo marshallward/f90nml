@@ -154,18 +154,11 @@ class NmlDict(OrderedDict):
 
     # File output
 
-    def write(self, nml_path, force=False, indent=None, end_comma=None):
+    def write(self, nml_path, force=False):
         """Output dict to a Fortran 90 namelist file."""
 
         if not force and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
-
-        # TODO: Remove these?
-        # Set formatting attributes
-        if indent:
-            self.indent = indent
-        if end_comma:
-            self.end_comma = end_comma
 
         with open(nml_path, 'w') as nml_file:
             for grp_name, grp_vars in self.items():
