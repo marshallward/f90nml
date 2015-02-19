@@ -135,7 +135,7 @@ class NmlDict(OrderedDict):
                 nml_file.truncate()
 
     def write_nmlgrp(self, grp_name, grp_vars, nml_file):
-        """Write namelist group to target file"""
+        """Write namelist group to target file."""
 
         print('&{0}'.format(grp_name), file=nml_file)
 
@@ -148,7 +148,7 @@ class NmlDict(OrderedDict):
         print(file=nml_file)
 
     def var_strings(self, v_name, v_values):
-        """Convert namelist variable to list of fixed-width strings"""
+        """Convert namelist variable to list of fixed-width strings."""
 
         var_strs = []
 
@@ -184,11 +184,13 @@ class NmlDict(OrderedDict):
             val_line = ''
             for v_val in v_values:
 
-                if len(val_line) < self.colwidth - len(v_name):
+                v_width = self.colwidth - len(self.indent + v_name + ' = ')
+
+                if len(val_line) < v_width:
                     val_line += fpy.f90repr(v_val) + ', '
 
-                if len(val_line) >= self.colwidth - len(v_name):
-                    val_strs.append(val_line)
+                if len(val_line) >= v_width:
+                    val_strs.append(val_line.rstrip())
                     val_line = ''
 
             # Append any remaining values
@@ -203,6 +205,6 @@ class NmlDict(OrderedDict):
             var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
 
             for v_str in val_strs[1:]:
-                var_strs.append(' ' * (3 + len(v_name)) + v_str)
+                var_strs.append(' ' * (len(v_name + ' = ')) + v_str)
 
         return var_strs
