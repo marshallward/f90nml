@@ -359,7 +359,10 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, test_nml, 'end_comma', 'xyz')
 
     def test_colwidth(self):
-        test_nml = f90nml.read('types.nml')
+        test_nml = f90nml.read('multiline.nml')
+        test_nml.colwidth = 40
+        self.assert_write(test_nml, 'multiline_colwidth.nml')
+
         self.assertRaises(ValueError, setattr, test_nml, 'colwidth', -1)
         self.assertRaises(TypeError, setattr, test_nml, 'colwidth', 'xyz')
 
