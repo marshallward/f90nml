@@ -104,7 +104,7 @@ class NmlDict(OrderedDict):
 
     # File output
 
-    def write(self, nml_path, force=False, =False):
+    def write(self, nml_path, force=False, header=False):
         """Output dict to a Fortran 90 namelist file."""
 
         if not force and os.path.isfile(nml_path):
