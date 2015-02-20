@@ -12,7 +12,7 @@ import itertools
 import shlex
 from string import whitespace
 
-from f90nml.fpy import pyfloat, pycomplex, pybool, pystr, f90repr
+from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import NmlDict
 
 
@@ -39,7 +39,11 @@ class Parser(object):
         nml_file = open(nml_fname, 'r')
 
         if nml_patch_in:
-            nml_patch = copy.deepcopy(nml_patch_in)
+
+            if not isinstance(nml_patch_in, dict):
+                raise ValueError('Input patch must be a dict or an NmlDict.')
+
+            nml_patch = copy.deepcopy(NmlDict(nml_patch_in))
 
             if not patch_fname:
                 patch_fname = nml_fname + '~'
@@ -49,7 +53,7 @@ class Parser(object):
                                  'same as the original filepath.')
             self.pfile = open(patch_fname, 'w')
         else:
-            nml_patch = {}
+            nml_patch = NmlDict()
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
@@ -161,7 +165,7 @@ class Parser(object):
         """Parse a variable and return its name and values."""
 
         if not patch_nml:
-            patch_nml = {}
+            patch_nml = NmlDict()
 
         v_name = self.prior_token
         v_values = []
@@ -214,7 +218,7 @@ class Parser(object):
             self.update_tokens()
 
             if v_name in patch_nml:
-                patch_values = f90repr(patch_nml.pop(v_name))
+                patch_values = patch_nml.f90repr(patch_nml.pop(v_name))
                 if not type(patch_values) is list:
                     patch_values = [patch_values]
 

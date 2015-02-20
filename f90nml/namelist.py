@@ -16,7 +16,6 @@ except ImportError:
     from ordereddict import OrderedDict
 
 import f90nml
-from f90nml import fpy
 
 
 class NmlDict(OrderedDict):
@@ -24,6 +23,10 @@ class NmlDict(OrderedDict):
 
     def __init__(self, *args, **kwds):
         super(NmlDict, self).__init__(*args, **kwds)
+
+        for key, val in self.items():
+            if isinstance(val, dict):
+                self[key] = NmlDict(val)
 
         # Formatting properties
         self._colwidth = 72
@@ -187,7 +190,7 @@ class NmlDict(OrderedDict):
                 v_width = self.colwidth - len(self.indent + v_name + ' = ')
 
                 if len(val_line) < v_width:
-                    val_line += fpy.f90repr(v_val) + ', '
+                    val_line += self.f90repr(v_val) + ', '
 
                 if len(val_line) >= v_width:
                     val_strs.append(val_line.rstrip())
@@ -208,3 +211,22 @@ class NmlDict(OrderedDict):
                 var_strs.append(' ' * (len(v_name + ' = ')) + v_str)
 
         return var_strs
+
+    def f90repr(self, value):
+        """Convert primitive Python types to equivalent Fortran strings."""
+
+        if type(value) is int:
+            return str(value)
+        elif type(value) is float:
+            return str(value)
+        elif type(value) is bool:
+            return '.{0}.'.format(str(value).lower())
+        elif type(value) is complex:
+            return '({0}, {1})'.format(value.real, value.imag)
+        elif type(value) is str:
+            return repr(value).replace("\\'", "''").replace('\\"', '""')
+        elif value is None:
+            return ''
+        else:
+            raise ValueError('Type {0} of {1} cannot be converted to a Fortran '
+                             'type.'.format(type(value), value))

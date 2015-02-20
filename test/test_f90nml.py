@@ -4,7 +4,8 @@ import unittest
 
 sys.path.insert(1, '../')
 import f90nml
-from f90nml.fpy import f90repr, pybool
+from f90nml.fpy import pybool
+from f90nml.namelist import NmlDict
 
 class Test(unittest.TestCase):
 
@@ -312,15 +313,16 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.read, 'index_zero_stride.nml')
 
     def test_f90repr(self):
-        self.assertEqual(f90repr(1), '1')
-        self.assertEqual(f90repr(1.), '1.0')
-        self.assertEqual(f90repr(1+2j), '(1.0, 2.0)')
-        self.assertEqual(f90repr(True), '.true.')
-        self.assertEqual(f90repr(False), '.false.')
-        self.assertEqual(f90repr('abc'), "'abc'")
+        nml = NmlDict()
+        self.assertEqual(nml.f90repr(1), '1')
+        self.assertEqual(nml.f90repr(1.), '1.0')
+        self.assertEqual(nml.f90repr(1+2j), '(1.0, 2.0)')
+        self.assertEqual(nml.f90repr(True), '.true.')
+        self.assertEqual(nml.f90repr(False), '.false.')
+        self.assertEqual(nml.f90repr('abc'), "'abc'")
 
         for ptype in ({}, [], set()):
-            self.assertRaises(ValueError, f90repr, ptype)
+            self.assertRaises(ValueError, nml.f90repr, ptype)
 
     def test_pybool(self):
         for fstr_true in ('true', 'ture', 't', '.t'):

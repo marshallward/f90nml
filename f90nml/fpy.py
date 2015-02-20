@@ -9,26 +9,6 @@
 """
 
 
-def f90repr(value):
-    """Convert primitive Python types to equivalent Fortran strings."""
-
-    if type(value) is int:
-        return str(value)
-    elif type(value) is float:
-        return str(value)
-    elif type(value) is bool:
-        return '.{0}.'.format(str(value).lower())
-    elif type(value) is complex:
-        return '({0}, {1})'.format(value.real, value.imag)
-    elif type(value) is str:
-        return repr(value).replace("\\'", "''").replace('\\"', '""')
-    elif value is None:
-        return ''
-    else:
-        raise ValueError('Type {0} of {1} cannot be converted to a Fortran '
-                         'type.'.format(type(value), value))
-
-
 def pyfloat(v_str):
     """Convert string repr of Fortran floating point to Python double."""
     # NOTE: There is no loss of information from SP to DP floats
