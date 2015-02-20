@@ -228,5 +228,5 @@ class NmlDict(OrderedDict):
         elif value is None:
             return ''
         else:
-            raise ValueError('Type {0} of {1} cannot be converted to a Fortran '
-                             'type.'.format(type(value), value))
+            raise ValueError('Type {0} of {1} cannot be converted to a '
+                             'Fortran type.'.format(type(value), value))
