@@ -41,6 +41,7 @@ class Parser(object):
         if nml_patch_in:
 
             if not isinstance(nml_patch_in, dict):
+                nml_file.close()
                 raise ValueError('Input patch must be a dict or an NmlDict.')
 
             nml_patch = copy.deepcopy(NmlDict(nml_patch_in))
