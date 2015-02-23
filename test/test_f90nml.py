@@ -357,6 +357,14 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, setattr, test_nml, 'indent', 'xyz')
         self.assertRaises(TypeError, setattr, test_nml, 'indent', [1, 2, 3])
 
+    def test_colwidth(self):
+        test_nml = f90nml.read('multiline.nml')
+        test_nml.colwidth = 40
+        self.assert_write(test_nml, 'multiline_colwidth.nml')
+
+        self.assertRaises(ValueError, setattr, test_nml, 'colwidth', -1)
+        self.assertRaises(TypeError, setattr, test_nml, 'colwidth', 'xyz')
+
     def test_end_comma(self):
         test_nml = f90nml.read('types.nml')
         test_nml.end_comma = True
@@ -371,13 +379,12 @@ class Test(unittest.TestCase):
 
         self.assertRaises(TypeError, setattr, test_nml, 'uppercase', 'xyz')
 
-    def test_colwidth(self):
-        test_nml = f90nml.read('multiline.nml')
-        test_nml.colwidth = 40
-        self.assert_write(test_nml, 'multiline_colwidth.nml')
+    def test_floatformat(self):
+        test_nml = f90nml.read('float.nml')
+        test_nml.floatformat = '.3f'
+        self.assert_write(test_nml, 'float_format.nml')
 
-        self.assertRaises(ValueError, setattr, test_nml, 'colwidth', -1)
-        self.assertRaises(TypeError, setattr, test_nml, 'colwidth', 'xyz')
+        self.assertRaises(TypeError, setattr, test_nml, 'floatformat', 123)
 
 
 if __name__ == '__main__':

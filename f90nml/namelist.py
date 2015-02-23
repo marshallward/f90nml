@@ -31,6 +31,7 @@ class NmlDict(OrderedDict):
         self._indent = 4 * ' '
         self._end_comma = False
         self._uppercase = False
+        self._floatformat = ''
 
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
@@ -115,6 +116,19 @@ class NmlDict(OrderedDict):
         if not isinstance(value, bool):
             raise TypeError('uppercase attribute must be a logical type.')
         self._uppercase = value
+
+    @property
+    def floatformat(self):
+        """Return the current floating point format code."""
+        return self._floatformat
+
+    @floatformat.setter
+    def floatformat(self, value):
+        """Validate and set the upper case flag."""
+        if not isinstance(value, str):
+            raise TypeError('Floating point format code must be a string.')
+        # TODO: Check valid format code
+        self._floatformat = value
 
     # File output
 
@@ -226,7 +240,7 @@ class NmlDict(OrderedDict):
         if type(value) is int:
             return str(value)
         elif type(value) is float:
-            return str(value)
+            return '{0:{fmt}}'.format(value, fmt=self.floatformat)
         elif type(value) is bool:
             return '.{0}.'.format(str(value).lower())
         elif type(value) is complex:
