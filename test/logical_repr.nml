@@ -1,0 +1,8 @@
+&logical_nml
+    a = T
+    b = F
+    c = T
+    d = F
+    e = T
+    f = F
+/

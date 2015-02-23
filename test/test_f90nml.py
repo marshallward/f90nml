@@ -4,7 +4,8 @@ import unittest
 
 sys.path.insert(1, '../')
 import f90nml
-from f90nml.fpy import f90repr, pybool
+from f90nml.fpy import pybool
+from f90nml.namelist import NmlDict
 
 class Test(unittest.TestCase):
 
@@ -279,6 +280,10 @@ class Test(unittest.TestCase):
         finally:
             os.remove('tmp.nml')
 
+    def test_patch_valueerror(self):
+        self.assertRaises(ValueError, f90nml.patch, 'types.nml', 'xyz',
+                          'tmp.nml')
+
     def test_default_patch(self):
         patch_nml = f90nml.read('types_patch.nml')
         f90nml.patch('types.nml', patch_nml)
@@ -312,15 +317,16 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.read, 'index_zero_stride.nml')
 
     def test_f90repr(self):
-        self.assertEqual(f90repr(1), '1')
-        self.assertEqual(f90repr(1.), '1.0')
-        self.assertEqual(f90repr(1+2j), '(1.0, 2.0)')
-        self.assertEqual(f90repr(True), '.true.')
-        self.assertEqual(f90repr(False), '.false.')
-        self.assertEqual(f90repr('abc'), "'abc'")
+        nml = NmlDict()
+        self.assertEqual(nml.f90repr(1), '1')
+        self.assertEqual(nml.f90repr(1.), '1.0')
+        self.assertEqual(nml.f90repr(1+2j), '(1.0, 2.0)')
+        self.assertEqual(nml.f90repr(True), '.true.')
+        self.assertEqual(nml.f90repr(False), '.false.')
+        self.assertEqual(nml.f90repr('abc'), "'abc'")
 
         for ptype in ({}, [], set()):
-            self.assertRaises(ValueError, f90repr, ptype)
+            self.assertRaises(ValueError, nml.f90repr, ptype)
 
     def test_pybool(self):
         for fstr_true in ('true', 'ture', 't', '.t'):
@@ -337,6 +343,60 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.patch, 'index_empty.nml', patch,
                                                     'tmp.nml')
         os.remove('tmp.nml')
+
+    def test_indent(self):
+        test_nml = f90nml.read('types.nml')
+
+        test_nml.indent = 2
+        self.assert_write(test_nml, 'types_indent_2.nml')
+
+        test_nml.indent = '\t'
+        self.assert_write(test_nml, 'types_indent_tab.nml')
+
+        self.assertRaises(ValueError, setattr, test_nml, 'indent', -4)
+        self.assertRaises(ValueError, setattr, test_nml, 'indent', 'xyz')
+        self.assertRaises(TypeError, setattr, test_nml, 'indent', [1, 2, 3])
+
+    def test_colwidth(self):
+        test_nml = f90nml.read('multiline.nml')
+        test_nml.colwidth = 40
+        self.assert_write(test_nml, 'multiline_colwidth.nml')
+
+        self.assertRaises(ValueError, setattr, test_nml, 'colwidth', -1)
+        self.assertRaises(TypeError, setattr, test_nml, 'colwidth', 'xyz')
+
+    def test_end_comma(self):
+        test_nml = f90nml.read('types.nml')
+        test_nml.end_comma = True
+        self.assert_write(test_nml, 'types_end_comma.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'end_comma', 'xyz')
+
+    def test_uppercase(self):
+        test_nml = f90nml.read('types.nml')
+        test_nml.uppercase = True
+        self.assert_write(test_nml, 'types_uppercase.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'uppercase', 'xyz')
+
+    def test_floatformat(self):
+        test_nml = f90nml.read('float.nml')
+        test_nml.floatformat = '.3f'
+        self.assert_write(test_nml, 'float_format.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'floatformat', 123)
+
+    def test_logical_repr(self):
+        test_nml = f90nml.read('logical.nml')
+        test_nml.truerepr = 'T'
+        test_nml.falserepr = 'F'
+        self.assert_write(test_nml, 'logical_repr.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'truerepr', 123)
+        self.assertRaises(TypeError, setattr, test_nml, 'falserepr', 123)
+        self.assertRaises(ValueError, setattr, test_nml, 'truerepr', 'xyz')
+        self.assertRaises(ValueError, setattr, test_nml, 'falserepr', 'xyz')
+
 
 
 if __name__ == '__main__':

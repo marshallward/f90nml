@@ -1,12 +1,15 @@
 &grp_repeat_nml
     x = 1
 /
+
 &grp_repeat_nml
     x = 2
 /
+
 &case_check_nml
     y = 1
 /
+
 &case_check_nml
     y = 2
 /

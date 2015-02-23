@@ -1,9 +1,10 @@
 &bcast_nml
     x = 2.0, 2.0
-    y = , ,
+    y = , , ,
     z = .true., .true., .true., .true.
 /
+
 &bcast_endnull_nml
     x = 2.0, 2.0
-    y = , ,
+    y = , , ,
 /

@@ -1,0 +1,7 @@
+&TYPES_NML
+    V_INTEGER = 1
+    V_FLOAT = 1.0
+    V_COMPLEX = (1.0, 2.0)
+    V_LOGICAL = .true.
+    V_STRING = 'Hello'
+/

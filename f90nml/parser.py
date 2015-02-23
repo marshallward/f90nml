@@ -12,8 +12,8 @@ import itertools
 import shlex
 from string import whitespace
 
-from f90nml.fpy import pyfloat, pycomplex, pybool, pystr, f90repr
-from f90nml.namelist import NmlDict, var_strings
+from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
+from f90nml.namelist import NmlDict
 
 
 class Parser(object):
@@ -39,7 +39,12 @@ class Parser(object):
         nml_file = open(nml_fname, 'r')
 
         if nml_patch_in:
-            nml_patch = copy.deepcopy(nml_patch_in)
+
+            if not isinstance(nml_patch_in, dict):
+                nml_file.close()
+                raise ValueError('Input patch must be a dict or an NmlDict.')
+
+            nml_patch = copy.deepcopy(NmlDict(nml_patch_in))
 
             if not patch_fname:
                 patch_fname = nml_fname + '~'
@@ -49,7 +54,7 @@ class Parser(object):
                                  'same as the original filepath.')
             self.pfile = open(patch_fname, 'w')
         else:
-            nml_patch = {}
+            nml_patch = NmlDict()
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
@@ -124,7 +129,7 @@ class Parser(object):
                     # Append any remaining patched variables
                     for v_name, v_val in grp_patch.items():
                         g_vars[v_name] = v_val
-                        v_strs = var_strings(v_name, v_val)
+                        v_strs = nmls.var_strings(v_name, v_val)
                         for v_str in v_strs:
                             self.pfile.write('    {0}\n'.format(v_str))
 
@@ -161,7 +166,7 @@ class Parser(object):
         """Parse a variable and return its name and values."""
 
         if not patch_nml:
-            patch_nml = {}
+            patch_nml = NmlDict()
 
         v_name = self.prior_token
         v_values = []
@@ -214,7 +219,7 @@ class Parser(object):
             self.update_tokens()
 
             if v_name in patch_nml:
-                patch_values = f90repr(patch_nml.pop(v_name))
+                patch_values = patch_nml.f90repr(patch_nml.pop(v_name))
                 if not type(patch_values) is list:
                     patch_values = [patch_values]
 
@@ -222,8 +227,8 @@ class Parser(object):
                     self.pfile.write(p_val)
 
             # Add variables until next variable trigger
-            while (self.token not in ('=', '(', '%')
-                   or (self.prior_token, self.token) == ('=', '(')):
+            while (self.token not in ('=', '(', '%') or
+                   (self.prior_token, self.token) == ('=', '(')):
 
                 # Check for repeated values
                 if self.token == '*':
@@ -235,9 +240,9 @@ class Parser(object):
 
                 # First check for implicit null values
                 if self.prior_token in ('=', '%', ','):
-                    if (self.token in (',', '/', '&', '$')
-                            and not (self.prior_token == ','
-                                     and self.token in ('/', '&', '$'))):
+                    if (self.token in (',', '/', '&', '$') and
+                            not (self.prior_token == ',' and
+                                 self.token in ('/', '&', '$'))):
                         append_value(v_values, None, v_idx, n_vals)
 
                 elif self.prior_token == '*':
@@ -245,8 +250,8 @@ class Parser(object):
                     if self.token not in ('/', '&', '$'):
                         self.update_tokens(write_token)
 
-                    if (self.token == '=' or (self.token in ('/', '&', '$')
-                                              and self.prior_token == '*')):
+                    if (self.token == '=' or (self.token in ('/', '&', '$') and
+                                              self.prior_token == '*')):
                         next_value = None
                     else:
                         next_value = self.parse_value(write_token)
@@ -260,8 +265,8 @@ class Parser(object):
                     write_token = True
 
                     # Check for escaped strings
-                    if (v_values and (type(v_values[-1]) is str)
-                            and type(next_value) is str and not prior_ws_sep):
+                    if (v_values and (type(v_values[-1]) is str) and
+                            type(next_value) is str and not prior_ws_sep):
 
                         quote_char = self.prior_token[0]
                         v_values[-1] = quote_char.join([v_values[-1],

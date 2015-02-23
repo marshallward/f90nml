@@ -3,19 +3,23 @@
     dt_stack%outer%inner = 2
     dt_vector%vec = 1, 2, 3
 /
+
 &dtype_multi_nml
     dt%x = 1
     dt%y = 2
     dt%z = 3
 /
+
 &dtype_nested_nml
     f%g%x = 1
     f%g%y = 2
     f%g%z = 3
 /
+
 &dtype_field_idx_nml
     f%x = 1, 2, 3
 /
+
 &dtype_vec_nml
     a%b(1)%c = 1
     a%b(1)%d = 2
@@ -24,12 +28,15 @@
     a%b(3)%c = 5
     a%b(3)%d = 6
 /
+
 &dtype_sparse_vec_nml
     a%b(2)%c = 2
 /
+
 &dtype_single_value_vec_nml
     a(1)%b = 1
 /
+
 &dtype_single_vec_merge_nml
     a%b(1)%c = 1
     a%b(1)%d = 2

@@ -6,11 +6,9 @@
    :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
    :license: Apache License, Version 2.0, see LICENSE for details.
 """
-__version__ = '0.11'
-
 from f90nml.parser import Parser
 
-# Legacy API functions
+__version__ = '0.12-dev'
 
 
 def read(nml_fname):
@@ -24,7 +22,7 @@ def write(nml, nml_fname, force=False):
     """Output namelist (nml) to a Fortran 90 namelist file (data.nml).
 
     >>> f90nml.write(nml, 'data.nml')"""
-    nml.write(nml_fname, force)
+    nml.write(nml_fname, force=force)
 
 
 def patch(nml_fname, nml_patch, out_fname=None):
