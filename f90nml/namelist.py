@@ -8,7 +8,6 @@
 """
 from __future__ import print_function
 
-from datetime import datetime
 import os
 try:
     from collections import OrderedDict
@@ -32,6 +31,8 @@ class NmlDict(OrderedDict):
         self._end_comma = False
         self._uppercase = False
         self._floatformat = ''
+        self._truerepr = '.true.'
+        self._falserepr = '.false.'
 
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
@@ -129,6 +130,42 @@ class NmlDict(OrderedDict):
             raise TypeError('Floating point format code must be a string.')
         # TODO: Check valid format code
         self._floatformat = value
+
+    @property
+    def truerepr(self):
+        """Return the namelist representation of logical true."""
+        return self._truerepr
+
+    @truerepr.setter
+    def truerepr(self, value):
+        """Validate and set the logical true representation."""
+        if isinstance(value, str):
+            if not (value.lower().startswith('t') or
+                    value.lower().startswith('.t')):
+                raise ValueError("Logical true representation must start with "
+                                 "'T' or '.T'.")
+            else:
+                self._truerepr = value
+        else:
+            raise TypeError('Logical true representation must be a string.')
+
+    @property
+    def falserepr(self):
+        """Return the namelist representation of logical false."""
+        return self._falserepr
+
+    @falserepr.setter
+    def falserepr(self, value):
+        """Validate and set the logical false representation."""
+        if isinstance(value, str):
+            if not (value.lower().startswith('f') or
+                    value.lower().startswith('.f')):
+                raise ValueError("Logical false representation must start "
+                                 "with 'F' or '.F'.")
+            else:
+                self._falserepr = value
+        else:
+            raise TypeError('Logical false representation must be a string.')
 
     # File output
 
@@ -242,7 +279,10 @@ class NmlDict(OrderedDict):
         elif type(value) is float:
             return '{0:{fmt}}'.format(value, fmt=self.floatformat)
         elif type(value) is bool:
-            return '.{0}.'.format(str(value).lower())
+            if value == True:
+                return self.truerepr
+            elif value == False:
+                return self.falserepr
         elif type(value) is complex:
             return '({0}, {1})'.format(value.real, value.imag)
         elif type(value) is str:

@@ -386,6 +386,18 @@ class Test(unittest.TestCase):
 
         self.assertRaises(TypeError, setattr, test_nml, 'floatformat', 123)
 
+    def test_logical_repr(self):
+        test_nml = f90nml.read('logical.nml')
+        test_nml.truerepr = 'T'
+        test_nml.falserepr = 'F'
+        self.assert_write(test_nml, 'logical_repr.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'truerepr', 123)
+        self.assertRaises(TypeError, setattr, test_nml, 'falserepr', 123)
+        self.assertRaises(ValueError, setattr, test_nml, 'truerepr', 'xyz')
+        self.assertRaises(ValueError, setattr, test_nml, 'falserepr', 'xyz')
+
+
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
