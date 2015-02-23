@@ -30,6 +30,7 @@ class NmlDict(OrderedDict):
         self._colwidth = 72
         self._indent = 4 * ' '
         self._end_comma = False
+        self._uppercase = False
 
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
@@ -100,8 +101,20 @@ class NmlDict(OrderedDict):
     def end_comma(self, value):
         """Validate and set the comma termination flag."""
         if not isinstance(value, bool):
-            raise TypeError('end_comma argument must be a logical type.')
+            raise TypeError('end_comma attribute must be a logical type.')
         self._end_comma = value
+
+    @property
+    def uppercase(self):
+        """Return True if names are displayed in upper case."""
+        return self._uppercase
+
+    @uppercase.setter
+    def uppercase(self, value):
+        """Validate and set the upper case flag."""
+        if not isinstance(value, bool):
+            raise TypeError('uppercase attribute must be a logical type.')
+        self._uppercase = value
 
     # File output
 
@@ -128,9 +141,13 @@ class NmlDict(OrderedDict):
     def write_nmlgrp(self, grp_name, grp_vars, nml_file):
         """Write namelist group to target file."""
 
+        if self.uppercase:
+            grp_name = grp_name.upper()
+
         print('&{0}'.format(grp_name), file=nml_file)
 
         for v_name, v_val in grp_vars.items():
+
             for v_str in self.var_strings(v_name, v_val):
                 nml_line = self.indent + '{0}'.format(v_str)
                 print(nml_line, file=nml_file)
@@ -140,6 +157,9 @@ class NmlDict(OrderedDict):
 
     def var_strings(self, v_name, v_values):
         """Convert namelist variable to list of fixed-width strings."""
+
+        if self.uppercase:
+            v_name = v_name.upper()
 
         var_strs = []
 

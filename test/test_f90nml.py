@@ -364,6 +364,13 @@ class Test(unittest.TestCase):
 
         self.assertRaises(TypeError, setattr, test_nml, 'end_comma', 'xyz')
 
+    def test_uppercase(self):
+        test_nml = f90nml.read('types.nml')
+        test_nml.uppercase = True
+        self.assert_write(test_nml, 'types_uppercase.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'uppercase', 'xyz')
+
     def test_colwidth(self):
         test_nml = f90nml.read('multiline.nml')
         test_nml.colwidth = 40
