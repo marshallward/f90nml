@@ -390,13 +390,20 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('logical.nml')
         test_nml.true_repr = 'T'
         test_nml.false_repr = 'F'
+
+        self.assertEqual(test_nml.true_repr, test_nml.logical_repr[0])
+        self.assertEqual(test_nml.false_repr, test_nml.logical_repr[1])
+        self.assert_write(test_nml, 'logical_repr.nml')
+
+        test_nml.logical_repr = 'T', 'F'
         self.assert_write(test_nml, 'logical_repr.nml')
 
         self.assertRaises(TypeError, setattr, test_nml, 'true_repr', 123)
         self.assertRaises(TypeError, setattr, test_nml, 'false_repr', 123)
         self.assertRaises(ValueError, setattr, test_nml, 'true_repr', 'xyz')
         self.assertRaises(ValueError, setattr, test_nml, 'false_repr', 'xyz')
-
+        self.assertRaises(TypeError, setattr, test_nml, 'logical_repr', 'xyz')
+        self.assertRaises(ValueError, setattr, test_nml, 'logical_repr', [])
 
 
 if __name__ == '__main__':
