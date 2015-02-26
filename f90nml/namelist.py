@@ -31,8 +31,9 @@ class NmlDict(OrderedDict):
         self._end_comma = False
         self._uppercase = False
         self._floatformat = ''
-        self._truerepr = '.true.'
-        self._falserepr = '.false.'
+        self._logical_repr = ['.true.', '.false.']
+        #self._truerepr = '.true.'
+        #self._falserepr = '.false.'
 
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
@@ -48,6 +49,7 @@ class NmlDict(OrderedDict):
 
     # Format configuration
 
+    # Column width
     @property
     def colwidth(self):
         """Return the target column width of the namelist file."""
@@ -64,6 +66,7 @@ class NmlDict(OrderedDict):
         else:
             raise TypeError('Column width must be a nonnegative integer.')
 
+    # Variable indent
     @property
     def indent(self):
         """Return the indentation string within namelist group entries."""
@@ -94,6 +97,7 @@ class NmlDict(OrderedDict):
             raise TypeError('Indentation must be specified by string or space '
                             'width.')
 
+    # Terminal comma
     @property
     def end_comma(self):
         """Return True if entries are terminated with commas."""
@@ -106,6 +110,7 @@ class NmlDict(OrderedDict):
             raise TypeError('end_comma attribute must be a logical type.')
         self._end_comma = value
 
+    # Uppercase
     @property
     def uppercase(self):
         """Return True if names are displayed in upper case."""
@@ -118,6 +123,7 @@ class NmlDict(OrderedDict):
             raise TypeError('uppercase attribute must be a logical type.')
         self._uppercase = value
 
+    # Float format
     @property
     def floatformat(self):
         """Return the current floating point format code."""
@@ -126,18 +132,37 @@ class NmlDict(OrderedDict):
     @floatformat.setter
     def floatformat(self, value):
         """Validate and set the upper case flag."""
-        if not isinstance(value, str):
+        if isinstance(value, str):
+            # TODO: Check valid format code
+            self._floatformat = value
+        else:
             raise TypeError('Floating point format code must be a string.')
-        # TODO: Check valid format code
-        self._floatformat = value
+
+    # Logical representation
+    @property
+    def logical_repr(self):
+        """Return the namelist representations of logical values."""
+        return self._logical_repr
+
+    @logical_repr.setter
+    def logical_repr(self, value):
+
+        if not (isinstance(value, list) or isinstance(value, tuple)):
+            raise TypeError("Logical representation must be a tuple with "
+                            "a valid true and false value.")
+        if not len(value) == 2:
+            raise ValueError("List must contain two values.")
+
+        self.true_repr = value[0]
+        self.false_repr = value[1]
 
     @property
-    def truerepr(self):
+    def true_repr(self):
         """Return the namelist representation of logical true."""
-        return self._truerepr
+        return self._logical_repr[0]
 
-    @truerepr.setter
-    def truerepr(self, value):
+    @true_repr.setter
+    def true_repr(self, value):
         """Validate and set the logical true representation."""
         if isinstance(value, str):
             if not (value.lower().startswith('t') or
@@ -145,17 +170,17 @@ class NmlDict(OrderedDict):
                 raise ValueError("Logical true representation must start with "
                                  "'T' or '.T'.")
             else:
-                self._truerepr = value
+                self._logical_repr[0] = value
         else:
             raise TypeError('Logical true representation must be a string.')
 
     @property
-    def falserepr(self):
+    def false_repr(self):
         """Return the namelist representation of logical false."""
-        return self._falserepr
+        return self._logical_repr[1]
 
-    @falserepr.setter
-    def falserepr(self, value):
+    @false_repr.setter
+    def false_repr(self, value):
         """Validate and set the logical false representation."""
         if isinstance(value, str):
             if not (value.lower().startswith('f') or
@@ -163,7 +188,7 @@ class NmlDict(OrderedDict):
                 raise ValueError("Logical false representation must start "
                                  "with 'F' or '.F'.")
             else:
-                self._falserepr = value
+                self._logical_repr[1] = value
         else:
             raise TypeError('Logical false representation must be a string.')
 
@@ -280,9 +305,9 @@ class NmlDict(OrderedDict):
             return '{0:{fmt}}'.format(value, fmt=self.floatformat)
         elif type(value) is bool:
             if value == True:
-                return self.truerepr
+                return self.true_repr
             elif value == False:
-                return self.falserepr
+                return self.false_repr
         elif type(value) is complex:
             return '({0}, {1})'.format(value.real, value.imag)
         elif type(value) is str:
