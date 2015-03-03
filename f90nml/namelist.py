@@ -32,8 +32,6 @@ class NmlDict(OrderedDict):
         self._uppercase = False
         self._floatformat = ''
         self._logical_repr = ['.true.', '.false.']
-        #self._truerepr = '.true.'
-        #self._falserepr = '.false.'
 
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
@@ -304,9 +302,9 @@ class NmlDict(OrderedDict):
         elif type(value) is float:
             return '{0:{fmt}}'.format(value, fmt=self.floatformat)
         elif type(value) is bool:
-            if value == True:
+            if value is True:
                 return self.true_repr
-            elif value == False:
+            elif value is False:
                 return self.false_repr
         elif type(value) is complex:
             return '({0}, {1})'.format(value.real, value.imag)
