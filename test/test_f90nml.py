@@ -391,11 +391,11 @@ class Test(unittest.TestCase):
         test_nml.true_repr = 'T'
         test_nml.false_repr = 'F'
 
-        self.assertEqual(test_nml.true_repr, test_nml.logical_repr[0])
-        self.assertEqual(test_nml.false_repr, test_nml.logical_repr[1])
+        self.assertEqual(test_nml.false_repr, test_nml.logical_repr[0])
+        self.assertEqual(test_nml.true_repr, test_nml.logical_repr[1])
         self.assert_write(test_nml, 'logical_repr.nml')
 
-        test_nml.logical_repr = 'T', 'F'
+        test_nml.logical_repr = 'F', 'T'
         self.assert_write(test_nml, 'logical_repr.nml')
 
         self.assertRaises(TypeError, setattr, test_nml, 'true_repr', 123)

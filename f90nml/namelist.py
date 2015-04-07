@@ -31,7 +31,7 @@ class NmlDict(OrderedDict):
         self._end_comma = False
         self._uppercase = False
         self._floatformat = ''
-        self._logical_repr = ['.true.', '.false.']
+        self._logical_repr = ['.false.', '.true.']
 
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
@@ -144,6 +144,7 @@ class NmlDict(OrderedDict):
 
     @logical_repr.setter
     def logical_repr(self, value):
+        """Set the namelist representations of logical values."""
 
         if not (isinstance(value, list) or isinstance(value, tuple)):
             raise TypeError("Logical representation must be a tuple with "
@@ -151,13 +152,13 @@ class NmlDict(OrderedDict):
         if not len(value) == 2:
             raise ValueError("List must contain two values.")
 
-        self.true_repr = value[0]
-        self.false_repr = value[1]
+        self.false_repr = value[0]
+        self.true_repr = value[1]
 
     @property
     def true_repr(self):
         """Return the namelist representation of logical true."""
-        return self._logical_repr[0]
+        return self._logical_repr[1]
 
     @true_repr.setter
     def true_repr(self, value):
@@ -168,14 +169,14 @@ class NmlDict(OrderedDict):
                 raise ValueError("Logical true representation must start with "
                                  "'T' or '.T'.")
             else:
-                self._logical_repr[0] = value
+                self._logical_repr[1] = value
         else:
             raise TypeError('Logical true representation must be a string.')
 
     @property
     def false_repr(self):
         """Return the namelist representation of logical false."""
-        return self._logical_repr[1]
+        return self._logical_repr[0]
 
     @false_repr.setter
     def false_repr(self, value):
@@ -186,7 +187,7 @@ class NmlDict(OrderedDict):
                 raise ValueError("Logical false representation must start "
                                  "with 'F' or '.F'.")
             else:
-                self._logical_repr[1] = value
+                self._logical_repr[0] = value
         else:
             raise TypeError('Logical false representation must be a string.')
 
@@ -201,7 +202,7 @@ class NmlDict(OrderedDict):
         with open(nml_path, 'w') as nml_file:
             for grp_name, grp_vars in self.items():
                 # Check for repeated namelist records (saved as lists)
-                if type(grp_vars) is list:
+                if isinstance(grp_vars, list):
                     for g_vars in grp_vars:
                         self.write_nmlgrp(grp_name, g_vars, nml_file)
                 else:
@@ -260,7 +261,7 @@ class NmlDict(OrderedDict):
                 var_strs.extend(v_strs)
 
         else:
-            if not type(v_values) is list:
+            if not isinstance(v_values, list):
                 v_values = [v_values]
 
             # Split output across multiple lines (if necessary)
