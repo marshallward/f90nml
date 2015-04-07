@@ -114,7 +114,7 @@ class Parser(object):
                         v_prior_values = g_vars[v_name]
                         v_values = merge_values(v_prior_values, v_values)
 
-                    if v_name in g_vars and type(g_vars[v_name]) is NmlDict:
+                    if v_name in g_vars and isinstance(g_vars[v_name], dict):
                         g_vars[v_name].update(v_values)
                     else:
                         g_vars[v_name] = v_values
@@ -138,7 +138,7 @@ class Parser(object):
                         g_update = nmls[g_name]
 
                         # Update to list of groups
-                        if not type(g_update) is list:
+                        if not isinstance(g_update, list):
                             g_update = [g_update]
 
                         g_update.append(g_vars)
@@ -220,7 +220,7 @@ class Parser(object):
 
             if v_name in patch_nml:
                 patch_values = patch_nml.f90repr(patch_nml.pop(v_name))
-                if not type(patch_values) is list:
+                if not isinstance(patch_values, list):
                     patch_values = [patch_values]
 
                 for p_val in patch_values:
@@ -233,7 +233,7 @@ class Parser(object):
                 # Check for repeated values
                 if self.token == '*':
                     n_vals = self.parse_value(write_token)
-                    assert type(n_vals) is int
+                    assert isinstance(n_vals, int)
                     self.update_tokens(write_token)
                 elif not n_vals:
                     n_vals = 1
@@ -265,8 +265,8 @@ class Parser(object):
                     write_token = True
 
                     # Check for escaped strings
-                    if (v_values and (type(v_values[-1]) is str) and
-                            type(next_value) is str and not prior_ws_sep):
+                    if (v_values and isinstance(v_values[-1], str) and
+                            isinstance(next_value, str) and not prior_ws_sep):
 
                         quote_char = self.prior_token[0]
                         v_values[-1] = quote_char.join([v_values[-1],

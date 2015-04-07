@@ -18,7 +18,7 @@ def pyfloat(v_str):
 
 def pycomplex(v_str):
     """Convert string repr of Fortran complex to Python complex."""
-    assert type(v_str) == str
+    assert isinstance(v_str, str)
 
     if v_str[0] == '(' and v_str[-1] == ')' and len(v_str.split(',')) == 2:
         v_re, v_im = v_str[1:-1].split(',', 1)
@@ -32,7 +32,7 @@ def pycomplex(v_str):
 
 def pybool(v_str):
     """Convert string repr of Fortran logical to Python logical."""
-    assert type(v_str) == str
+    assert isinstance(v_str, str)
 
     try:
         if v_str.startswith('.'):
@@ -52,7 +52,7 @@ def pybool(v_str):
 
 def pystr(v_str):
     """Convert string repr of Fortran string to Python string."""
-    assert type(v_str) == str
+    assert isinstance(v_str, str)
 
     if v_str[0] in ("'", '"') and v_str[0] == v_str[-1]:
         return v_str[1:-1]
