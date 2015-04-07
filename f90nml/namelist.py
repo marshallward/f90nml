@@ -31,7 +31,23 @@ class NmlDict(OrderedDict):
         self._end_comma = False
         self._uppercase = False
         self._floatformat = ''
-        self._logical_repr = ['.false.', '.true.']
+        self._logical_repr = {False: '.false.', True: '.true.'}
+
+        # Representatation functions
+        self.f90str = {
+            bool:
+                lambda x: self.logical_repr[x],
+            int:
+                lambda x: str(x),
+            float:
+                lambda x: '{0:{fmt}}'.format(x, fmt=self.floatformat),
+            complex:
+                lambda x: '({0}, {1})'.format(x.real, x.imag),
+            str:
+                lambda x: repr(x).replace("\\'", "''").replace('\\"', '""'),
+            type(None):
+                lambda x: ''
+        }
 
     def __contains__(self, key):
         return super(NmlDict, self).__contains__(key.lower())
@@ -137,6 +153,7 @@ class NmlDict(OrderedDict):
             raise TypeError('Floating point format code must be a string.')
 
     # Logical representation
+    # NOTE: This presumes that bools and ints are identical as dict keys
     @property
     def logical_repr(self):
         """Return the namelist representations of logical values."""
@@ -146,7 +163,7 @@ class NmlDict(OrderedDict):
     def logical_repr(self, value):
         """Set the namelist representations of logical values."""
 
-        if not (isinstance(value, list) or isinstance(value, tuple)):
+        if not any(isinstance(value, t) for t in (list, tuple)):
             raise TypeError("Logical representation must be a tuple with "
                             "a valid true and false value.")
         if not len(value) == 2:
@@ -298,21 +315,8 @@ class NmlDict(OrderedDict):
     def f90repr(self, value):
         """Convert primitive Python types to equivalent Fortran strings."""
 
-        if type(value) is int:
-            return str(value)
-        elif type(value) is float:
-            return '{0:{fmt}}'.format(value, fmt=self.floatformat)
-        elif type(value) is bool:
-            if value is True:
-                return self.true_repr
-            elif value is False:
-                return self.false_repr
-        elif type(value) is complex:
-            return '({0}, {1})'.format(value.real, value.imag)
-        elif type(value) is str:
-            return repr(value).replace("\\'", "''").replace('\\"', '""')
-        elif value is None:
-            return ''
-        else:
+        try:
+            return self.f90str[type(value)](value)
+        except KeyError:
             raise ValueError('Type {0} of {1} cannot be converted to a '
                              'Fortran type.'.format(type(value), value))
