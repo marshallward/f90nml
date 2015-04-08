@@ -8,7 +8,7 @@
 """
 from f90nml.parser import Parser
 
-__version__ = '0.12-dev'
+__version__ = '0.12'
 
 
 def read(nml_fname):
