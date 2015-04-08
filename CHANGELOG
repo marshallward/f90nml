@@ -1,0 +1,8 @@
+v0.12:
+    - Namelist output formatting (column width, indent, etc.)
+    - Improved user-defined type output support
+    - Arch (AUR) distribution configuration
+    - Setuptools is now the install default
+
+v0.11:
+    - TODO

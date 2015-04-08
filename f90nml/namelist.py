@@ -21,6 +21,7 @@ class NmlDict(OrderedDict):
     def __init__(self, *args, **kwds):
         super(NmlDict, self).__init__(*args, **kwds)
 
+        # Convert any internal dicts to NmlDicts
         for key, val in self.items():
             if isinstance(val, dict):
                 self[key] = NmlDict(val)
@@ -147,7 +148,9 @@ class NmlDict(OrderedDict):
     def floatformat(self, value):
         """Validate and set the upper case flag."""
         if isinstance(value, str):
-            # TODO: Check valid format code
+            # Duck-test the format string; raise ValueError on fail
+            '{0:{1}}'.format(1.23, value)
+
             self._floatformat = value
         else:
             raise TypeError('Floating point format code must be a string.')
