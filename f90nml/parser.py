@@ -177,12 +177,17 @@ class Parser(object):
 
         if self.token == '(':
 
-            v_indices = self.parse_index()
+            v_indices = self.parse_indexes()
+            print v_indices
 
             # TODO: Multidimensional support
-            i_s = 1 if not v_indices[0][0] else v_indices[0][0]
-            i_e = v_indices[0][1]
-            i_r = 1 if not v_indices[0][2] else v_indices[0][2]
+            i_s = []
+            i_e = []
+            i_r = []
+            for v_i in v_indices:
+                i_s.append(1 if not v_i[0] else v_i[0])
+                i_e.append(v_i[1])
+                i_r.append(1 if not v_i[2] else v_i[2])
 
             if i_e:
                 v_idx = iter(range(i_s, i_e, i_r))
@@ -289,11 +294,19 @@ class Parser(object):
 
         return v_name, v_values
 
-    def parse_index(self):
-        """Parse Fortran vector indices into a tuple of Python indices."""
+    def parse_indexes(self):
 
         v_name = self.prior_token
         v_indices = []
+
+        while (self.token in (",","(")):
+            v_indices.append(self.parse_index(v_name))
+
+        return v_indices
+
+    def parse_index(self,v_name):
+        """Parse Fortran vector indices into a tuple of Python indices."""
+
         i_start = i_end = i_stride = None
 
         # Start index
@@ -347,10 +360,7 @@ class Parser(object):
                              'correctly.'.format(v_name))
 
         idx_triplet = (i_start, i_end, i_stride)
-        v_indices.append((idx_triplet))
-        self.update_tokens()
-
-        return v_indices
+        return idx_triplet
 
     def parse_value(self, write_token=True):
         """Convert string repr of Fortran type to equivalent Python type."""
