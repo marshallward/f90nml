@@ -1,7 +1,8 @@
 *.pyc
-a.out
-blah.f90
-blah.nml
-test.nml
-test.py
-
+/__pycache__
+/build
+/dist
+/*.egg-info
+MANIFEST
+/docs/build
+.coverage

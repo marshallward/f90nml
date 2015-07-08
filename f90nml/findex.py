@@ -1,0 +1,34 @@
+"""f90nml.findex
+   =============
+
+   Column-major Fortran iterator of indices across multipe dimensions.
+
+   :copyright: Copyright 2015 Marshall Ward, see AUTHORS for details.
+   :license: Apache License, Version 2.0, see LICENSE for details.
+"""
+
+
+class FIndex(object):
+    def __init__(self, bounds):
+        self.start = [1 if not b[0] else b[0] for b in bounds]
+        self.end = [b[1] for b in bounds]
+        self.step = [1 if not b[2] else b[2] for b in bounds]
+
+        self.current = self.start[:]
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.end[-1] and self.current[-1] > self.end[-1]:
+            raise StopIteration
+
+        state = self.current[:]
+        for rank, idx in enumerate(self.current):
+            if idx <= self.end[rank]:
+                self.current[rank] = idx + self.step[rank]
+                break
+            else:
+                self.current[rank] = self.start[rank]
+
+        return state

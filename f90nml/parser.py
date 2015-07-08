@@ -14,7 +14,7 @@ from string import whitespace
 
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import NmlDict
-from f90nml.multid import multi_index,multi_value
+#from f90nml.multid import multi_index,multi_value
 
 
 class Parser(object):
@@ -170,6 +170,7 @@ class Parser(object):
             patch_nml = NmlDict()
 
         v_name = self.prior_token
+        v_values = []
 
         # Patch state
         patch_values = None
@@ -177,19 +178,35 @@ class Parser(object):
 
         if self.token == '(':
 
-            v_indices = self.parse_indexes()
+            v_indices = self.parse_indices()
+            self.update_tokens()
+
+            v_idx = FIndex(v_indices)
 
             # TODO: Multidimensional support
-            i_s = []
-            i_e = []
-            i_r = []
-            v_idx = []
-            for v_i in v_indices:
-                i_s.append(1 if not v_i[0] else v_i[0])
-                i_e.append(v_i[1])
-                i_r.append(1 if not v_i[2] else v_i[2])
-                v_idx.append(iter(range(i_s[-1], i_e[-1], i_r[-1])))
-            v_values = multi_value(i_e)
+
+            # --- original method ---
+            #i_s = 1 if not v_indices[0][0] else v_indices[0][0]
+            #i_e = v_indices[0][1]
+            #i_r = 1 if not v_indices[0][2] else v_indices[0][2]
+
+            #if i_e:
+            #    v_idx = iter(range(i_s, i_e, i_r))
+            #else:
+            #    v_idx = (i_s + i_r * k for k in itertools.count())
+
+            # ---patch---
+            #i_s = []
+            #i_e = []
+            #i_r = []
+            #v_idx = []
+            #for v_i in v_indices:
+            #    i_s.append(1 if not v_i[0] else v_i[0])
+            #    i_e.append(v_i[1])
+            #    i_r.append(1 if not v_i[2] else v_i[2])
+            #    v_idx.append(iter(range(i_s[-1], i_e[-1], i_r[-1])))
+            #v_values = multi_value(i_e)
+            # ---end patch---
 
             # if i_e:
             #     v_idx = iter(range(i_s, i_e, i_r))
@@ -198,11 +215,8 @@ class Parser(object):
         else:
             v_idx = None
 
-        if v_idx: 
-            v_idx = multi_index(v_idx)
-
-        # while(True):
-        #     print next(v_idx)
+        #if v_idx:
+        #    v_idx = multi_index(v_idx)
 
         if self.token == '%':
 
@@ -224,7 +238,8 @@ class Parser(object):
 
         else:
             # Construct the variable array
-            self.update_tokens()
+
+            #self.update_tokens()
             assert self.token == '='
             n_vals = None
             prior_ws_sep = ws_sep = False
@@ -278,7 +293,8 @@ class Parser(object):
                     write_token = True
 
                     # Check for escaped strings
-                    if (v_values and v_values.have_string() and
+                    #if (v_values and v_values.have_string() and
+                    if (v_values and isinstance(v_values[-1], str) and
                             isinstance(next_value, str) and not prior_ws_sep):
 
                         quote_char = self.prior_token[0]
@@ -302,17 +318,17 @@ class Parser(object):
 
         return v_name, v_values
 
-    def parse_indexes(self):
+    def parse_indices(self):
 
         v_name = self.prior_token
         v_indices = []
 
-        while (self.token in (",","(")):
+        while (self.token in (',', '(')):
             v_indices.append(self.parse_index(v_name))
 
         return v_indices
 
-    def parse_index(self,v_name):
+    def parse_index(self, v_name):
         """Parse Fortran vector indices into a tuple of Python indices."""
 
         i_start = i_end = i_stride = None
