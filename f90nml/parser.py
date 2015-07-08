@@ -14,6 +14,7 @@ from string import whitespace
 
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import NmlDict
+from f90nml.findex import FIndex
 #from f90nml.multid import multi_index,multi_value
 
 
@@ -178,12 +179,10 @@ class Parser(object):
 
         if self.token == '(':
 
-            v_indices = self.parse_indices()
+            v_idx_bounds = self.parse_indices()
+            v_idx = FIndex(v_idx_bounds)
+
             self.update_tokens()
-
-            v_idx = FIndex(v_indices)
-
-            # TODO: Multidimensional support
 
             # --- original method ---
             #i_s = 1 if not v_indices[0][0] else v_indices[0][0]
@@ -453,6 +452,9 @@ def append_value(v_values, next_value, v_idx=None, n_vals=1):
     for _ in range(n_vals):
         if v_idx:
             v_i = next(v_idx)
+
+            # TODO: Multidimensional support
+            v_i = v_i[0]
 
             try:
                 # Default Fortran indexing starts at 1
