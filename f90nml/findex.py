@@ -21,6 +21,9 @@ class FIndex(object):
     def __iter__(self):
         return self
 
+    def next(self):
+        return self.__next__()
+
     def __next__(self):
         if self.end[-1] and self.current[-1] > self.end[-1]:
             raise StopIteration
