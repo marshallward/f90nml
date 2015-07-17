@@ -8,7 +8,6 @@
    :license: Apache License, Version 2.0, see LICENSE for details.
 """
 import copy
-import itertools
 import shlex
 from string import whitespace
 
@@ -183,39 +182,8 @@ class Parser(object):
             v_idx = FIndex(v_idx_bounds)
 
             self.update_tokens()
-
-            # --- original method ---
-            #i_s = 1 if not v_indices[0][0] else v_indices[0][0]
-            #i_e = v_indices[0][1]
-            #i_r = 1 if not v_indices[0][2] else v_indices[0][2]
-
-            #if i_e:
-            #    v_idx = iter(range(i_s, i_e, i_r))
-            #else:
-            #    v_idx = (i_s + i_r * k for k in itertools.count())
-
-            # ---patch---
-            #i_s = []
-            #i_e = []
-            #i_r = []
-            #v_idx = []
-            #for v_i in v_indices:
-            #    i_s.append(1 if not v_i[0] else v_i[0])
-            #    i_e.append(v_i[1])
-            #    i_r.append(1 if not v_i[2] else v_i[2])
-            #    v_idx.append(iter(range(i_s[-1], i_e[-1], i_r[-1])))
-            #v_values = multi_value(i_e)
-            # ---end patch---
-
-            # if i_e:
-            #     v_idx = iter(range(i_s, i_e, i_r))
-            # else:
-            #     v_idx = (i_s + i_r * k for k in itertools.count())
         else:
             v_idx = None
-
-        #if v_idx:
-        #    v_idx = multi_index(v_idx)
 
         if self.token == '%':
 
@@ -238,13 +206,13 @@ class Parser(object):
         else:
             # Construct the variable array
 
-            #self.update_tokens()
             assert self.token == '='
             n_vals = None
             prior_ws_sep = ws_sep = False
 
             self.update_tokens()
 
+            # Check if value is in the namelist patch
             if v_name in patch_nml:
                 patch_values = patch_nml.f90repr(patch_nml.pop(v_name))
                 if not isinstance(patch_values, list):
@@ -453,17 +421,41 @@ def append_value(v_values, next_value, v_idx=None, n_vals=1):
         if v_idx:
             v_i = next(v_idx)
 
-            # TODO: Multidimensional support
-            v_i = v_i[0]
+            if len(v_i) == 1:
+                v_i = v_i[0]
 
-            try:
-                # Default Fortran indexing starts at 1
-                v_values[v_i - 1] = next_value
-            except IndexError:
-                # Expand list to accommodate out-of-range indices
-                size = len(v_values)
-                v_values.extend(None for i in range(size, v_i))
-                v_values[v_i - 1] = next_value
+                try:
+                    # Default Fortran indexing starts at 1
+                    v_values[v_i - 1] = next_value
+                except IndexError:
+                    # Expand list to accommodate out-of-range indices
+                    size = len(v_values)
+                    v_values.extend(None for i in range(size, v_i))
+                    v_values[v_i - 1] = next_value
+            else:
+                # Multidimensional arrays
+                # TODO: support both row and column ordering in Python
+                # TODO: Integrate these cases
+
+                v_tmp = v_values
+                #for idx in v_i[:0:-1]:
+                for idx in v_i[:-1:]:
+                    try:
+                        v_tmp = v_tmp[idx - 1]
+                    except IndexError:
+                        size = len(v_tmp)
+                        v_tmp.extend([] for i in range(size, idx))
+                        v_tmp = v_tmp[idx - 1]
+
+                try:
+                    #v_tmp[v_i[0] - 1] = next_value
+                    v_tmp[v_i[-1] - 1] = next_value
+                except IndexError:
+                    size = len(v_tmp)
+                    #v_tmp.extend(None for i in range(size, v_i[0]))
+                    v_tmp.extend(None for i in range(size, v_i[-1]))
+                    #v_tmp[v_i[0] - 1] = next_value
+                    v_tmp[v_i[-1] - 1] = next_value
         else:
             v_values.append(next_value)
 
@@ -492,6 +484,8 @@ def merge_lists(src, new):
     for i, val in enumerate(new):
         if isinstance(val, dict) and isinstance(src[i], dict):
             new[i] = merge_dicts(src[i], val)
+        elif isinstance(val, list) and isinstance(src[i], list):
+            new[i] = merge_lists(src[i], val)
         elif val is not None:
             new[i] = val
         else:
