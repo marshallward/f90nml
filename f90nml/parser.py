@@ -421,41 +421,24 @@ def append_value(v_values, next_value, v_idx=None, n_vals=1):
         if v_idx:
             v_i = next(v_idx)
 
-            if len(v_i) == 1:
-                v_i = v_i[0]
+            # Multidimensional arrays
+            # TODO: support both row and column ordering in Python
 
+            v_tmp = v_values
+            for idx in v_i[:-1]:
                 try:
-                    # Default Fortran indexing starts at 1
-                    v_values[v_i - 1] = next_value
-                except IndexError:
-                    # Expand list to accommodate out-of-range indices
-                    size = len(v_values)
-                    v_values.extend(None for i in range(size, v_i))
-                    v_values[v_i - 1] = next_value
-            else:
-                # Multidimensional arrays
-                # TODO: support both row and column ordering in Python
-                # TODO: Integrate these cases
-
-                v_tmp = v_values
-                #for idx in v_i[:0:-1]:
-                for idx in v_i[:-1:]:
-                    try:
-                        v_tmp = v_tmp[idx - 1]
-                    except IndexError:
-                        size = len(v_tmp)
-                        v_tmp.extend([] for i in range(size, idx))
-                        v_tmp = v_tmp[idx - 1]
-
-                try:
-                    #v_tmp[v_i[0] - 1] = next_value
-                    v_tmp[v_i[-1] - 1] = next_value
+                    v_tmp = v_tmp[idx - 1]
                 except IndexError:
                     size = len(v_tmp)
-                    #v_tmp.extend(None for i in range(size, v_i[0]))
-                    v_tmp.extend(None for i in range(size, v_i[-1]))
-                    #v_tmp[v_i[0] - 1] = next_value
-                    v_tmp[v_i[-1] - 1] = next_value
+                    v_tmp.extend([] for i in range(size, idx))
+                    v_tmp = v_tmp[idx - 1]
+
+            try:
+                v_tmp[v_i[-1] - 1] = next_value
+            except IndexError:
+                size = len(v_tmp)
+                v_tmp.extend(None for i in range(size, v_i[-1]))
+                v_tmp[v_i[-1] - 1] = next_value
         else:
             v_values.append(next_value)
 
