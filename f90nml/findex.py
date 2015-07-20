@@ -31,7 +31,7 @@ class FIndex(object):
 
         state = self.current[:]
         for rank, idx in enumerate(self.current):
-            if self.end[rank] and idx < (self.end[rank] - 1):
+            if not self.end[rank] or idx < (self.end[rank] - 1):
                 self.current[rank] = idx + self.step[rank]
                 break
             else:
