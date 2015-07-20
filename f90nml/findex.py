@@ -25,12 +25,13 @@ class FIndex(object):
         return self.__next__()
 
     def __next__(self):
+
         if self.end[-1] and self.current[-1] > self.end[-1]:
             raise StopIteration
 
         state = self.current[:]
         for rank, idx in enumerate(self.current):
-            if not self.end[rank] or idx <= self.end[rank]:
+            if self.end[rank] and idx < (self.end[rank] - 1):
                 self.current[rank] = idx + self.step[rank]
                 break
             else:

@@ -260,7 +260,6 @@ class Parser(object):
                     write_token = True
 
                     # Check for escaped strings
-                    #if (v_values and v_values.have_string() and
                     if (v_values and isinstance(v_values[-1], str) and
                             isinstance(next_value, str) and not prior_ws_sep):
 
