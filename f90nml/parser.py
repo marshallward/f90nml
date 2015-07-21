@@ -30,17 +30,28 @@ class Parser(object):
         # Patching
         self.pfile = None
 
-    def read(self, nml_fname, nml_patch_in=None, patch_fname=None):
+        # Control flags
+        self.row_major = False
+
+    def read(self, nml_fname, nml_patch_in=None, patch_fname=None,
+             row_major=None):
         """Parse a Fortran 90 namelist file and store the contents.
 
         >>> from f90nml.parser import Parser
         >>> parser = Parser()
         >>> data_nml = parser.read('data.nml')"""
 
+        # Check for row-major or column-major ordering
+        if row_major:
+            if not isinstance(row_major, bool):
+                raise ValueError('f90nml: error: row_major must be a '
+                                  'logical value.')
+            else:
+                self.row_major = row_major
+
         nml_file = open(nml_fname, 'r')
 
         if nml_patch_in:
-
             if not isinstance(nml_patch_in, dict):
                 nml_file.close()
                 raise ValueError('Input patch must be a dict or an NmlDict.')
@@ -201,7 +212,7 @@ class Parser(object):
 
             next_value = NmlDict()
             next_value[v_att] = v_att_vals
-            append_value(v_values, next_value, v_idx)
+            self.append_value(v_values, next_value, v_idx)
 
         else:
             # Construct the variable array
@@ -238,7 +249,7 @@ class Parser(object):
                     if (self.token in (',', '/', '&', '$') and
                             not (self.prior_token == ',' and
                                  self.token in ('/', '&', '$'))):
-                        append_value(v_values, None, v_idx, n_vals)
+                        self.append_value(v_values, None, v_idx, n_vals)
 
                 elif self.prior_token == '*':
 
@@ -251,7 +262,7 @@ class Parser(object):
                     else:
                         next_value = self.parse_value(write_token)
 
-                    append_value(v_values, next_value, v_idx, n_vals)
+                    self.append_value(v_values, next_value, v_idx, n_vals)
 
                 else:
                     next_value = self.parse_value(write_token)
@@ -267,7 +278,7 @@ class Parser(object):
                         v_values[-1] = quote_char.join([v_values[-1],
                                                         next_value])
                     else:
-                        append_value(v_values, next_value, v_idx, n_vals)
+                        self.append_value(v_values, next_value, v_idx, n_vals)
 
                 # Exit for end of nml group (/, &, $) or null broadcast (=)
                 if self.token in ('/', '&', '$', '='):
@@ -411,36 +422,39 @@ class Parser(object):
         return ws_sep
 
 
-# Support functions
+    def append_value(self, v_values, next_value, v_idx=None, n_vals=1):
+        """Update a list of parsed values with a new value."""
 
-def append_value(v_values, next_value, v_idx=None, n_vals=1):
-    """Update a list of parsed values with a new value."""
+        for _ in range(n_vals):
+            if v_idx:
+                v_i = next(v_idx)
 
-    for _ in range(n_vals):
-        if v_idx:
-            v_i = next(v_idx)
+                if not self.row_major:
+                    v_i = v_i[::-1]
 
-            # Multidimensional arrays
-            # TODO: support both row and column ordering in Python
+                # Multidimensional arrays
+                # TODO: support both row and column ordering in Python
 
-            v_tmp = v_values
-            for idx in v_i[:-1]:
+                v_tmp = v_values
+                for idx in v_i[:-1]:
+                    try:
+                        v_tmp = v_tmp[idx - 1]
+                    except IndexError:
+                        size = len(v_tmp)
+                        v_tmp.extend([] for i in range(size, idx))
+                        v_tmp = v_tmp[idx - 1]
+
                 try:
-                    v_tmp = v_tmp[idx - 1]
+                    v_tmp[v_i[-1] - 1] = next_value
                 except IndexError:
                     size = len(v_tmp)
-                    v_tmp.extend([] for i in range(size, idx))
-                    v_tmp = v_tmp[idx - 1]
+                    v_tmp.extend(None for i in range(size, v_i[-1]))
+                    v_tmp[v_i[-1] - 1] = next_value
+            else:
+                v_values.append(next_value)
 
-            try:
-                v_tmp[v_i[-1] - 1] = next_value
-            except IndexError:
-                size = len(v_tmp)
-                v_tmp.extend(None for i in range(size, v_i[-1]))
-                v_tmp[v_i[-1] - 1] = next_value
-        else:
-            v_values.append(next_value)
 
+# Support functions
 
 def merge_values(src, new):
     """Merge two lists or dicts into a single element."""
