@@ -14,7 +14,6 @@ from string import whitespace
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import NmlDict
 from f90nml.findex import FIndex
-#from f90nml.multid import multi_index,multi_value
 
 
 class Parser(object):
@@ -45,7 +44,7 @@ class Parser(object):
         if row_major:
             if not isinstance(row_major, bool):
                 raise ValueError('f90nml: error: row_major must be a '
-                                  'logical value.')
+                                 'logical value.')
             else:
                 self.row_major = row_major
 
@@ -420,7 +419,6 @@ class Parser(object):
         self.token, self.prior_token = next_token, self.token
 
         return ws_sep
-
 
     def append_value(self, v_values, next_value, v_idx=None, n_vals=1):
         """Update a list of parsed values with a new value."""
