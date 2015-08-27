@@ -285,9 +285,12 @@ class NmlDict(OrderedDict):
         elif (isinstance(v_values, list) and
               any(isinstance(v, list) for v in v_values) and
               all((isinstance(v, list) or v is None) for v in v_values)):
+
             for idx, val in enumerate(v_values, start=1):
-                print('TODO')
-                break
+
+                v_title = v_name + str(idx)
+                v_strs = self.var_strings(v_title, val)
+                var_strs.extend(v_strs)
 
         else:
             if not isinstance(v_values, list):
