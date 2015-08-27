@@ -11,11 +11,11 @@ from f90nml.parser import Parser
 __version__ = '0.12'
 
 
-def read(nml_fname):
+def read(nml_fname, row_major=False):
     """Parse a Fortran 90 namelist file (data.nml) and store its contents.
 
     >>> nml = f90nml.read('data.nml')"""
-    return Parser().read(nml_fname)
+    return Parser().read(nml_fname, row_major=row_major)
 
 
 def write(nml, nml_fname, force=False):
@@ -25,8 +25,8 @@ def write(nml, nml_fname, force=False):
     nml.write(nml_fname, force=force)
 
 
-def patch(nml_fname, nml_patch, out_fname=None):
+def patch(nml_fname, nml_patch, out_fname=None, row_major=False):
     """Create a new namelist based on an input namelist and reference dict.
 
     >>> f90nml.patch('data.nml', nml_patch, 'patched_data.nml')"""
-    return Parser().read(nml_fname, nml_patch, out_fname)
+    return Parser().read(nml_fname, nml_patch, out_fname, row_major=row_major)

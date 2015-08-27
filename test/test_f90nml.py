@@ -61,6 +61,15 @@ class Test(unittest.TestCase):
                             }
                           }
 
+        self.md_rowmaj_nml = {'multidim_nml':
+                                {'v2d': [[1, 3], [2, 4]],
+                                 'v3d': [[[1, 5], [3, 7]], [[2, 6], [4, 8]]],
+                                 'v2d_explicit': [[1, 3], [2, 4]],
+                                 'v2d_outer': [[1, 2, 3, 4]],
+                                 'v2d_inner': [[1], [2], [3], [4]],
+                                }
+                             }
+
         self.float_nml = {'float_nml':
                             {'v_float': 1.,
                              'v_decimal_end': 1.,
@@ -222,6 +231,10 @@ class Test(unittest.TestCase):
     def test_multidim(self):
         test_nml = f90nml.read('multidim.nml')
         self.assertEqual(self.multidim_nml, test_nml)
+
+        test_nml = f90nml.read('multidim.nml', row_major=True)
+        self.assertEqual(self.md_rowmaj_nml, test_nml)
+
         # TODO: test multidim output
 
     def test_float(self):
