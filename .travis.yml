@@ -18,3 +18,4 @@ script:
     - coverage run --source f90nml test_f90nml.py
 after_success:
     - coveralls
+sudo: False
