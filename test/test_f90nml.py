@@ -231,11 +231,15 @@ class Test(unittest.TestCase):
     def test_multidim(self):
         test_nml = f90nml.read('multidim.nml')
         self.assertEqual(self.multidim_nml, test_nml)
+        # TODO: test multidim output
 
+    def test_rowmaj_multidim(self):
         test_nml = f90nml.read('multidim.nml', row_major=True)
         self.assertEqual(self.md_rowmaj_nml, test_nml)
 
-        # TODO: test multidim output
+    def test_rowmaj_syntax(self):
+        self.assertRaises(ValueError, f90nml.read, 'index_empty.nml',
+                          row_major='abc')
 
     def test_float(self):
         test_nml = f90nml.read('float.nml')
