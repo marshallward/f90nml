@@ -17,5 +17,6 @@ before_script:
 script:
     - coverage run --source f90nml test_f90nml.py
 after_success:
+    - coverage report -m
     - coveralls
 sudo: False
