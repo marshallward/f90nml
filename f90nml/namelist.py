@@ -250,7 +250,7 @@ class NmlDict(OrderedDict):
         print('/', file=nml_file)
         print(file=nml_file)
 
-    def var_strings(self, v_name, v_values):
+    def var_strings(self, v_name, v_values, v_idx=None):
         """Convert namelist variable to list of fixed-width strings."""
 
         if self.uppercase:
@@ -286,15 +286,23 @@ class NmlDict(OrderedDict):
               any(isinstance(v, list) for v in v_values) and
               all((isinstance(v, list) or v is None) for v in v_values)):
 
+            if not v_idx:
+                v_idx = []
+
+            v_title = v_name
             for idx, val in enumerate(v_values, start=1):
 
-                v_title = v_name + str(idx)
-                v_strs = self.var_strings(v_title, val)
+                v_idx_new = v_idx + [idx]
+                v_strs = self.var_strings(v_title, val, v_idx_new)
                 var_strs.extend(v_strs)
 
         else:
             if not isinstance(v_values, list):
                 v_values = [v_values]
+
+            if v_idx:
+                #print(v_name, v_idx)
+                v_name += '(:, ' + ', '.join(str(i) for i in v_idx[::-1]) + ')'
 
             # Split output across multiple lines (if necessary)
             val_strs = []
