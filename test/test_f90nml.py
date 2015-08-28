@@ -6,6 +6,7 @@ sys.path.insert(1, '../')
 import f90nml
 from f90nml.fpy import pybool
 from f90nml.namelist import NmlDict
+from f90nml.findex import FIndex
 
 class Test(unittest.TestCase):
 
@@ -445,6 +446,13 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, setattr, test_nml, 'false_repr', 'xyz')
         self.assertRaises(TypeError, setattr, test_nml, 'logical_repr', 'xyz')
         self.assertRaises(ValueError, setattr, test_nml, 'logical_repr', [])
+
+    def test_findex_iteration(self):
+        rng = [(None, 5, None)]
+        fidx = iter(FIndex(rng))
+
+        for i, j in enumerate(fidx, start=1):
+            self.assertEqual(i, j[0])
 
 
 if __name__ == '__main__':
