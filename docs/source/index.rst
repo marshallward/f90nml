@@ -5,7 +5,7 @@
 ``f90nml`` is a Python module that provides a simple interface for the reading,
 writing, and the general manipulation of Fortran namelist files.
 
-A namelist file is parsed and converted into an ``NmlDict`` object, which
+A namelist file is parsed and converted into an ``Namelist`` object, which
 behaves like a standard Python ``dict``.  Values are converted from Fortran
 data types to equivalent primitive Python types.
 
@@ -72,3 +72,11 @@ Basic Usage
 .. autofunction:: f90nml.patch
 
 
+Classes
+=======
+
+.. autoclass:: f90nml.parser.Parser
+
+.. autoclass:: f90nml.namelist.Namelist
+
+.. autoclass:: f90nml.findex.FIndex

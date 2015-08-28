@@ -13,7 +13,7 @@ __version__ = '0.12'
 
 def read(nml_path, row_major=False):
     """Parse a Fortran 90 namelist file with file path ``nml_path``  return its
-    contents as a ``NmlDict``.
+    contents as a ``Namelist``.
 
     >>> nml = f90nml.read('data.nml')
 

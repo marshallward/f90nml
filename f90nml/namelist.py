@@ -15,16 +15,16 @@ except ImportError:
     from ordereddict import OrderedDict
 
 
-class NmlDict(OrderedDict):
+class Namelist(OrderedDict):
     """Case-insensitive Python dict"""
 
     def __init__(self, *args, **kwds):
-        super(NmlDict, self).__init__(*args, **kwds)
+        super(Namelist, self).__init__(*args, **kwds)
 
-        # Convert any internal dicts to NmlDicts
+        # Convert any internal dicts to Namelists
         for key, val in self.items():
             if isinstance(val, dict):
-                self[key] = NmlDict(val)
+                self[key] = Namelist(val)
 
         # Formatting properties
         self._colwidth = 72
@@ -51,16 +51,16 @@ class NmlDict(OrderedDict):
         }
 
     def __contains__(self, key):
-        return super(NmlDict, self).__contains__(key.lower())
+        return super(Namelist, self).__contains__(key.lower())
 
     def __delitem__(self, key):
-        return super(NmlDict, self).__delitem__(key.lower())
+        return super(Namelist, self).__delitem__(key.lower())
 
     def __getitem__(self, key):
-        return super(NmlDict, self).__getitem__(key.lower())
+        return super(Namelist, self).__getitem__(key.lower())
 
     def __setitem__(self, key, value):
-        super(NmlDict, self).__setitem__(key.lower(), value)
+        super(Namelist, self).__setitem__(key.lower(), value)
 
     # Format configuration
 

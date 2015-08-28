@@ -58,7 +58,7 @@ Additional Features
 Derived types
 +++++++++++++
 
-Additional ``NmlDict``\ s are created to traverse user-defined types. For
+Additional ``Namelist``\ s are created to traverse user-defined types. For
 example, if you want to access ``z`` in the following namelist:
 
 .. code:: fortran
@@ -88,7 +88,7 @@ To overwrite an existing file when using the ``write`` method, use the
 Notes
 =====
 
-The ``read`` method produces an ``NmlDict``, which behaves as a ``dict`` with
+The ``read`` method produces an ``Namelist``, which behaves as a ``dict`` with
 case-insensitive keys, due to the case insensitivity of Fortran. This
 implementation is currently not a true case-insensitive ``dict``, and is only
 intended to accommodate individual references and assignments.

@@ -12,7 +12,7 @@ import shlex
 from string import whitespace
 
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
-from f90nml.namelist import NmlDict
+from f90nml.namelist import Namelist
 from f90nml.findex import FIndex
 
 
@@ -53,9 +53,9 @@ class Parser(object):
         if nml_patch_in:
             if not isinstance(nml_patch_in, dict):
                 nml_file.close()
-                raise ValueError('Input patch must be a dict or an NmlDict.')
+                raise ValueError('Input patch must be a dict or an Namelist.')
 
-            nml_patch = copy.deepcopy(NmlDict(nml_patch_in))
+            nml_patch = copy.deepcopy(Namelist(nml_patch_in))
 
             if not patch_fname:
                 patch_fname = nml_fname + '~'
@@ -65,7 +65,7 @@ class Parser(object):
                                  'same as the original filepath.')
             self.pfile = open(patch_fname, 'w')
         else:
-            nml_patch = NmlDict()
+            nml_patch = Namelist()
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
@@ -77,7 +77,7 @@ class Parser(object):
 
         self.tokens = iter(f90lex)
 
-        nmls = NmlDict()
+        nmls = Namelist()
 
         # TODO: Replace "while True" with an update_token() iterator
         self.update_tokens(write_token=False)
@@ -98,7 +98,7 @@ class Parser(object):
             self.update_tokens()
             g_name = self.token
 
-            g_vars = NmlDict()
+            g_vars = Namelist()
             v_name = None
 
             grp_patch = nml_patch.get(g_name, {})
@@ -177,7 +177,7 @@ class Parser(object):
         """Parse a variable and return its name and values."""
 
         if not patch_nml:
-            patch_nml = NmlDict()
+            patch_nml = Namelist()
 
         v_name = self.prior_token
         v_values = []
@@ -209,7 +209,7 @@ class Parser(object):
 
             v_att, v_att_vals = self.parse_variable(v_parent)
 
-            next_value = NmlDict()
+            next_value = Namelist()
             next_value[v_att] = v_att_vals
             self.append_value(v_values, next_value, v_idx)
 

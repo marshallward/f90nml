@@ -5,7 +5,7 @@ import unittest
 sys.path.insert(1, '../')
 import f90nml
 from f90nml.fpy import pybool
-from f90nml.namelist import NmlDict
+from f90nml.namelist import Namelist
 from f90nml.findex import FIndex
 
 class Test(unittest.TestCase):
@@ -311,7 +311,7 @@ class Test(unittest.TestCase):
     def test_pop_key(self):
         test_nml = f90nml.read('empty.nml')
         test_nml.pop('empty_nml')
-        self.assertEqual(test_nml, f90nml.namelist.NmlDict())
+        self.assertEqual(test_nml, f90nml.namelist.Namelist())
 
     def test_patch(self):
         patch_nml = f90nml.read('types_patch.nml')
@@ -359,7 +359,7 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.read, 'index_zero_stride.nml')
 
     def test_f90repr(self):
-        nml = NmlDict()
+        nml = Namelist()
         self.assertEqual(nml.f90repr(1), '1')
         self.assertEqual(nml.f90repr(1.), '1.0')
         self.assertEqual(nml.f90repr(1+2j), '(1.0, 2.0)')
