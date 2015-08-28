@@ -1,6 +1,6 @@
-===================================================================
-``f90nml`` -- A Fortran namelist parser, generator, and manipulator
-===================================================================
+==============================================================
+``f90nml`` -- A Fortran namelist parser, generator, and editor
+==============================================================
 
 ``f90nml`` is a Python module that provides a simple interface for the reading,
 writing, and the general manipulation of Fortran namelist files.
@@ -13,7 +13,7 @@ data types to equivalent primitive Python types.
 Quick usage guide
 =================
 
-To read a namelist file``sample.nml`` which contains the following namelists:
+To read a namelist file ``sample.nml`` which contains the following namelists:
 
 .. code:: fortran
 
@@ -59,7 +59,6 @@ manipulate the ``nml`` contents and write to disk using the ``write`` function:
         'd': 4
        }
    nml.write('new_sample.nml')
-
 
 
 Basic Usage
