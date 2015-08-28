@@ -10,11 +10,10 @@ behaves like a standard Python ``dict``.  Values are converted from Fortran
 data types to equivalent primitive Python types.
 
 
-Basic Usage
-===========
+Quick usage guide
+=================
 
-Consider a namelist file, ``sample.nml`` which contains the following
-namelist:
+To read a namelist file``sample.nml`` which contains the following namelists:
 
 .. code:: fortran
 
@@ -26,7 +25,7 @@ namelist:
       use_biharmonic = .false.
    /
 
-In order to read this namelist into python, we would use the following script:
+we would use the following script:
 
 .. code:: python
 
@@ -47,16 +46,24 @@ which would would set ``nml`` to the following ``dict``:
             }
          }
 
-To modify one of the values, say ``steps``, and save the output, just manipulate the ``nml`` contents and write to disk using the ``write`` function:
+To modify one of the values, say ``steps``, and save the output, just
+manipulate the ``nml`` contents and write to disk using the ``write`` function:
 
 .. code:: python
 
    nml['config_nml']['steps'] = 432
+        'b': 2,
+       }
+    'second':
+       {'c': 3,
+        'd': 4
+       }
    nml.write('new_sample.nml')
 
 
+
 Basic Usage
------------
+===========
 
 .. autofunction:: f90nml.read
 
