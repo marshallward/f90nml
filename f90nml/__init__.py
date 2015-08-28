@@ -58,7 +58,8 @@ def patch(nml_path, nml_patch, out_path=None, row_major=False):
 
     >>> f90nml.patch('data.nml', nml_patch, 'patched_data.nml')
 
-    This function is equivalent to the ``read`` function of the ``Parser`` object with the patch output arguments.
+    This function is equivalent to the ``read`` function of the ``Parser``
+    object with the patch output arguments.
 
     >>> parser = f90nml.Parser()
     >>> nml = parser.read('data.nml', nml_path, 'patched_data.nml')

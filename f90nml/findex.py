@@ -31,8 +31,8 @@ class FIndex(object):
         state = self.current[:]
         # Allow the final index to exceed self.end[-1] as a finalisation check
         for rank, idx in enumerate(self.current):
-            if ((not self.end[rank] or idx < (self.end[rank] - 1))
-                    or rank == (len(self.current) - 1)):
+            if ((not self.end[rank] or idx < (self.end[rank] - 1)) or
+                    rank == (len(self.current) - 1)):
                 self.current[rank] = idx + self.step[rank]
                 break
             else:

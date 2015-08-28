@@ -301,7 +301,6 @@ class NmlDict(OrderedDict):
                 v_values = [v_values]
 
             if v_idx:
-                #print(v_name, v_idx)
                 v_name += '(:, ' + ', '.join(str(i) for i in v_idx[::-1]) + ')'
 
             # Split output across multiple lines (if necessary)
