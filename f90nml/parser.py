@@ -295,11 +295,12 @@ class Parser(object):
         return v_name, v_values
 
     def parse_indices(self):
+        """Parse a sequence of Fortran vector indices as a list of tuples."""
 
         v_name = self.prior_token
         v_indices = []
 
-        while (self.token in (',', '(')):
+        while self.token in (',', '('):
             v_indices.append(self.parse_index(v_name))
 
         return v_indices
