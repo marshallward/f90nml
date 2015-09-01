@@ -32,7 +32,6 @@ we would use the following script:
    import f90nml
    nml = f90nml.read('sample.nml')
 
-
 which would would set ``nml`` to the following ``dict``:
 
 .. code:: python
@@ -69,6 +68,29 @@ Basic Usage
 .. autofunction:: f90nml.write
 
 .. autofunction:: f90nml.patch
+
+
+Notes
+=====
+
+Derived Types
+-------------
+
+User-defined types are saved as a hierarchy of ``dict``\ s.  For
+example, the following namelist
+
+.. code:: fortran
+
+   &dtype_nml
+      a%b%c = 1
+   /
+
+would be saved as the following ``Namelist``:
+
+.. code:: python
+
+   TODO
+
 
 
 Classes
