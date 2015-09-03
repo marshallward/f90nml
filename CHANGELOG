@@ -1,3 +1,6 @@
+v0.13:
+    - Multidimensional array support
+
 v0.12:
     - Namelist output formatting (column width, indent, etc.)
     - Improved user-defined type output support
