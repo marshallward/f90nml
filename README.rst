@@ -100,7 +100,6 @@ approximate guess about its data type.
 
 The following namelist features are currently not supported:
 
-* Multidimensional vector assignment (``v(:,:) = 1, 2, 3, 4``)
 * Upcast vector elements if components differ (``x(i) = 1, x(j) = 2.0``)
 * stdin/stdout support (``?``, ``?=``)
 
