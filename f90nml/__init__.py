@@ -8,10 +8,10 @@
 """
 from f90nml.parser import Parser
 
-__version__ = '0.13.post1'
+__version__ = '0.14-dev'
 
 
-def read(nml_path, row_major=False):
+def read(nml_path, row_major=None, strict_logical=None):
     """Parse a Fortran 90 namelist file with file path ``nml_path``  return its
     contents as a ``Namelist``.
 
@@ -31,7 +31,8 @@ def read(nml_path, row_major=False):
     between Fortran to Python, but the data will be converted to row-major form
     (with respect to Fortran)."""
 
-    return Parser().read(nml_path, row_major=row_major)
+    return Parser().read(nml_path, row_major=row_major,
+                         strict_logical=strict_logical)
 
 
 def write(nml, nml_path, force=False):
@@ -53,7 +54,8 @@ def write(nml, nml_path, force=False):
     nml.write(nml_path, force=force)
 
 
-def patch(nml_path, nml_patch, out_path=None, row_major=False):
+def patch(nml_path, nml_patch, out_path=None, row_major=None,
+          strict_logical=None):
     """Create a new namelist based on an input namelist and reference dict.
 
     >>> f90nml.patch('data.nml', nml_patch, 'patched_data.nml')
@@ -68,4 +70,5 @@ def patch(nml_path, nml_patch, out_path=None, row_major=False):
     original namelist file.  Any modified values will be formatted based on the
     settings of the ``Namelist`` object."""
 
-    return Parser().read(nml_path, nml_patch, out_path, row_major=row_major)
+    return Parser().read(nml_path, nml_patch, out_path, row_major=row_major,
+                         strict_logical=strict_logical)

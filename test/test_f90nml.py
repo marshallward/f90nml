@@ -248,9 +248,11 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('multidim.nml', row_major=True)
         self.assertEqual(self.md_rowmaj_nml, test_nml)
 
-    def test_rowmaj_syntax(self):
+    def test_flag_syntax(self):
         self.assertRaises(ValueError, f90nml.read, 'index_empty.nml',
                           row_major='abc')
+        self.assertRaises(ValueError, f90nml.read, 'index_empty.nml',
+                          strict_logical='abc')
 
     def test_float(self):
         test_nml = f90nml.read('float.nml')
@@ -371,14 +373,23 @@ class Test(unittest.TestCase):
             self.assertRaises(ValueError, nml.f90repr, ptype)
 
     def test_pybool(self):
-        for fstr_true in ('true', 'ture', 't', '.t'):
+        for fstr_true in ('true', '.true.', 't', '.t.'):
             self.assertEqual(pybool(fstr_true), True)
 
-        for fstr_false in ('false', 'flase', 'f', '.f'):
+        for fstr_false in ('false', '.false.', 'f', '.f.'):
             self.assertEqual(pybool(fstr_false), False)
 
-        for fstr in ('g', '.', 'xyz'):
+        for fstr_true in ('ture', '.t'):
+            self.assertEqual(pybool(fstr_true, strict_logical=False), True)
+
+        for fstr_false in ('flase', '.f'):
+            self.assertEqual(pybool(fstr_false, strict_logical=False), False)
+
+        for fstr in ('ture', '.t', 'flase', '.f'):
             self.assertRaises(ValueError, pybool, fstr)
+
+        for fstr in ('g', '.', 'xyz'):
+            self.assertRaises(ValueError, pybool, fstr, strict_logical=False)
 
     def test_close_patch_on_error(self):
         patch = {'tmp_nml': {'tmp_val': 0}}
@@ -429,7 +440,7 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, test_nml, 'floatformat', 123)
 
     def test_logical_repr(self):
-        test_nml = f90nml.read('logical.nml')
+        test_nml = f90nml.read('logical.nml', strict_logical=False)
         test_nml.true_repr = 'T'
         test_nml.false_repr = 'F'
 

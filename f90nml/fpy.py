@@ -30,21 +30,26 @@ def pycomplex(v_str):
                          ''.format(v_str))
 
 
-def pybool(v_str):
+def pybool(v_str, strict_logical=True):
     """Convert string repr of Fortran logical to Python logical."""
     assert isinstance(v_str, str)
+    assert isinstance(strict_logical, bool)
 
-    try:
-        if v_str.startswith('.'):
-            v_bool = v_str[1].lower()
-        else:
-            v_bool = v_str[0].lower()
-    except IndexError:
-        raise ValueError('{0} is not a valid logical constant.'.format(v_str))
+    if strict_logical:
+        v_bool = v_str.lower()
+    else:
+        try:
+            if v_str.startswith('.'):
+                v_bool = v_str[1].lower()
+            else:
+                v_bool = v_str[0].lower()
+        except IndexError:
+            raise ValueError('{0} is not a valid logical constant.'
+                             ''.format(v_str))
 
-    if v_bool == 't':
+    if v_bool in ('.true.', '.t.', 'true', 't'):
         return True
-    elif v_bool == 'f':
+    elif v_bool in ('.false.', '.f.', 'false', 'f'):
         return False
     else:
         raise ValueError('{0} is not a valid logical constant.'.format(v_str))

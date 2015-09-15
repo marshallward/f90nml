@@ -31,22 +31,29 @@ class Parser(object):
 
         # Control flags
         self.row_major = False
+        self.strict_logical = True
 
     def read(self, nml_fname, nml_patch_in=None, patch_fname=None,
-             row_major=None):
+             row_major=None, strict_logical=None):
         """Parse a Fortran 90 namelist file and store the contents.
 
         >>> from f90nml.parser import Parser
         >>> parser = Parser()
         >>> data_nml = parser.read('data.nml')"""
 
-        # Check for row-major or column-major ordering
-        if row_major:
+        if row_major is not None:
             if not isinstance(row_major, bool):
-                raise ValueError('f90nml: error: row_major must be a '
-                                 'logical value.')
+                raise ValueError('f90nml: error: row_major must be a logical '
+                                 'value.')
             else:
                 self.row_major = row_major
+
+        if strict_logical is not None:
+            if not isinstance(strict_logical, bool):
+                raise ValueError('f90nml: error: strict_logical must be a '
+                                 'logical value.')
+            else:
+                self.strict_logical = strict_logical
 
         nml_file = open(nml_fname, 'r')
 
@@ -387,7 +394,11 @@ class Parser(object):
 
         for f90type in recast_funcs:
             try:
-                value = f90type(v_str)
+                # Unclever hack.. integrate this better
+                if f90type == pybool:
+                    value = pybool(v_str, self.strict_logical)
+                else:
+                    value = f90type(v_str)
                 return value
             except ValueError:
                 continue

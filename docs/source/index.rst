@@ -32,7 +32,7 @@ we would use the following script:
    import f90nml
    nml = f90nml.read('sample.nml')
 
-which would would set ``nml`` to the following ``dict``:
+which would would point ``nml`` to the following ``dict``:
 
 .. code:: python
 
@@ -51,13 +51,42 @@ manipulate the ``nml`` contents and write to disk using the ``write`` function:
 .. code:: python
 
    nml['config_nml']['steps'] = 432
-        'b': 2,
-       }
-    'second':
-       {'c': 3,
-        'd': 4
-       }
    nml.write('new_sample.nml')
+
+To modify a namelist but preserve its comments and formatting, create a
+namelist patch and apply it to a target file using the ``patch`` function:
+
+.. code:: python
+
+   patch_nml = {'config_nml': {'visc': 1e-6}}
+   nml.patch('sample.nml', 'new_sample.nml', patch_nml)
+
+
+Installation
+============
+
+``f90nml`` is available on PyPI and can be installed via pip::
+
+   $ pip install f90nml
+
+It is also available on Arch Linux via the AUR::
+
+   $ git clone https://aur.archlinux.org/python-f90nml.git
+   $ cd python-f90nml
+   $ makepkg -sri
+
+``f90nml`` is not yet available on other Linux distributions.
+
+The latest version of ``f90nml`` can be installed from source::
+
+   $ git clone https://github.com/marshallward/f90nml.git
+   $ cd f90nml
+   $ python setup.py install
+
+Users without install privileges can append the ``--user`` flag to
+``setup.py``::
+
+   $ python setup.py --user install
 
 
 Basic Usage
@@ -73,11 +102,48 @@ Basic Usage
 Notes
 =====
 
+Data types
+----------
+
+Fortran namelists do not contain any information about data type, which is
+determined by the target variables of the Fortran executable.  ``f90nml``
+infers the data type based on the value, but not all cases can be explicitly
+resolved.
+
+``f90nml`` tests values as one of each data type in the order listed below:
+
+* Integer
+
+* Floating point
+
+* Complex floating point
+
+* Logical (boolean)
+
+* String
+
+Strings acts as a fallback type.  If a value cannot be matched to any other
+value, then it is interpreted as a string.
+
+In order to get the best results from ``f90nml``, it is best to follow these
+guidelines:
+
+* All strings should be enclosed by string delimiters (``'``, ``"``).
+
+* Floating point values should use decimals (``.``) or `E notation`_.
+
+* Array indices should be explicit
+
+* Array values should be separated by commas (``,``)
+
+.. _E notation: https://en.wikipedia.org/wiki/Scientific_notation#E_notation
+
+
 Derived Types
 -------------
 
-User-defined types are saved as a hierarchy of ``dict``\ s.  For
-example, the following namelist
+User-defined types are saved as a nested hierarcy of ``dict``\ s.  For example,
+the following namelist
 
 .. code:: fortran
 
@@ -89,8 +155,44 @@ would be saved as the following ``Namelist``:
 
 .. code:: python
 
-   TODO
+   nml = {'dtype_nml':
+            {'a':
+               {'b':
+                  {'c': 1}
+               }
+            }
+         }
 
+
+Output formatting
+-----------------
+
+The output format of ``f90nml.write`` can be altered by modifying the
+properties of the ``Namelist`` object.  The properties for a sample namelist
+``nml`` are shown below.
+
+``nml.colwidth`` (Default: 72)
+   Maximum number of characters per line of the namelist file.  Tokens longer
+   than ``colwidth`` are allowed to extend past this limit.
+
+``nml.indent`` (Default: 4)
+   Whitespace indentation.  This can be set to an integer, denoting the number
+   of spaces, or to an explicit whitespace character, such as a tab (``\t``).
+
+``nml.end_comma`` (Default: ``False``)
+   Append a comma (``,``) to the end of each namelist entry.
+
+``nml.uppercase`` (Default: ``False``)
+   Display namelist and variable names in uppercase.
+
+``nml.float_format`` (Default: ``None``)
+   Specify the floating point output format, as expected by Python ``format``
+   function.
+
+``nml.logical_repr`` (Default: ``.false., .true.``)
+   String representation of logical values ``False`` and ``True``.  The
+   properties ``true_repr`` and ``false_repr`` are also provided as interfaces
+   to the ``logical_repr`` tuple.
 
 
 Classes
