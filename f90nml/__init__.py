@@ -29,7 +29,18 @@ def read(nml_path, row_major=None, strict_logical=None):
 
     The ``row_major`` flag will reorder the data to preserve the index rules
     between Fortran to Python, but the data will be converted to row-major form
-    (with respect to Fortran)."""
+    (with respect to Fortran).
+
+    The ``strict_logical`` flag will limit the parsing of non-delimited logical
+    strings as logical values.  The default value is ``True``.
+
+    When ``strict_logical`` is enabled, only ``.true.``, ``.t.``, ``true``, and
+    ``t`` are interpreted as ``True``, and only ``.false.``, ``.f.``,
+    ``false``, and ``.false.`` are interpreted as false.
+
+    When ``strict_logical`` is disabled, any value starting with ``.t`` or
+    ``t`` are interpreted as ``True``, while any string starting with ``.f`` or
+    ``f`` is interpreted as ``False``."""
 
     return Parser().read(nml_path, row_major=row_major,
                          strict_logical=strict_logical)
