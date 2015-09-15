@@ -1,6 +1,6 @@
-=========================================================
-f90nml - A Fortran namelist parser, generator, and editor
-=========================================================
+======
+f90nml
+======
 
 A Python module for parsing Fortran namelist files
 
