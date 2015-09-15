@@ -2,6 +2,18 @@
 ``f90nml`` -- A Fortran namelist parser, generator, and editor
 ==============================================================
 
+A Python module for parsing Fortran namelist files
+
+.. image:: https://travis-ci.org/marshallward/f90nml.svg?branch=master
+    :target: https://travis-ci.org/marshallward/f90nml
+
+.. image:: https://coveralls.io/repos/marshallward/f90nml/badge.png?branch=master
+   :target: https://coveralls.io/r/marshallward/f90nml?branch=master
+
+
+About f90nml
+============
+
 ``f90nml`` is a Python module that provides a simple interface for the reading,
 writing, and the general manipulation of Fortran namelist files.
 
@@ -203,3 +215,17 @@ Classes
 .. autoclass:: f90nml.namelist.Namelist
 
 .. autoclass:: f90nml.findex.FIndex
+
+
+Licensing
+=========
+
+``f90nml`` is distributed under the `Apache 2.0 License`_.
+
+.. _Apache 2.0 License:
+    http://www.apache.org/licenses/LICENSE-2.0.txt
+
+Contact
+=======
+
+Marshall Ward <f90nml@marshallward.org>
