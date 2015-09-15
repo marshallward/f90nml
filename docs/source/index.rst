@@ -11,8 +11,8 @@ A Python module for parsing Fortran namelist files
    :target: https://coveralls.io/r/marshallward/f90nml?branch=master
 
 
-About f90nml
-============
+About ``f90nml``
+================
 
 ``f90nml`` is a Python module that provides a simple interface for the reading,
 writing, and the general manipulation of Fortran namelist files.
