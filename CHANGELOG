@@ -1,3 +1,11 @@
+v0.15:
+    - Null values are now always followed by commas
+
+v0.14:
+    - Default logical parsing is now more strict.  Only `true`, `false`, `t`,
+      and `f` (and with surrounding `.`) are now parsed to equivalent values.
+    - Extensive documentation update
+
 v0.13:
     - Multidimensional array support
 
