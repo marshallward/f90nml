@@ -320,8 +320,7 @@ class Namelist(OrderedDict):
 
             # Append any remaining values
             if val_line:
-                if (self.end_comma or
-                        (len(v_values) > 1 and v_values[-1] is None)):
+                if (self.end_comma or v_values[-1] is None):
                     val_strs.append(val_line)
                 else:
                     val_strs.append(val_line[:-2])
