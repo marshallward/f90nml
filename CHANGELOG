@@ -1,3 +1,6 @@
+v0.16:
+    - User-defined comment delimiters (e.g. `#` comment support)
+
 v0.15:
     - Null values are now always followed by commas
 
