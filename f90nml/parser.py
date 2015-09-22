@@ -33,6 +33,9 @@ class Parser(object):
         self.row_major = False
         self.strict_logical = True
 
+        # Configuration
+        self.comment_tokens = '!'
+
     def read(self, nml_fname, nml_patch_in=None, patch_fname=None,
              row_major=None, strict_logical=None):
         """Parse a Fortran 90 namelist file and store the contents.
@@ -80,7 +83,7 @@ class Parser(object):
         if nml_patch:
             f90lex.commenters = ''
         else:
-            f90lex.commenters = '!'
+            f90lex.commenters = self.comment_tokens
 
         self.tokens = iter(f90lex)
 

@@ -8,7 +8,7 @@
 """
 from f90nml.parser import Parser
 
-__version__ = '0.14'
+__version__ = '0.15'
 
 
 def read(nml_path, row_major=None, strict_logical=None):

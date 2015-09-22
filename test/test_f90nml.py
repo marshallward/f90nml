@@ -169,6 +169,11 @@ class Test(unittest.TestCase):
                             }
                            }
 
+        self.comment_alt_nml = {'comment_alt_nml':
+                                {'x': 1,
+                                 'z': 3}
+                               }
+
         self.grp_repeat_nml = {'grp_repeat_nml':
                                 [{'x': 1}, {'x': 2}],
                                'case_check_nml':
@@ -278,6 +283,12 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('comment.nml')
         self.assertEqual(self.comment_nml, test_nml)
         self.assert_write(test_nml, 'comment_target.nml')
+
+    def test_comment_alt(self):
+        parser = f90nml.Parser()
+        parser.comment_tokens = '#'
+        test_nml = parser.read('comment_alt.nml')
+        self.assertEqual(self.comment_alt_nml, test_nml)
 
     def test_grp_repeat(self):
         test_nml = f90nml.read('grp_repeat.nml')
