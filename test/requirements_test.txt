@@ -1,2 +1,3 @@
-coverage
+coverage == 3.7.1 ; python_version == '3.2'
+coverage ; python_version != '3.2'
 coveralls
