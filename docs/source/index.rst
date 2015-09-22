@@ -207,6 +207,25 @@ properties of the ``Namelist`` object.  The properties for a sample namelist
    to the ``logical_repr`` tuple.
 
 
+Comment tokens
+--------------
+
+Some Fortran programs will introduce alternative comment tokens (e.g. ``#``)
+for internal preprocessing.
+
+If you need to support these tokens, create a ``Parser`` object and set the
+comment token as follows:
+
+.. code:: python
+
+   parser = f90nml.Parser()
+   parser.comment_tokens += '#'
+   nml = Parser.read('sample.nml')
+
+Be aware that this is non-standard Fortran and could mangle any strings using
+the '#' characters.  Characters inside string delimiters should be protected.
+
+
 Classes
 =======
 
