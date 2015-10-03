@@ -30,33 +30,50 @@ class Parser(object):
         self.pfile = None
 
         # Control flags
-        self.row_major = False
-        self.strict_logical = True
+        self._row_major = False
+        self._strict_logical = True
 
         # Configuration
         self.comment_tokens = '!'
 
-    def read(self, nml_fname, nml_patch_in=None, patch_fname=None,
-             row_major=None, strict_logical=None):
+    @property
+    def row_major(self):
+        """Return true if multidimensional arrays are in row-major format."""
+        return self._row_major
+
+    @row_major.setter
+    def row_major(self, value):
+        """Validate and set row-major format for multidimensional arrays."""
+
+        if value is not None:
+            if not isinstance(value, bool):
+                raise ValueError(''
+                    'f90nml: error: row_major must be a logical value.')
+            else:
+                self._row_major = value
+
+    @property
+    def strict_logical(self):
+        """Return true for strict logical value parsing."""
+        return self._strict_logical
+
+    @strict_logical.setter
+    def strict_logical(self, value):
+        """Validate and set the strict logical flag."""
+
+        if value is not None:
+            if not isinstance(value, bool):
+                raise ValueError(''
+                    'f90nml: error: strict_logical must be a logical value.')
+            else:
+                self._strict_logical = value
+
+    def read(self, nml_fname, nml_patch_in=None, patch_fname=None):
         """Parse a Fortran 90 namelist file and store the contents.
 
         >>> from f90nml.parser import Parser
         >>> parser = Parser()
         >>> data_nml = parser.read('data.nml')"""
-
-        if row_major is not None:
-            if not isinstance(row_major, bool):
-                raise ValueError('f90nml: error: row_major must be a logical '
-                                 'value.')
-            else:
-                self.row_major = row_major
-
-        if strict_logical is not None:
-            if not isinstance(strict_logical, bool):
-                raise ValueError('f90nml: error: strict_logical must be a '
-                                 'logical value.')
-            else:
-                self.strict_logical = strict_logical
 
         nml_file = open(nml_fname, 'r')
 

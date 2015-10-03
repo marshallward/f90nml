@@ -7,8 +7,9 @@
    :license: Apache License, Version 2.0, see LICENSE for details.
 """
 from f90nml.parser import Parser
+from f90nml.namelist import Namelist
 
-__version__ = '0.16'
+__version__ = '0.17-dev'
 
 
 def read(nml_path, row_major=None, strict_logical=None):
@@ -42,8 +43,11 @@ def read(nml_path, row_major=None, strict_logical=None):
     ``t`` are interpreted as ``True``, while any string starting with ``.f`` or
     ``f`` is interpreted as ``False``."""
 
-    return Parser().read(nml_path, row_major=row_major,
-                         strict_logical=strict_logical)
+    parser = Parser()
+    parser.row_major = row_major
+    parser.strict_logical = strict_logical
+
+    return parser.read(nml_path)
 
 
 def write(nml, nml_path, force=False):
@@ -62,7 +66,13 @@ def write(nml, nml_path, force=False):
 
     >>> nml.write('data.nml', force=True)"""
 
-    nml.write(nml_path, force=force)
+    # Promote dicts to Namelists
+    if not isinstance(nml, Namelist) and isinstance(nml, dict):
+        nml_in = Namelist(nml)
+    else:
+        nml_in = nml
+
+    nml_in.write(nml_path, force=force)
 
 
 def patch(nml_path, nml_patch, out_path=None, row_major=None,
@@ -81,5 +91,8 @@ def patch(nml_path, nml_patch, out_path=None, row_major=None,
     original namelist file.  Any modified values will be formatted based on the
     settings of the ``Namelist`` object."""
 
-    return Parser().read(nml_path, nml_patch, out_path, row_major=row_major,
-                         strict_logical=strict_logical)
+    parser = Parser()
+    parser.row_major = row_major
+    parser.strict_logical = strict_logical
+
+    return parser.read(nml_path, nml_patch, out_path)

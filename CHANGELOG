@@ -1,3 +1,8 @@
+v0.17:
+    - `f90nml.write()` works for normal (non-`Namelist`) dicts
+    - `Parser` properties moved outside of function arguments, and are now
+      handled with property decorators (as in `Namelist`)
+
 v0.16:
     - User-defined comment delimiters (e.g. `#` comment support)
 
