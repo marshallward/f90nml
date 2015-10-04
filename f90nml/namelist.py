@@ -19,7 +19,14 @@ class Namelist(OrderedDict):
     """Case-insensitive Python dict"""
 
     def __init__(self, *args, **kwds):
-        super(Namelist, self).__init__(*args, **kwds)
+
+        # If using (unordered) dict, then resort the keys for reproducibility
+        s_args = list(args)
+        if (args and not isinstance(args[0], OrderedDict) and
+                isinstance(args[0], dict)):
+            s_args[0] = sorted(args[0].items())
+
+        super(Namelist, self).__init__(*s_args, **kwds)
 
         # Convert any internal dicts to Namelists
         for key, val in self.items():

@@ -47,7 +47,7 @@ class Parser(object):
 
         if value is not None:
             if not isinstance(value, bool):
-                raise ValueError(''
+                raise ValueError(
                     'f90nml: error: row_major must be a logical value.')
             else:
                 self._row_major = value
@@ -63,7 +63,7 @@ class Parser(object):
 
         if value is not None:
             if not isinstance(value, bool):
-                raise ValueError(''
+                raise ValueError(
                     'f90nml: error: strict_logical must be a logical value.')
             else:
                 self._strict_logical = value

@@ -8,104 +8,111 @@ from f90nml.fpy import pybool
 from f90nml.namelist import Namelist
 from f90nml.findex import FIndex
 
+
 class Test(unittest.TestCase):
 
     def setUp(self):
         self.empty_nml = {'empty_nml': {}}
 
-        self.null_nml = {'null_nml':
-                            {'null_value': None},
-                         'null_comma_nml':
-                            {'null_comma': None}
-                        }
+        self.null_nml = {
+                'null_nml': {'null_value': None},
+                'null_comma_nml': {'null_comma': None}
+                }
 
-        self.unset_nml = {'unset_nml':
-                            {'x': None,
-                             'y': None
-                            }
-                         }
+        self.unset_nml = {
+                'unset_nml': {
+                    'x': None,
+                    'y': None
+                    }
+                }
 
-        self.types_nml = {'types_nml':
-                            {'v_integer': 1,
-                             'v_float': 1.0,
-                             'v_complex': 1+2j,
-                             'v_logical': True,
-                             'v_string': 'Hello',
-                            }
-                         }
+        self.types_nml = {
+                'types_nml': {
+                    'v_integer': 1,
+                    'v_float': 1.0,
+                    'v_complex': 1+2j,
+                    'v_logical': True,
+                    'v_string': 'Hello',
+                    }
+                }
 
-        self.vector_nml = {'vector_nml':
-                            {'v': [1, 2, 3, 4, 5],
-                             'v_idx': [1, 2, 3, 4],
-                             'v_idx_ooo': [1, 2, 3, 4],
-                             'v_range': [1, 2, 3, 4],
-                             'v_implicit_start': [1, 2, 3, 4],
-                             'v_implicit_end': [1, 2, 3, 4],
-                             'v_implicit_all': [1, 2, 3, 4],
-                             'v_null_start': [None, 2, 3, 4],
-                             'v_null_interior': [1, 2, None, 4],
-                             'v_null_end': [1, 2, 3, None],
-                             'v_zero': [1, 0, 3],
-                             'v_stride': [1, None, 3, None, 5, None, 7],
-                             'v_single': [1],
-                             'v_implicit_merge': [1, 2],
-                             'v_explicit_merge': [1, 2],
-                            }
-                          }
+        self.vector_nml = {
+                'vector_nml': {
+                    'v': [1, 2, 3, 4, 5],
+                    'v_idx': [1, 2, 3, 4],
+                    'v_idx_ooo': [1, 2, 3, 4],
+                    'v_range': [1, 2, 3, 4],
+                    'v_implicit_start': [1, 2, 3, 4],
+                    'v_implicit_end': [1, 2, 3, 4],
+                    'v_implicit_all': [1, 2, 3, 4],
+                    'v_null_start': [None, 2, 3, 4],
+                    'v_null_interior': [1, 2, None, 4],
+                    'v_null_end': [1, 2, 3, None],
+                    'v_zero': [1, 0, 3],
+                    'v_stride': [1, None, 3, None, 5, None, 7],
+                    'v_single': [1],
+                    'v_implicit_merge': [1, 2],
+                    'v_explicit_merge': [1, 2],
+                    }
+                }
 
-        self.multidim_nml = {'multidim_nml':
-                            {'v2d': [[1, 2], [3, 4]],
-                             'v3d': [[[1, 2], [3, 4]], [[5, 6], [7, 8]]],
-                             'w3d': [[[1, 2, 3, 4],
-                                      [5, 6, 7, 8],
-                                      [9, 10, 11, 12]],
-                                     [[13, 14, 15, 16],
-                                      [17, 18, 19, 20],
-                                      [21, 22, 23, 24]]],
-                             'v2d_explicit': [[1, 2], [3, 4]],
-                             'v2d_outer': [[1], [2], [3], [4]],
-                             'v2d_inner': [[1, 2, 3, 4]],
-                            }
-                          }
+        self.multidim_nml = {
+                'multidim_nml': {
+                    'v2d': [[1, 2], [3, 4]],
+                    'v3d': [[[1, 2], [3, 4]], [[5, 6], [7, 8]]],
+                    'w3d': [[[1, 2, 3, 4],
+                             [5, 6, 7, 8],
+                             [9, 10, 11, 12]],
+                            [[13, 14, 15, 16],
+                             [17, 18, 19, 20],
+                             [21, 22, 23, 24]]],
+                    'v2d_explicit': [[1, 2], [3, 4]],
+                    'v2d_outer': [[1], [2], [3], [4]],
+                    'v2d_inner': [[1, 2, 3, 4]],
+                    }
+                }
 
-        self.md_rowmaj_nml = {'multidim_nml':
-                                {'v2d': [[1, 3], [2, 4]],
-                                 'v3d': [[[1, 5], [3, 7]], [[2, 6], [4, 8]]],
-                                 'w3d': [[[1, 13], [5, 17], [9, 21]],
-                                         [[2, 14], [6, 18], [10, 22]],
-                                         [[3, 15], [7, 19], [11, 23]],
-                                         [[4, 16], [8, 20], [12, 24]]],
-                                 'v2d_explicit': [[1, 3], [2, 4]],
-                                 'v2d_outer': [[1, 2, 3, 4]],
-                                 'v2d_inner': [[1], [2], [3], [4]],
-                                }
-                             }
+        self.md_rowmaj_nml = {
+                'multidim_nml': {
+                    'v2d': [[1, 3], [2, 4]],
+                    'v3d': [[[1, 5], [3, 7]], [[2, 6], [4, 8]]],
+                    'w3d': [[[1, 13], [5, 17], [9, 21]],
+                            [[2, 14], [6, 18], [10, 22]],
+                            [[3, 15], [7, 19], [11, 23]],
+                            [[4, 16], [8, 20], [12, 24]]],
+                    'v2d_explicit': [[1, 3], [2, 4]],
+                    'v2d_outer': [[1, 2, 3, 4]],
+                    'v2d_inner': [[1], [2], [3], [4]],
+                    }
+                }
 
-        self.float_nml = {'float_nml':
-                            {'v_float': 1.,
-                             'v_decimal_end': 1.,
-                             'v_negative': -1.,
-                             'v_single': 1.,
-                             'v_double': 1.,
-                             'v_single_upper': 1.,
-                             'v_double_upper': 1.,
-                             'v_positive_index': 10.,
-                             'v_negative_index': 0.1,
-                            }
-                         }
+        self.float_nml = {
+                'float_nml': {
+                    'v_float': 1.,
+                    'v_decimal_end': 1.,
+                    'v_negative': -1.,
+                    'v_single': 1.,
+                    'v_double': 1.,
+                    'v_single_upper': 1.,
+                    'v_double_upper': 1.,
+                    'v_positive_index': 10.,
+                    'v_negative_index': 0.1,
+                    }
+                }
 
-        self.string_nml = {'string_nml':
-                            {'str_basic': 'hello',
-                             'str_no_delim': 'hello',
-                             'str_no_delim_no_esc': "a''b",
-                             'single_esc_delim': "a 'single' delimiter",
-                             'double_esc_delim': 'a "double" delimiter',
-                             'double_nested': "''x'' \"y\"",
-                             'str_list': ['a', 'b', 'c'],
-                             'slist_no_space': ['a', 'b', 'c'],
-                             'slist_no_quote': ['a', 'b', 'c'],
-                            }
-                        }
+        self.string_nml = {
+                'string_nml': {
+                    'str_basic': 'hello',
+                    'str_no_delim': 'hello',
+                    'str_no_delim_no_esc': "a''b",
+                    'single_esc_delim': "a 'single' delimiter",
+                    'double_esc_delim': 'a "double" delimiter',
+                    'double_nested': "''x'' \"y\"",
+                    'str_list': ['a', 'b', 'c'],
+                    'slist_no_space': ['a', 'b', 'c'],
+                    'slist_no_quote': ['a', 'b', 'c'],
+                    }
+                }
 
         self.dtype_nml = {'dtype_nml':
                             {'dt_scalar': {'val': 1},
@@ -186,9 +193,7 @@ class Test(unittest.TestCase):
                             {'y': 'abc'},
                        }
 
-        self.dollar_nml = {'dollar_nml':
-                            {'v': 1.},
-                          }
+        self.dollar_nml = {'dollar_nml': {'v': 1.}}
 
         self.multiline_nml = {'multiline_nml':
                                 {'x': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -198,9 +203,7 @@ class Test(unittest.TestCase):
                                 }
                              }
 
-        self.ext_token_nml = {'ext_token_nml':
-                                {'x': 1}
-                             }
+        self.ext_token_nml = {'ext_token_nml': {'x': 1}}
 
     # Support functions
     def assert_file_equal(self, source_fname, target_fname):
@@ -475,6 +478,9 @@ class Test(unittest.TestCase):
 
         for i, j in enumerate(fidx, start=1):
             self.assertEqual(i, j[0])
+
+    def test_dict_write(self):
+        self.assert_write(self.types_nml, 'types_dict.nml')
 
 
 if __name__ == '__main__':
