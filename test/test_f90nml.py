@@ -114,94 +114,104 @@ class Test(unittest.TestCase):
                     }
                 }
 
-        self.dtype_nml = {'dtype_nml':
-                            {'dt_scalar': {'val': 1},
-                             'dt_stack': {'outer': {'inner': 2} },
-                             'dt_vector': {'vec': [1, 2, 3]}
-                            },
-                          'dtype_multi_nml':
-                            {'dt': {'x': 1,
-                                    'y': 2,
-                                    'z': 3,
-                                   }
-                            },
-                          'dtype_nested_nml':
-                            {'f': {'g': {'x': 1,
-                                         'y': 2,
-                                         'z': 3,
-                                         }
-                                  }
-                            },
-                          'dtype_field_idx_nml':
-                            {'f': {'x': [1, 2, 3]}
-                            },
-                          'dtype_vec_nml':
-                            {'a': {'b': [{'c': 1, 'd': 2},
-                                         {'c': 3, 'd': 4},
-                                         {'c': 5, 'd': 6}
-                                        ]
-                                  }
-                            },
-                          'dtype_sparse_vec_nml':
-                            {'a': {'b': [None,
-                                         {'c': 2}
-                                        ]
-                                  }
-                            },
-                          'dtype_single_value_vec_nml':
-                            {'a': [{'b': 1}]},
-                          'dtype_single_vec_merge_nml':
-                            {'a': {'b': [{'c': 1,
-                                          'd': 2}
-                                        ]
-                                  }
+        self.dtype_nml = {
+                'dtype_nml': {
+                    'dt_scalar': {'val': 1},
+                    'dt_stack': {'outer': {'inner': 2}},
+                    'dt_vector': {'vec': [1, 2, 3]}
+                    },
+                'dtype_multi_nml': {
+                    'dt': {
+                        'x': 1,
+                        'y': 2,
+                        'z': 3,
+                        }
+                    },
+                'dtype_nested_nml': {
+                    'f': {
+                        'g': {
+                            'x': 1,
+                            'y': 2,
+                            'z': 3,
                             }
-                         }
+                        }
+                    },
+                'dtype_field_idx_nml': {
+                    'f': {
+                        'x': [1, 2, 3]}
+                    },
+                'dtype_vec_nml': {
+                    'a': {
+                        'b': [
+                            {'c': 1, 'd': 2},
+                            {'c': 3, 'd': 4},
+                            {'c': 5, 'd': 6}
+                            ]
+                        }
+                    },
+                'dtype_sparse_vec_nml': {
+                    'a': {
+                        'b': [None, {'c': 2}]
+                        }
+                    },
+                'dtype_single_value_vec_nml': {
+                    'a': [{'b': 1}]
+                    },
+                'dtype_single_vec_merge_nml': {
+                    'a': {
+                        'b': [{'c': 1, 'd': 2}]
+                        }
+                    }
+                }
 
-        self.bcast_nml = {'bcast_nml':
-                            {'x': [2.0, 2.0],
-                             'y': [None, None, None],
-                             'z': [True, True, True, True],
-                            },
-                          'bcast_endnull_nml':
-                            {'x': [2.0, 2.0],
-                             'y': [None, None, None],
-                            }
-                         }
+        self.bcast_nml = {
+                'bcast_nml': {
+                    'x': [2.0, 2.0],
+                    'y': [None, None, None],
+                    'z': [True, True, True, True],
+                    },
+                'bcast_endnull_nml': {
+                    'x': [2.0, 2.0],
+                    'y': [None, None, None],
+                    }
+                }
 
-        self.comment_nml = {'comment_nml':
-                            {'v_cmt_inline': 123,
-                             'v_cmt_in_str': 'This token ! is not a comment',
-                             'v_cmt_after_str': 'This ! is not a comment',
-                            }
-                           }
+        self.comment_nml = {
+                'comment_nml': {
+                    'v_cmt_inline': 123,
+                    'v_cmt_in_str': 'This token ! is not a comment',
+                    'v_cmt_after_str': 'This ! is not a comment',
+                    }
+                }
 
-        self.comment_alt_nml = {'comment_alt_nml':
-                                {'x': 1,
-                                 'z': 3}
-                               }
+        self.comment_alt_nml = {
+                'comment_alt_nml': {
+                    'x': 1,
+                    'z': 3}
+                }
 
-        self.grp_repeat_nml = {'grp_repeat_nml':
-                                [{'x': 1}, {'x': 2}],
-                               'case_check_nml':
-                                [{'y': 1}, {'y': 2}],
-                              }
+        self.grp_repeat_nml = {
+                'grp_repeat_nml': [{'x': 1}, {'x': 2}],
+                'case_check_nml': [{'y': 1}, {'y': 2}],
+                }
 
-        self.f77_nml = {'f77_nml':
-                            {'x': 123},
-                        'next_f77_nml':
-                            {'y': 'abc'},
-                       }
+        self.f77_nml = {
+                'f77_nml': {'x': 123},
+                'next_f77_nml': {'y': 'abc'},
+                }
 
         self.dollar_nml = {'dollar_nml': {'v': 1.}}
 
-        self.multiline_nml = {'multiline_nml':
-                                {'x': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                       1, 1, 1, 1, 1, 1, 1, 1]
-                                }
-                             }
+        self.multiline_nml = {
+                'multiline_nml': {
+                    'x': [
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1
+                        ]
+                    }
+                }
 
         self.ext_token_nml = {'ext_token_nml': {'x': 1}}
 
