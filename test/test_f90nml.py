@@ -16,7 +16,11 @@ class Test(unittest.TestCase):
 
         self.null_nml = {
                 'null_nml': {'null_value': None},
-                'null_comma_nml': {'null_comma': None}
+                'null_comma_nml': {'null_comma': None},
+                'null_nocomma_rpt_nml': {
+                    'null_one': None,
+                    'null_two': None,
+                    }
                 }
 
         self.unset_nml = {

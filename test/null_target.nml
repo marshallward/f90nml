@@ -5,3 +5,8 @@
 &null_comma_nml
     null_comma = ,
 /
+
+&null_nocomma_rpt_nml
+    null_one = ,
+    null_two = ,
+/
