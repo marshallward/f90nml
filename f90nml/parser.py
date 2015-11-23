@@ -128,6 +128,7 @@ class Parser(object):
             g_vars = Namelist()
             v_name = None
 
+            # TODO: Edit `Namelist` to support case-insensitive `get` calls
             grp_patch = nml_patch.get(g_name.lower(), {})
 
             # Populate the namelist group
@@ -250,6 +251,8 @@ class Parser(object):
             self.update_tokens()
 
             # Check if value is in the namelist patch
+            # TODO: Edit `Namelist` to support case-insensitive `pop` calls
+            #       (Currently only a problem in PyPy2)
             if v_name in patch_nml:
                 patch_values = patch_nml.f90repr(patch_nml.pop(v_name.lower()))
                 if not isinstance(patch_values, list):
