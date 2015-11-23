@@ -251,7 +251,7 @@ class Parser(object):
 
             # Check if value is in the namelist patch
             if v_name in patch_nml:
-                patch_values = patch_nml.f90repr(patch_nml.pop(v_name))
+                patch_values = patch_nml.f90repr(patch_nml.pop(v_name.lower()))
                 if not isinstance(patch_values, list):
                     patch_values = [patch_values]
 
