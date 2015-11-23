@@ -352,6 +352,15 @@ class Test(unittest.TestCase):
         finally:
             os.remove('tmp.nml')
 
+    def test_patch_case(self):
+        patch_nml = f90nml.read('types_patch.nml')
+        f90nml.patch('types_uppercase.nml', patch_nml, 'tmp.nml')
+        test_nml = f90nml.read('tmp.nml')
+        try:
+            self.assertEqual(test_nml, patch_nml)
+        finally:
+            os.remove('tmp.nml')
+
     def test_patch_valueerror(self):
         self.assertRaises(ValueError, f90nml.patch, 'types.nml', 'xyz',
                           'tmp.nml')

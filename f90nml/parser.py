@@ -80,7 +80,7 @@ class Parser(object):
         if nml_patch_in:
             if not isinstance(nml_patch_in, dict):
                 nml_file.close()
-                raise ValueError('Input patch must be a dict or an Namelist.')
+                raise ValueError('Input patch must be a dict or a Namelist.')
 
             nml_patch = copy.deepcopy(Namelist(nml_patch_in))
 
@@ -128,7 +128,7 @@ class Parser(object):
             g_vars = Namelist()
             v_name = None
 
-            grp_patch = nml_patch.get(g_name, {})
+            grp_patch = nml_patch.get(g_name.lower(), {})
 
             # Populate the namelist group
             while g_name:
