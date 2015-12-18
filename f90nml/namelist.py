@@ -333,10 +333,11 @@ class Namelist(OrderedDict):
                     val_strs.append(val_line[:-2])
 
             # Complete the set of values
-            var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
+            if val_strs:
+                var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
 
-            for v_str in val_strs[1:]:
-                var_strs.append(' ' * (len(v_name + ' = ')) + v_str)
+                for v_str in val_strs[1:]:
+                    var_strs.append(' ' * (len(v_name + ' = ')) + v_str)
 
         return var_strs
 
