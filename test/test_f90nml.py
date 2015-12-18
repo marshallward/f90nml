@@ -73,6 +73,7 @@ class Test(unittest.TestCase):
                     'v2d_explicit': [[1, 2], [3, 4]],
                     'v2d_outer': [[1], [2], [3], [4]],
                     'v2d_inner': [[1, 2, 3, 4]],
+                    'v2d_sparse' : [[1, 2], [], [5, 6]]
                     }
                 }
 
@@ -87,6 +88,7 @@ class Test(unittest.TestCase):
                     'v2d_explicit': [[1, 3], [2, 4]],
                     'v2d_outer': [[1, 2, 3, 4]],
                     'v2d_inner': [[1], [2], [3], [4]],
+                    'v2d_sparse': [[1, None, 5], [2, None, 6]]
                     }
                 }
 
