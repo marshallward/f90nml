@@ -71,7 +71,7 @@ namelist patch and apply it to a target file using the ``patch`` function:
 .. code:: python
 
    patch_nml = {'config_nml': {'visc': 1e-6}}
-   nml.patch('sample.nml', 'new_sample.nml', patch_nml)
+   f90nml.patch('sample.nml', patch_nml, 'new_sample.nml')
 
 
 Installation
@@ -197,7 +197,7 @@ properties of the ``Namelist`` object.  The properties for a sample namelist
 ``nml.uppercase`` (Default: ``False``)
    Display namelist and variable names in uppercase.
 
-``nml.float_format`` (Default: ``None``)
+``nml.floatformat`` (Default: ``None``)
    Specify the floating point output format, as expected by Python ``format``
    function.
 
