@@ -52,7 +52,7 @@ class Namelist(OrderedDict):
             complex:
                 lambda x: '({0}, {1})'.format(x.real, x.imag),
             str:
-                lambda x: repr(x).replace("\\'", "''").replace('\\"', '""'),
+                lambda x: repr(x).replace("\\'", "''").replace('\\"', '""').replace('\\\\', '\\'),
             type(None):
                 lambda x: ''
         }
