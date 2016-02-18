@@ -117,6 +117,7 @@ class Test(unittest.TestCase):
                     'str_list': ['a', 'b', 'c'],
                     'slist_no_space': ['a', 'b', 'c'],
                     'slist_no_quote': ['a', 'b', 'c'],
+                    'slash': 'back\\slash',
                     }
                 }
 
