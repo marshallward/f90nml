@@ -75,11 +75,10 @@ class Parser(object):
         >>> parser = Parser()
         >>> data_nml = parser.read('data.nml')"""
 
-        nml_file = open(nml_fname, 'r')
-
+        # Convert patch data to a Namelist object
         if nml_patch_in:
             if not isinstance(nml_patch_in, dict):
-                nml_file.close()
+                #nml_file.close()
                 raise ValueError('Input patch must be a dict or a Namelist.')
 
             nml_patch = copy.deepcopy(Namelist(nml_patch_in))
@@ -87,12 +86,14 @@ class Parser(object):
             if not patch_fname:
                 patch_fname = nml_fname + '~'
             elif nml_fname == patch_fname:
-                nml_file.close()
+                #nml_file.close()
                 raise ValueError('f90nml: error: Patch filepath cannot be the '
                                  'same as the original filepath.')
             self.pfile = open(patch_fname, 'w')
         else:
             nml_patch = Namelist()
+
+        nml_file = open(nml_fname, 'r')
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
