@@ -91,7 +91,17 @@ class Parser(object):
         else:
             nml_patch = Namelist()
 
-        nml_file = open(nml_fname, 'r')
+        try:
+            nml_file = open(nml_fname, 'r')
+            return self.readstream(nml_file, nml_patch)
+
+        finally:
+            # Close the unfinished files on any exceptions within readstream
+            nml_file.close()
+            if self.pfile:
+                self.pfile.close()
+
+    def readstream(self, nml_file, nml_patch):
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
@@ -139,14 +149,8 @@ class Parser(object):
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
 
-                    try:
-                        v_name, v_values = self.parse_variable(
-                            g_vars, patch_nml=grp_patch)
-                    except ValueError:
-                        nml_file.close()
-                        if self.pfile:
-                            self.pfile.close()
-                        raise
+                    v_name, v_values = self.parse_variable(g_vars,
+                                                           patch_nml=grp_patch)
 
                     if v_name in g_vars:
                         v_prior_values = g_vars[v_name]
@@ -193,10 +197,6 @@ class Parser(object):
                 self.update_tokens()
             except StopIteration:
                 break
-
-        nml_file.close()
-        if self.pfile:
-            self.pfile.close()
 
         return nmls
 
