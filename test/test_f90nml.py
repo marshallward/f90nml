@@ -237,8 +237,22 @@ class Test(unittest.TestCase):
                 self.assertEqual(source_str, target_str)
 
     def assert_write(self, nml, target_fname):
+        self.assert_write_path(nml, target_fname)
+        self.assert_write_file(nml, target_fname)
+
+    def assert_write_path(self, nml, target_fname):
         tmp_fname = 'tmp.nml'
         f90nml.write(nml, tmp_fname)
+        try:
+            self.assert_file_equal(tmp_fname, target_fname)
+        finally:
+            os.remove(tmp_fname)
+
+    def assert_write_file(self, nml, target_fname):
+        tmp_fname = 'tmp.nml'
+        with open(tmp_fname, 'w') as tmp_file:
+            f90nml.write(nml, tmp_file)
+            self.assertFalse(tmp_file.closed)
         try:
             self.assert_file_equal(tmp_fname, target_fname)
         finally:
@@ -352,11 +366,24 @@ class Test(unittest.TestCase):
         test_nml.pop('empty_nml')
         self.assertEqual(test_nml, f90nml.namelist.Namelist())
 
-    def test_patch(self):
+    def test_patch_paths(self):
         patch_nml = f90nml.read('types_patch.nml')
         f90nml.patch('types.nml', patch_nml, 'tmp.nml')
         test_nml = f90nml.read('tmp.nml')
         try:
+            self.assertEqual(test_nml, patch_nml)
+        finally:
+            os.remove('tmp.nml')
+
+    def test_patch_files(self):
+        patch_nml = f90nml.read('types_patch.nml')
+        with open('types.nml') as f_in:
+            with open('tmp.nml', 'w') as f_out:
+                f90nml.patch(f_in, patch_nml, f_out)
+                self.assertFalse(f_in.closed)
+                self.assertFalse(f_out.closed)
+        try:
+            test_nml = f90nml.read('tmp.nml')
             self.assertEqual(test_nml, patch_nml)
         finally:
             os.remove('tmp.nml')
@@ -382,6 +409,10 @@ class Test(unittest.TestCase):
             self.assertEqual(test_nml, patch_nml)
         finally:
             os.remove('types.nml~')
+
+        # The above behavior is only for paths, not files
+        with open('types.nml') as nml_file:
+            self.assertRaises(ValueError, f90nml.patch, nml_file, patch_nml)
 
     def test_no_selfpatch(self):
         patch_nml = f90nml.read('types_patch.nml')

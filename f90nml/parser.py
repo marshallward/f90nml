@@ -75,6 +75,10 @@ class Parser(object):
         >>> parser = Parser()
         >>> data_nml = parser.read('data.nml')"""
 
+        # For switching based on files versus paths
+        nml_is_path = not hasattr(nml_fname, 'read')
+        patch_is_path = not hasattr(patch_fname, 'read')
+
         # Convert patch data to a Namelist object
         if nml_patch_in:
             if not isinstance(nml_patch_in, dict):
@@ -82,23 +86,28 @@ class Parser(object):
 
             nml_patch = copy.deepcopy(Namelist(nml_patch_in))
 
-            if not patch_fname:
+            if not patch_fname and nml_is_path:
                 patch_fname = nml_fname + '~'
+            elif not patch_fname:
+                raise ValueError('f90nml: error: No output file for patch.')
             elif nml_fname == patch_fname:
                 raise ValueError('f90nml: error: Patch filepath cannot be the '
                                  'same as the original filepath.')
-            self.pfile = open(patch_fname, 'w')
+            self.pfile = open(patch_fname, 'w') if patch_is_path else patch_fname
         else:
             nml_patch = Namelist()
 
         try:
-            nml_file = open(nml_fname, 'r')
-            return self.readstream(nml_file, nml_patch)
+            nml_file = open(nml_fname, 'r') if nml_is_path else nml_fname
+            try:
+                return self.readstream(nml_file, nml_patch)
 
+            # Close the files we opened on any exceptions within readstream
+            finally:
+                if nml_is_path:
+                    nml_file.close()
         finally:
-            # Close the unfinished files on any exceptions within readstream
-            nml_file.close()
-            if self.pfile:
+            if self.pfile and patch_is_path:
                 self.pfile.close()
 
     def readstream(self, nml_file, nml_patch):
