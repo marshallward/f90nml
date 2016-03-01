@@ -334,7 +334,8 @@ class Namelist(OrderedDict):
 
             # Complete the set of values
             if val_strs:
-                var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
+                var_strs.append('{0} = {1}'
+                                ''.format(v_name, val_strs[0]).strip())
 
                 for v_str in val_strs[1:]:
                     var_strs.append(' ' * (len(v_name + ' = ')) + v_str)
