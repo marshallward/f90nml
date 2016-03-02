@@ -84,17 +84,20 @@ class Parser(object):
 
             if not patch_fname:
                 patch_fname = nml_fname + '~'
+
             elif nml_fname == patch_fname:
                 raise ValueError('f90nml: error: Patch filepath cannot be the '
                                  'same as the original filepath.')
-            self.pfile = open(patch_fname, 'w')
         else:
             nml_patch = Namelist()
 
-        try:
-            nml_file = open(nml_fname, 'r')
-            return self.readstream(nml_file, nml_patch)
+        # Open file descriptors
+        nml_file = open(nml_fname, 'r')
+        if nml_patch_in and patch_fname:
+            self.pfile = open(patch_fname, 'w')
 
+        try:
+            return self.readstream(nml_file, nml_patch)
         finally:
             # Close the unfinished files on any exceptions within readstream
             nml_file.close()
