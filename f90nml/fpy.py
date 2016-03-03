@@ -9,7 +9,6 @@
 """
 import re
 
-
 def pyfloat(v_str):
     """Convert string repr of Fortran floating point to Python double."""
     # NOTE: There is no loss of information from SP to DP floats

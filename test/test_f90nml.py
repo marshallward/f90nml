@@ -443,11 +443,6 @@ class Test(unittest.TestCase):
                                                     'tmp.nml')
         os.remove('tmp.nml')
 
-    def test_no_patch_file(self):
-        patch_nml = f90nml.read('types_patch.nml')
-        self.assertRaises(IOError, f90nml.patch,
-                          'missing_patch.nml', patch_nml, 'tmp.nml')
-
     def test_indent(self):
         test_nml = f90nml.read('types.nml')
 
