@@ -8,10 +8,4 @@
     v_double_upper = 1.0
     v_positive_index = 10.0
     v_negative_index = 0.1
-    v_no_exp_pos = 1.0
-    v_no_exp_neg = 1.0
-    v_no_exp_pos_dot = 1.0
-    v_no_exp_neg_dot = 1.0
-    v_neg_no_exp_pos = -1.0
-    v_neg_no_exp_neg = -1.0
 /
