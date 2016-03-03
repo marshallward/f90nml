@@ -223,22 +223,30 @@ class Namelist(OrderedDict):
     def write(self, nml_path, force=False):
         """Output dict to a Fortran 90 namelist file."""
 
-        if not force and os.path.isfile(nml_path):
+        nml_is_file = hasattr(nml_path, 'read')
+        if not force and not nml_is_file and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
 
-        with open(nml_path, 'w') as nml_file:
-            for grp_name, grp_vars in self.items():
-                # Check for repeated namelist records (saved as lists)
-                if isinstance(grp_vars, list):
-                    for g_vars in grp_vars:
-                        self.write_nmlgrp(grp_name, g_vars, nml_file)
-                else:
-                    self.write_nmlgrp(grp_name, grp_vars, nml_file)
+        # collect individual (name, namelist) pairs, including repeated names
+        groups = []
+        for (name,vals) in self.items():
+            if isinstance(vals, list): # repeated namelist
+                groups.extend((name, v) for v in vals)
+            else:
+                groups.append((name, vals))
 
-        if self.items():
-            with open(nml_path, 'rb+') as nml_file:
-                nml_file.seek(-1, os.SEEK_END)
-                nml_file.truncate()
+        nml_file = nml_path if nml_is_file else open(nml_path, 'w')
+        try:
+            if len(groups) > 0:
+                first_name, first_vals = groups[0]
+                self.write_nmlgrp(first_name, first_vals, nml_file)
+
+                for (name, vals) in groups[1:]:
+                    print(file=nml_file) # double-space between groups
+                    self.write_nmlgrp(name, vals, nml_file)
+        finally:
+            if not nml_is_file:
+                nml_file.close()
 
     def write_nmlgrp(self, grp_name, grp_vars, nml_file):
         """Write namelist group to target file."""
@@ -255,7 +263,6 @@ class Namelist(OrderedDict):
                 print(nml_line, file=nml_file)
 
         print('/', file=nml_file)
-        print(file=nml_file)
 
     def var_strings(self, v_name, v_values, v_idx=None):
         """Convert namelist variable to list of fixed-width strings."""
