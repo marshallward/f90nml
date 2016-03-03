@@ -246,27 +246,6 @@ class Namelist(OrderedDict):
             if not nml_is_file:
                 nml_file.close()
 
-        ## collect individual (name, namelist) pairs, including repeated names
-        #groups = []
-        #for (name,vals) in self.items():
-        #    if isinstance(vals, list): # repeated namelist
-        #        groups.extend((name, v) for v in vals)
-        #    else:
-        #        groups.append((name, vals))
-
-        #nml_file = nml_path if nml_is_file else open(nml_path, 'w')
-        #try:
-        #    if len(groups) > 0:
-        #        first_name, first_vals = groups[0]
-        #        self.write_nmlgrp(first_name, first_vals, nml_file)
-
-        #        for (name, vals) in groups[1:]:
-        #            print(file=nml_file) # double-space between groups
-        #            self.write_nmlgrp(name, vals, nml_file)
-        #finally:
-        #    if not nml_is_file:
-        #        nml_file.close()
-
     def write_nmlgrp(self, grp_name, grp_vars, nml_file):
         """Write namelist group to target file."""
 
