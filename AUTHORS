@@ -1,15 +1,20 @@
-Marshall Ward:
-    - Creator and Maintainer
-    - Email: <f90nml@marshallward.org>
+Marshall Ward <f90nml@marshallward.org>
+    - Maintainer, Creator
 
-Huziy Oleksander:
+Jacob Williams
+    - Derived type support and testing
+
+Michael Lamparski
+    - File object support
+
+Martin Dix
+    - Sparse array support
+
+Huziy Oleksander
     - Streamlined namelist output interface
 
-Kai Li:
+Kai Li
     - Python 2.6 output support
 
-Jacob Williams:
-    - Extensive testing of derived type support
-
-Dalon Work:
-    - Contributions to multidimensional support
+dwwork
+    - Multidimensional support

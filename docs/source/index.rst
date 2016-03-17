@@ -57,6 +57,13 @@ which would would point ``nml`` to the following ``dict``:
             }
          }
 
+File objects can also be used as inputs:
+
+.. code:: python
+
+   with open('sample.nml') as nml_file:
+       nml = f90nml.read(nml_file)
+
 To modify one of the values, say ``steps``, and save the output, just
 manipulate the ``nml`` contents and write to disk using the ``write`` function:
 
@@ -65,8 +72,16 @@ manipulate the ``nml`` contents and write to disk using the ``write`` function:
    nml['config_nml']['steps'] = 432
    nml.write('new_sample.nml')
 
+Namelists can also be saved to file objects:
+
+.. code:: python
+
+   with open('target.nml') as nml_file:
+      nml.write(nml_file)
+
 To modify a namelist but preserve its comments and formatting, create a
-namelist patch and apply it to a target file using the ``patch`` function:
+namelist (or ``dict``) patch and apply it to a target file using the ``patch``
+function:
 
 .. code:: python
 
