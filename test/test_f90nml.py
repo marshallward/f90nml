@@ -6,7 +6,11 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-import numpy
+try:
+    import numpy
+    has_numpy = True
+except ImportError:
+    has_numpy = False
 
 sys.path.insert(1, '../')
 import f90nml
@@ -234,14 +238,15 @@ class Test(unittest.TestCase):
 
         self.ext_token_nml = {'ext_token_nml': {'x': 1}}
 
-        self.numpy_nml = {
-            'numpy_nml': OrderedDict((
-                    ('np_integer', numpy.int64(1)),
-                    ('np_float', numpy.float64(1.0)),
-                    ('np_complex', numpy.complex128(1+2j)),
+        if has_numpy:
+            self.numpy_nml = {
+                'numpy_nml': OrderedDict((
+                        ('np_integer', numpy.int64(1)),
+                        ('np_float', numpy.float64(1.0)),
+                        ('np_complex', numpy.complex128(1+2j)),
+                    )
                 )
-            )
-        }
+            }
 
     # Support functions
     def assert_file_equal(self, source_fname, target_fname):
@@ -560,8 +565,9 @@ class Test(unittest.TestCase):
     def test_dict_write(self):
         self.assert_write(self.types_nml, 'types_dict.nml')
 
-    def test_numpy_write(self):
-        self.assert_write(self.numpy_nml, 'numpy_types.nml')
+    if has_numpy:
+        def test_numpy_write(self):
+            self.assert_write(self.numpy_nml, 'numpy_types.nml')
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
