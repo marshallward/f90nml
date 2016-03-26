@@ -8,6 +8,7 @@
 """
 from __future__ import print_function
 
+import numbers
 import os
 try:
     from collections import OrderedDict
@@ -43,22 +44,6 @@ class Namelist(OrderedDict):
 
         # Namelist group spacing flag
         self._newline = False
-
-        # Representatation functions
-        self.f90str = {
-            bool:
-                lambda x: self.logical_repr[x],
-            int:
-                lambda x: str(x),
-            float:
-                lambda x: '{0:{fmt}}'.format(x, fmt=self.floatformat),
-            complex:
-                lambda x: '({0}, {1})'.format(x.real, x.imag),
-            str:
-                lambda x: repr(x).replace("\\'", "''").replace('\\"', '""').replace('\\\\', '\\'),
-            type(None):
-                lambda x: ''
-        }
 
     def __contains__(self, key):
         return super(Namelist, self).__contains__(key.lower())
@@ -354,8 +339,34 @@ class Namelist(OrderedDict):
     def f90repr(self, value):
         """Convert primitive Python types to equivalent Fortran strings."""
 
-        try:
-            return self.f90str[type(value)](value)
-        except KeyError:
-            raise ValueError('Type {0} of {1} cannot be converted to a '
-                             'Fortran type.'.format(type(value), value))
+        if isinstance(value, bool):
+            return self.f90bool(value)
+        elif isinstance(value, numbers.Integral):
+            return self.f90int(value)
+        elif isinstance(value, numbers.Real):
+            return self.f90float(value)
+        elif isinstance(value, numbers.Complex):
+            return self.f90complex(value)
+        elif isinstance(value, str):
+            return self.f90str(value)
+        elif value is None:
+            return ''
+        else:
+            raise ValueError('Type {0} of {1} cannot be converted to a Fortran'
+                             ' type.'.format(type(value), value))
+
+    def f90bool(self, v):
+        return self.logical_repr[v]
+
+    def f90int(self, v):
+        return str(v)
+
+    def f90float(self, v):
+        return '{0:{fmt}}'.format(v, fmt=self.floatformat)
+
+    def f90complex(self, v):
+        return '({0:{fmt}}, {1:{fmt}})'.format(v.real, v.imag,
+                                               fmt=self.floatformat)
+
+    def f90str(self, v):
+        return repr(v).replace("\\'", "''").replace('\\"', '""').replace('\\\\', '\\')
