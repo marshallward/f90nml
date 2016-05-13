@@ -15,7 +15,7 @@ def pyfloat(v_str):
     # NOTE: There is no loss of information from SP to DP floats
 
     return float(re.sub('(?<=[^eEdD])(?=[+-])', 'e',
-                 v_str.lower().replace('d', 'e')))
+                        v_str.lower().replace('d', 'e')))
 
 
 def pycomplex(v_str):
