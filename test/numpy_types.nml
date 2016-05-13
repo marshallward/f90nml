@@ -1,0 +1,5 @@
+&numpy_nml
+    np_integer = 1
+    np_float = 1.0
+    np_complex = (1.0, 2.0)
+/
