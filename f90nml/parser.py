@@ -69,7 +69,7 @@ class Parser(object):
                 self._strict_logical = value
 
     def read(self, nml_fname, nml_patch_in=None, patch_fname=None):
-        """Parse a Fortran 90 namelist file and store the contents.
+        """Parse a Fortran namelist file and store the contents.
 
         >>> from f90nml.parser import Parser
         >>> parser = Parser()
@@ -93,7 +93,10 @@ class Parser(object):
             elif nml_fname == patch_fname:
                 raise ValueError('f90nml: error: Patch filepath cannot be the '
                                  'same as the original filepath.')
-            self.pfile = open(patch_fname, 'w') if patch_is_path else patch_fname
+            if patch_is_path:
+                self.pfile = open(patch_fname, 'w')
+            else:
+                self.pfile = patch_fname
         else:
             nml_patch = Namelist()
 
@@ -111,6 +114,7 @@ class Parser(object):
                 self.pfile.close()
 
     def readstream(self, nml_file, nml_patch):
+        """Parse an input stream containing a Fortran namelist."""
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
