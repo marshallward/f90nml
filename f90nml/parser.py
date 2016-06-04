@@ -335,6 +335,8 @@ class Parser(object):
         if patch_values:
             if not isinstance(patch_values, list):
                 patch_values = [patch_values]
+            else:
+                self.pfile.write(self.prior_token)
             v_values = patch_values
 
         if not v_idx:
