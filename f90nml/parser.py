@@ -262,12 +262,15 @@ class Parser(object):
             # TODO: Edit `Namelist` to support case-insensitive `pop` calls
             #       (Currently only a problem in PyPy2)
             if v_name in patch_nml:
-                patch_values = patch_nml.f90repr(patch_nml.pop(v_name.lower()))
-                if not isinstance(patch_values, list):
-                    patch_values = [patch_values]
+                patch_values = patch_nml.pop(v_name.lower())
 
-                for p_val in patch_values:
-                    self.pfile.write(p_val)
+                if isinstance(patch_values, list):
+                    val_str = ', '.join([patch_nml.f90repr(v)
+                                         for v in patch_values])
+                else:
+                    val_str = patch_nml.f90repr(patch_values)
+
+                self.pfile.write(val_str)
 
             # Add variables until next variable trigger
             while (self.token not in ('=', '(', '%') or
@@ -325,6 +328,8 @@ class Parser(object):
                     ws_sep = self.update_tokens(write_token)
 
         if patch_values:
+            if not isinstance(patch_values, list):
+                patch_values = [patch_values]
             v_values = patch_values
 
         if not v_idx:
