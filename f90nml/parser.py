@@ -312,7 +312,8 @@ class Parser(object):
                     next_value = self.parse_value(write_token)
 
                     # Finished reading old value, we can again write tokens
-                    write_token = True
+                    if not isinstance(patch_values, list):
+                        write_token = True
 
                     # Check for escaped strings
                     if (v_values and isinstance(v_values[-1], str) and
