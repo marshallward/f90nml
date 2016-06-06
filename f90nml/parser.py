@@ -224,9 +224,6 @@ class Parser(object):
 
         # Patch state
         patch_values = None
-        #write_token = v_name not in patch_nml
-        # XXX investigate
-        write_token = True
 
         if self.token == '(':
 
@@ -273,14 +270,7 @@ class Parser(object):
                 if not isinstance(patch_values, list):
                     patch_values = [patch_values]
 
-                val_str = ', '.join([patch_nml.f90repr(v)
-                                     for v in patch_values])
-
-                n_pvals = len(patch_values)
                 p_idx = 0
-
-                # XXX
-                #self.pfile.write(val_str)
 
             # Add variables until next variable trigger
             while (self.token not in ('=', '(', '%') or
@@ -288,9 +278,9 @@ class Parser(object):
 
                 # Check for repeated values
                 if self.token == '*':
-                    n_vals = self.parse_value(write_token)
+                    n_vals = self.parse_value()
                     assert isinstance(n_vals, int)
-                    self.update_tokens(write_token)
+                    self.update_tokens()
                 elif not n_vals:
                     n_vals = 1
 
@@ -304,26 +294,18 @@ class Parser(object):
                 elif self.prior_token == '*':
 
                     if self.token not in ('/', '&', '$'):
-                        self.update_tokens(write_token)
+                        self.update_tokens()
 
                     if (self.token == '=' or (self.token in ('/', '&', '$') and
                                               self.prior_token == '*')):
                         next_value = None
                     else:
-                        next_value = self.parse_value(write_token)
+                        next_value = self.parse_value()
 
                     self.append_value(v_values, next_value, v_idx, n_vals)
 
                 else:
-                    next_value = self.parse_value(write_token)
-
-                    # XXX
-                    # Finished reading old value, we can again write tokens
-                    #if patch_values and n_pvals > 1:
-                    #    n_pvals -= 1
-                    #else:
-                    #    write_token = True
-                    #write_token = True
+                    next_value = self.parse_value()
 
                     # Check for escaped strings
                     if (v_values and isinstance(v_values[-1], str) and
@@ -340,27 +322,23 @@ class Parser(object):
                     break
                 else:
                     prior_ws_sep = ws_sep
-                    #ws_sep = self.update_tokens(write_token)
-                    if (patch_values and p_idx < len(patch_values)
-                            and len(patch_values) > 0 and self.token != ','):
+                    if (patch_values and p_idx < len(patch_values) and
+                            len(patch_values) > 0 and self.token != ','):
                         p_val = patch_values[p_idx]
                         p_repr = patch_nml.f90repr(patch_values[p_idx])
-                        #print(self.token, p_idx, p_val)
                         p_idx += 1
-                        ws_sep = self.update_tokens(write_token, p_repr)
+                        ws_sep = self.update_tokens(override=p_repr)
                         if isinstance(p_val, complex):
-                            # Just skip the complex content
+                            # Skip over the complex content
                             # NOTE: Assumes input and patch are complex
                             self.update_tokens(write_token=False)
                             self.update_tokens(write_token=False)
                             self.update_tokens(write_token=False)
                             self.update_tokens(write_token=False)
                     else:
-                        ws_sep = self.update_tokens(write_token)
+                        ws_sep = self.update_tokens()
 
         if patch_values:
-            if not isinstance(patch_values, list):
-                patch_values = [patch_values]
             v_values = patch_values
 
         if not v_idx:

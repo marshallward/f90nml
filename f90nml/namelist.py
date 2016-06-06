@@ -355,18 +355,23 @@ class Namelist(OrderedDict):
             raise ValueError('Type {0} of {1} cannot be converted to a Fortran'
                              ' type.'.format(type(value), value))
 
-    def f90bool(self, v):
-        return self.logical_repr[v]
+    def f90bool(self, value):
+        """Return a Fortran 90 representation of a logical value."""
+        return self.logical_repr[value]
 
-    def f90int(self, v):
-        return str(v)
+    def f90int(self, value):
+        """Return a Fortran 90 representation of an integer."""
+        return str(value)
 
-    def f90float(self, v):
-        return '{0:{fmt}}'.format(v, fmt=self.floatformat)
+    def f90float(self, value):
+        """Return a Fortran 90 representation of a floating point number."""
+        return '{0:{fmt}}'.format(value, fmt=self.floatformat)
 
-    def f90complex(self, v):
-        return '({0:{fmt}}, {1:{fmt}})'.format(v.real, v.imag,
+    def f90complex(self, value):
+        """Return a Fortran 90 representation of a complex number."""
+        return '({0:{fmt}}, {1:{fmt}})'.format(value.real, value.imag,
                                                fmt=self.floatformat)
 
-    def f90str(self, v):
-        return repr(v).replace("\\'", "''").replace('\\"', '""').replace('\\\\', '\\')
+    def f90str(self, value):
+        """Return a Fortran 90 representation of a string."""
+        return repr(value).replace("\\'", "''").replace('\\"', '""').replace('\\\\', '\\')
