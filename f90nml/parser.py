@@ -224,7 +224,9 @@ class Parser(object):
 
         # Patch state
         patch_values = None
-        write_token = v_name not in patch_nml
+        #write_token = v_name not in patch_nml
+        # XXX investigate
+        write_token = True
 
         if self.token == '(':
 
@@ -275,8 +277,10 @@ class Parser(object):
                                      for v in patch_values])
 
                 n_pvals = len(patch_values)
+                p_idx = 0
 
-                self.pfile.write(val_str)
+                # XXX
+                #self.pfile.write(val_str)
 
             # Add variables until next variable trigger
             while (self.token not in ('=', '(', '%') or
@@ -313,11 +317,13 @@ class Parser(object):
                 else:
                     next_value = self.parse_value(write_token)
 
+                    # XXX
                     # Finished reading old value, we can again write tokens
-                    if patch_values and n_pvals > 1:
-                        n_pvals -= 1
-                    else:
-                        write_token = True
+                    #if patch_values and n_pvals > 1:
+                    #    n_pvals -= 1
+                    #else:
+                    #    write_token = True
+                    #write_token = True
 
                     # Check for escaped strings
                     if (v_values and isinstance(v_values[-1], str) and
@@ -334,7 +340,23 @@ class Parser(object):
                     break
                 else:
                     prior_ws_sep = ws_sep
-                    ws_sep = self.update_tokens(write_token)
+                    #ws_sep = self.update_tokens(write_token)
+                    if (patch_values and p_idx < len(patch_values)
+                            and len(patch_values) > 0 and self.token != ','):
+                        p_val = patch_values[p_idx]
+                        p_repr = patch_nml.f90repr(patch_values[p_idx])
+                        #print(self.token, p_idx, p_val)
+                        p_idx += 1
+                        ws_sep = self.update_tokens(write_token, p_repr)
+                        if isinstance(p_val, complex):
+                            # Just skip the complex content
+                            # NOTE: Assumes input and patch are complex
+                            self.update_tokens(write_token=False)
+                            self.update_tokens(write_token=False)
+                            self.update_tokens(write_token=False)
+                            self.update_tokens(write_token=False)
+                    else:
+                        ws_sep = self.update_tokens(write_token)
 
         if patch_values:
             if not isinstance(patch_values, list):
@@ -415,7 +437,7 @@ class Parser(object):
         idx_triplet = (i_start, i_end, i_stride)
         return idx_triplet
 
-    def parse_value(self, write_token=True):
+    def parse_value(self, write_token=True, override=None):
         """Convert string repr of Fortran type to equivalent Python type."""
         v_str = self.prior_token
 
@@ -432,7 +454,7 @@ class Parser(object):
             self.update_tokens(write_token)
             assert self.token == ')'
 
-            self.update_tokens(write_token)
+            self.update_tokens(write_token, override)
             v_str = '({0}, {1})'.format(v_re, v_im)
 
         recast_funcs = [int, pyfloat, pycomplex, pybool, pystr]
@@ -448,14 +470,15 @@ class Parser(object):
             except ValueError:
                 continue
 
-    def update_tokens(self, write_token=True):
+    def update_tokens(self, write_token=True, override=None):
         """Update tokens to the next available values."""
 
         ws_sep = False
         next_token = next(self.tokens)
 
         if self.pfile and write_token:
-            self.pfile.write(self.token)
+            token = override if override else self.token
+            self.pfile.write(token)
 
         # Commas between values are interpreted as whitespace
         if self.token == ',':
