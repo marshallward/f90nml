@@ -271,8 +271,10 @@ class Parser(object):
                 if isinstance(patch_values, list):
                     val_str = ', '.join([patch_nml.f90repr(v)
                                          for v in patch_values])
+                    n_pvals = len(patch_values)
                 else:
                     val_str = patch_nml.f90repr(patch_values)
+                    n_pvals = 1
 
                 self.pfile.write(val_str)
 
@@ -312,7 +314,9 @@ class Parser(object):
                     next_value = self.parse_value(write_token)
 
                     # Finished reading old value, we can again write tokens
-                    if not isinstance(patch_values, list):
+                    if patch_values and n_pvals > 1:
+                        n_pvals -= 1
+                    else:
                         write_token = True
 
                     # Check for escaped strings
@@ -335,8 +339,6 @@ class Parser(object):
         if patch_values:
             if not isinstance(patch_values, list):
                 patch_values = [patch_values]
-            else:
-                self.pfile.write(self.prior_token)
             v_values = patch_values
 
         if not v_idx:
