@@ -268,13 +268,13 @@ class Parser(object):
             if v_name in patch_nml:
                 patch_values = patch_nml.pop(v_name.lower())
 
-                if isinstance(patch_values, list):
-                    val_str = ', '.join([patch_nml.f90repr(v)
-                                         for v in patch_values])
-                    n_pvals = len(patch_values)
-                else:
-                    val_str = patch_nml.f90repr(patch_values)
-                    n_pvals = 1
+                if not isinstance(patch_values, list):
+                    patch_values = [patch_values]
+
+                val_str = ', '.join([patch_nml.f90repr(v)
+                                     for v in patch_values])
+
+                n_pvals = len(patch_values)
 
                 self.pfile.write(val_str)
 
