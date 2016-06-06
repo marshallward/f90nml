@@ -1,3 +1,8 @@
+v0.19:
+    - Array patching is now supported
+    - Numpy primitives can be converted to Fortran types
+    - File objects can now be used as input arguments
+
 v0.18:
     - File object read and write support
     - Escape (\) character support in strings
