@@ -18,6 +18,18 @@
     ! Range test
     v_range(1:4) = 1,2,3,4
 
+    ! Nonzero starting index
+    v_start_zero(0:3) = 1, 2, 3, 4
+    v_start_minusone(-2:2) = 1, 2, 3, 4, 5
+
+    ! In-order start index adjust
+    v_zero_adj(0) = 1
+    v_zero_adj(2:3) = 3, 4
+
+    ! Out-of-order start index adjust
+    v_zero_adj_ooo(2:3) = 3, 4
+    v_zero_adj_ooo(0) = 1
+
     ! Implicit range test
     v_implicit_start(1:) = 1,2,3,4
     v_implicit_end(:4) = 1,2,3,4
