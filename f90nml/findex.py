@@ -12,9 +12,9 @@ class FIndex(object):
     """Column-major multidimensional index iterator"""
 
     def __init__(self, bounds):
-        self.start = [1 if not b[0] else b[0] for b in bounds]
+        self.start = [1 if b[0] is None else b[0] for b in bounds]
         self.end = [b[1] for b in bounds]
-        self.step = [1 if not b[2] else b[2] for b in bounds]
+        self.step = [1 if b[2] is None else b[2] for b in bounds]
 
         self.current = self.start[:]
 
