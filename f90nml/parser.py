@@ -230,6 +230,8 @@ class Parser(object):
             v_idx_bounds = self.parse_indices()
             v_idx = FIndex(v_idx_bounds)
 
+            # TODO: Update start index against namelist?
+
             self.update_tokens()
         else:
             v_idx = None
@@ -484,28 +486,29 @@ class Parser(object):
         for _ in range(n_vals):
             if v_idx:
                 v_i = next(v_idx)
+                v_s = v_idx.first
 
                 if not self.row_major:
                     v_i = v_i[::-1]
+                    v_s = v_s[::-1]
 
                 # Multidimensional arrays
-                # TODO: support both row and column ordering in Python
-
                 v_tmp = v_values
-                for idx in v_i[:-1]:
+                for (i_v, i_s) in zip(v_i[:-1], v_s[:-1]):
                     try:
-                        v_tmp = v_tmp[idx - 1]
+                        v_tmp = v_tmp[i_v - i_s]
                     except IndexError:
                         size = len(v_tmp)
-                        v_tmp.extend([] for i in range(size, idx))
-                        v_tmp = v_tmp[idx - 1]
+                        v_tmp.extend([] for i in range(size, i_v - i_s + 1))
+                        v_tmp = v_tmp[i_v - i_s]
 
+                i_v, i_s = v_i[-1], v_s[-1]
                 try:
-                    v_tmp[v_i[-1] - 1] = next_value
+                    v_tmp[i_v - i_s] = next_value
                 except IndexError:
                     size = len(v_tmp)
-                    v_tmp.extend(None for i in range(size, v_i[-1]))
-                    v_tmp[v_i[-1] - 1] = next_value
+                    v_tmp.extend(None for i in range(size, i_v - i_s + 1))
+                    v_tmp[i_v - i_s] = next_value
             else:
                 v_values.append(next_value)
 
