@@ -46,7 +46,7 @@ class Namelist(OrderedDict):
         self._newline = False
 
         # Vector starting index tracking
-        self.first_index = {}
+        self.start_index = {}
 
     def __contains__(self, key):
         return super(Namelist, self).__contains__(key.lower())
@@ -248,13 +248,15 @@ class Namelist(OrderedDict):
 
         for v_name, v_val in grp_vars.items():
 
-            for v_str in self.var_strings(v_name, v_val):
+            v_start = grp_vars.start_index.get(v_name, None)
+
+            for v_str in self.var_strings(v_name, v_val, v_start=v_start):
                 nml_line = self.indent + '{0}'.format(v_str)
                 print(nml_line, file=nml_file)
 
         print('/', file=nml_file)
 
-    def var_strings(self, v_name, v_values, v_idx=None):
+    def var_strings(self, v_name, v_values, v_idx=None, v_start=None):
         """Convert namelist variable to list of fixed-width strings."""
 
         if self.uppercase:
@@ -262,8 +264,23 @@ class Namelist(OrderedDict):
 
         var_strs = []
 
+        # Parse a multidimensional array
+        if (isinstance(v_values, list) and
+              any(isinstance(v, list) for v in v_values) and
+              all((isinstance(v, list) or v is None) for v in v_values)):
+
+            if not v_idx:
+                v_idx = []
+
+            i_s = 1 # FIXME
+            for idx, val in enumerate(v_values, start=i_s):
+                v_idx_new = v_idx + [idx]
+                v_strs = self.var_strings(v_name, val, v_idx=v_idx_new,
+                                          v_start=v_start)
+                var_strs.extend(v_strs)
+
         # Parse derived type contents
-        if isinstance(v_values, dict):
+        elif isinstance(v_values, dict):
             for f_name, f_vals in v_values.items():
                 v_title = '%'.join([v_name, f_name])
 
@@ -284,30 +301,36 @@ class Namelist(OrderedDict):
                 v_strs = self.var_strings(v_title, val)
                 var_strs.extend(v_strs)
 
-        # Parse a multidimensional array
-        # TODO: Merge with the array of derived types
-        elif (isinstance(v_values, list) and
-              any(isinstance(v, list) for v in v_values) and
-              all((isinstance(v, list) or v is None) for v in v_values)):
-
-            if not v_idx:
-                v_idx = []
-
-            v_title = v_name
-            for idx, val in enumerate(v_values, start=1):
-
-                v_idx_new = v_idx + [idx]
-                v_strs = self.var_strings(v_title, val, v_idx_new)
-                var_strs.extend(v_strs)
-
         else:
             if not isinstance(v_values, list):
                 v_values = [v_values]
 
-            if v_idx:
-                v_name += '(:, ' + ', '.join(str(i) for i in v_idx[::-1]) + ')'
+            # Print the index range
+
+            if v_idx or v_start:
+                v_idx_repr = '('
+
+                if v_start:
+                    i_s = v_start[0]
+                    i_e = i_s + len(v_values) - 1
+
+                    if i_s == i_e:
+                        v_idx_repr += '{0}'.format(i_s)
+                    else:
+                        v_idx_repr += '{0}:{1}'.format(i_s, i_e)
+                else:
+                    v_idx_repr += ':'
+
+                if v_idx:
+                    v_idx_repr += ', '
+                    v_idx_repr += ', '.join(str(i) for i in v_idx[::-1])
+
+                v_idx_repr += ')'
+            else:
+                v_idx_repr = ''
 
             # Split output across multiple lines (if necessary)
+
             val_strs = []
 
             val_line = ''
@@ -331,8 +354,9 @@ class Namelist(OrderedDict):
 
             # Complete the set of values
             if val_strs:
-                var_strs.append('{0} = {1}'
-                                ''.format(v_name, val_strs[0]).strip())
+                var_strs.append('{0}{1} = {2}'
+                                ''.format(v_name, v_idx_repr,
+                                          val_strs[0]).strip())
 
                 for v_str in val_strs[1:]:
                     var_strs.append(' ' * (len(v_name + ' = ')) + v_str)
