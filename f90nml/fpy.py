@@ -7,13 +7,15 @@
    :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
    :license: Apache License, Version 2.0, see LICENSE for details.
 """
+import re
 
 
 def pyfloat(v_str):
     """Convert string repr of Fortran floating point to Python double."""
     # NOTE: There is no loss of information from SP to DP floats
 
-    return float(v_str.lower().replace('d', 'e'))
+    return float(re.sub('(?<=[^eEdD])(?=[+-])', 'e',
+                        v_str.lower().replace('d', 'e')))
 
 
 def pycomplex(v_str):

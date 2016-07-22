@@ -8,6 +8,7 @@
 """
 from __future__ import print_function
 
+import numbers
 import os
 try:
     from collections import OrderedDict
@@ -41,21 +42,8 @@ class Namelist(OrderedDict):
         self._floatformat = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
 
-        # Representatation functions
-        self.f90str = {
-            bool:
-                lambda x: self.logical_repr[x],
-            int:
-                lambda x: str(x),
-            float:
-                lambda x: '{0:{fmt}}'.format(x, fmt=self.floatformat),
-            complex:
-                lambda x: '({0}, {1})'.format(x.real, x.imag),
-            str:
-                lambda x: repr(x).replace("\\'", "''").replace('\\"', '""'),
-            type(None):
-                lambda x: ''
-        }
+        # Namelist group spacing flag
+        self._newline = False
 
     def __contains__(self, key):
         return super(Namelist, self).__contains__(key.lower())
@@ -223,10 +211,15 @@ class Namelist(OrderedDict):
     def write(self, nml_path, force=False):
         """Output dict to a Fortran 90 namelist file."""
 
-        if not force and os.path.isfile(nml_path):
+        # Reset newline flag
+        self._newline = False
+
+        nml_is_file = hasattr(nml_path, 'read')
+        if not force and not nml_is_file and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
 
-        with open(nml_path, 'w') as nml_file:
+        nml_file = nml_path if nml_is_file else open(nml_path, 'w')
+        try:
             for grp_name, grp_vars in self.items():
                 # Check for repeated namelist records (saved as lists)
                 if isinstance(grp_vars, list):
@@ -234,14 +227,16 @@ class Namelist(OrderedDict):
                         self.write_nmlgrp(grp_name, g_vars, nml_file)
                 else:
                     self.write_nmlgrp(grp_name, grp_vars, nml_file)
-
-        if self.items():
-            with open(nml_path, 'rb+') as nml_file:
-                nml_file.seek(-1, os.SEEK_END)
-                nml_file.truncate()
+        finally:
+            if not nml_is_file:
+                nml_file.close()
 
     def write_nmlgrp(self, grp_name, grp_vars, nml_file):
         """Write namelist group to target file."""
+
+        if self._newline:
+            print(file=nml_file)
+        self._newline = True
 
         if self.uppercase:
             grp_name = grp_name.upper()
@@ -255,7 +250,6 @@ class Namelist(OrderedDict):
                 print(nml_line, file=nml_file)
 
         print('/', file=nml_file)
-        print(file=nml_file)
 
     def var_strings(self, v_name, v_values, v_idx=None):
         """Convert namelist variable to list of fixed-width strings."""
@@ -327,24 +321,57 @@ class Namelist(OrderedDict):
 
             # Append any remaining values
             if val_line:
-                if (self.end_comma or v_values[-1] is None):
+                if self.end_comma or v_values[-1] is None:
                     val_strs.append(val_line)
                 else:
                     val_strs.append(val_line[:-2])
 
             # Complete the set of values
-            var_strs.append('{0} = {1}'.format(v_name, val_strs[0]).strip())
+            if val_strs:
+                var_strs.append('{0} = {1}'
+                                ''.format(v_name, val_strs[0]).strip())
 
-            for v_str in val_strs[1:]:
-                var_strs.append(' ' * (len(v_name + ' = ')) + v_str)
+                for v_str in val_strs[1:]:
+                    var_strs.append(' ' * (len(v_name + ' = ')) + v_str)
 
         return var_strs
 
     def f90repr(self, value):
         """Convert primitive Python types to equivalent Fortran strings."""
 
-        try:
-            return self.f90str[type(value)](value)
-        except KeyError:
-            raise ValueError('Type {0} of {1} cannot be converted to a '
-                             'Fortran type.'.format(type(value), value))
+        if isinstance(value, bool):
+            return self.f90bool(value)
+        elif isinstance(value, numbers.Integral):
+            return self.f90int(value)
+        elif isinstance(value, numbers.Real):
+            return self.f90float(value)
+        elif isinstance(value, numbers.Complex):
+            return self.f90complex(value)
+        elif isinstance(value, str):
+            return self.f90str(value)
+        elif value is None:
+            return ''
+        else:
+            raise ValueError('Type {0} of {1} cannot be converted to a Fortran'
+                             ' type.'.format(type(value), value))
+
+    def f90bool(self, value):
+        """Return a Fortran 90 representation of a logical value."""
+        return self.logical_repr[value]
+
+    def f90int(self, value):
+        """Return a Fortran 90 representation of an integer."""
+        return str(value)
+
+    def f90float(self, value):
+        """Return a Fortran 90 representation of a floating point number."""
+        return '{0:{fmt}}'.format(value, fmt=self.floatformat)
+
+    def f90complex(self, value):
+        """Return a Fortran 90 representation of a complex number."""
+        return '({0:{fmt}}, {1:{fmt}})'.format(value.real, value.imag,
+                                               fmt=self.floatformat)
+
+    def f90str(self, value):
+        """Return a Fortran 90 representation of a string."""
+        return repr(value).replace("\\'", "''").replace('\\"', '""').replace('\\\\', '\\')

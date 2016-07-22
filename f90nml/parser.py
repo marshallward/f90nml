@@ -69,30 +69,52 @@ class Parser(object):
                 self._strict_logical = value
 
     def read(self, nml_fname, nml_patch_in=None, patch_fname=None):
-        """Parse a Fortran 90 namelist file and store the contents.
+        """Parse a Fortran namelist file and store the contents.
 
         >>> from f90nml.parser import Parser
         >>> parser = Parser()
         >>> data_nml = parser.read('data.nml')"""
 
-        nml_file = open(nml_fname, 'r')
+        # For switching based on files versus paths
+        nml_is_path = not hasattr(nml_fname, 'read')
+        patch_is_path = not hasattr(patch_fname, 'read')
 
+        # Convert patch data to a Namelist object
         if nml_patch_in:
             if not isinstance(nml_patch_in, dict):
-                nml_file.close()
-                raise ValueError('Input patch must be a dict or an Namelist.')
+                raise ValueError('Input patch must be a dict or a Namelist.')
 
             nml_patch = copy.deepcopy(Namelist(nml_patch_in))
 
-            if not patch_fname:
+            if not patch_fname and nml_is_path:
                 patch_fname = nml_fname + '~'
+            elif not patch_fname:
+                raise ValueError('f90nml: error: No output file for patch.')
             elif nml_fname == patch_fname:
-                nml_file.close()
                 raise ValueError('f90nml: error: Patch filepath cannot be the '
                                  'same as the original filepath.')
-            self.pfile = open(patch_fname, 'w')
+            if patch_is_path:
+                self.pfile = open(patch_fname, 'w')
+            else:
+                self.pfile = patch_fname
         else:
             nml_patch = Namelist()
+
+        try:
+            nml_file = open(nml_fname, 'r') if nml_is_path else nml_fname
+            try:
+                return self.readstream(nml_file, nml_patch)
+
+            # Close the files we opened on any exceptions within readstream
+            finally:
+                if nml_is_path:
+                    nml_file.close()
+        finally:
+            if self.pfile and patch_is_path:
+                self.pfile.close()
+
+    def readstream(self, nml_file, nml_patch):
+        """Parse an input stream containing a Fortran namelist."""
 
         f90lex = shlex.shlex(nml_file)
         f90lex.whitespace = ''
@@ -128,7 +150,8 @@ class Parser(object):
             g_vars = Namelist()
             v_name = None
 
-            grp_patch = nml_patch.get(g_name, {})
+            # TODO: Edit `Namelist` to support case-insensitive `get` calls
+            grp_patch = nml_patch.get(g_name.lower(), {})
 
             # Populate the namelist group
             while g_name:
@@ -139,14 +162,8 @@ class Parser(object):
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
 
-                    try:
-                        v_name, v_values = self.parse_variable(
-                            g_vars, patch_nml=grp_patch)
-                    except ValueError:
-                        nml_file.close()
-                        if self.pfile:
-                            self.pfile.close()
-                        raise
+                    v_name, v_values = self.parse_variable(g_vars,
+                                                           patch_nml=grp_patch)
 
                     if v_name in g_vars:
                         v_prior_values = g_vars[v_name]
@@ -194,10 +211,6 @@ class Parser(object):
             except StopIteration:
                 break
 
-        nml_file.close()
-        if self.pfile:
-            self.pfile.close()
-
         return nmls
 
     def parse_variable(self, parent, patch_nml=None):
@@ -211,7 +224,6 @@ class Parser(object):
 
         # Patch state
         patch_values = None
-        write_token = v_name not in patch_nml
 
         if self.token == '(':
 
@@ -250,13 +262,15 @@ class Parser(object):
             self.update_tokens()
 
             # Check if value is in the namelist patch
+            # TODO: Edit `Namelist` to support case-insensitive `pop` calls
+            #       (Currently only a problem in PyPy2)
             if v_name in patch_nml:
-                patch_values = patch_nml.f90repr(patch_nml.pop(v_name))
+                patch_values = patch_nml.pop(v_name.lower())
+
                 if not isinstance(patch_values, list):
                     patch_values = [patch_values]
 
-                for p_val in patch_values:
-                    self.pfile.write(p_val)
+                p_idx = 0
 
             # Add variables until next variable trigger
             while (self.token not in ('=', '(', '%') or
@@ -264,9 +278,9 @@ class Parser(object):
 
                 # Check for repeated values
                 if self.token == '*':
-                    n_vals = self.parse_value(write_token)
+                    n_vals = self.parse_value()
                     assert isinstance(n_vals, int)
-                    self.update_tokens(write_token)
+                    self.update_tokens()
                 elif not n_vals:
                     n_vals = 1
 
@@ -280,21 +294,18 @@ class Parser(object):
                 elif self.prior_token == '*':
 
                     if self.token not in ('/', '&', '$'):
-                        self.update_tokens(write_token)
+                        self.update_tokens()
 
                     if (self.token == '=' or (self.token in ('/', '&', '$') and
                                               self.prior_token == '*')):
                         next_value = None
                     else:
-                        next_value = self.parse_value(write_token)
+                        next_value = self.parse_value()
 
                     self.append_value(v_values, next_value, v_idx, n_vals)
 
                 else:
-                    next_value = self.parse_value(write_token)
-
-                    # Finished reading old value, we can again write tokens
-                    write_token = True
+                    next_value = self.parse_value()
 
                     # Check for escaped strings
                     if (v_values and isinstance(v_values[-1], str) and
@@ -311,7 +322,21 @@ class Parser(object):
                     break
                 else:
                     prior_ws_sep = ws_sep
-                    ws_sep = self.update_tokens(write_token)
+                    if (patch_values and p_idx < len(patch_values) and
+                            len(patch_values) > 0 and self.token != ','):
+                        p_val = patch_values[p_idx]
+                        p_repr = patch_nml.f90repr(patch_values[p_idx])
+                        p_idx += 1
+                        ws_sep = self.update_tokens(override=p_repr)
+                        if isinstance(p_val, complex):
+                            # Skip over the complex content
+                            # NOTE: Assumes input and patch are complex
+                            self.update_tokens(write_token=False)
+                            self.update_tokens(write_token=False)
+                            self.update_tokens(write_token=False)
+                            self.update_tokens(write_token=False)
+                    else:
+                        ws_sep = self.update_tokens()
 
         if patch_values:
             v_values = patch_values
@@ -390,7 +415,7 @@ class Parser(object):
         idx_triplet = (i_start, i_end, i_stride)
         return idx_triplet
 
-    def parse_value(self, write_token=True):
+    def parse_value(self, write_token=True, override=None):
         """Convert string repr of Fortran type to equivalent Python type."""
         v_str = self.prior_token
 
@@ -407,7 +432,7 @@ class Parser(object):
             self.update_tokens(write_token)
             assert self.token == ')'
 
-            self.update_tokens(write_token)
+            self.update_tokens(write_token, override)
             v_str = '({0}, {1})'.format(v_re, v_im)
 
         recast_funcs = [int, pyfloat, pycomplex, pybool, pystr]
@@ -423,14 +448,15 @@ class Parser(object):
             except ValueError:
                 continue
 
-    def update_tokens(self, write_token=True):
+    def update_tokens(self, write_token=True, override=None):
         """Update tokens to the next available values."""
 
         ws_sep = False
         next_token = next(self.tokens)
 
         if self.pfile and write_token:
-            self.pfile.write(self.token)
+            token = override if override else self.token
+            self.pfile.write(token)
 
         # Commas between values are interpreted as whitespace
         if self.token == ',':

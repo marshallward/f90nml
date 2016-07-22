@@ -1,3 +1,13 @@
+v0.19:
+    - Array patching is now supported
+    - Numpy primitives can be converted to Fortran types
+    - File objects can now be used as input arguments
+
+v0.18:
+    - File object read and write support
+    - Escape (\) character support in strings
+    - Fortran floating point `E` symbol is now optional (with +/- exponent)
+
 v0.17:
     - `f90nml.write()` works for normal (non-`Namelist`) dicts
     - `Parser` properties moved outside of function arguments, and are now

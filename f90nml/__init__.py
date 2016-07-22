@@ -9,20 +9,27 @@
 from f90nml.parser import Parser
 from f90nml.namelist import Namelist
 
-__version__ = '0.17'
+__version__ = '0.19'
 
 
 def read(nml_path, row_major=None, strict_logical=None):
-    """Parse a Fortran 90 namelist file with file path ``nml_path``  return its
-    contents as a ``Namelist``.
+    """Parse a Fortran 90 namelist file ``nml_file`` or file path ``nml_path``
+    and return its contents as a ``Namelist``.
 
-    >>> nml = f90nml.read('data.nml')
+    File object usage:
+
+    >>> with open(nml_path) as nml_file:
+    >>>     nml = f90nml.read(nml_file)
+
+    File path usage:
+
+    >>> nml = f90nml.read(nml_path)
 
     This function is equivalent to the ``read`` function of the ``Parser``
     object.
 
     >>> parser = f90nml.Parser()
-    >>> nml = parser.read('data.nml')
+    >>> nml = parser.read(nml_file)
 
     Multidimensional array data contiguity is preserved by default, so that
     column-major Fortran data is represented as row-major Python list of
@@ -51,8 +58,15 @@ def read(nml_path, row_major=None, strict_logical=None):
 
 
 def write(nml, nml_path, force=False):
-    """Output namelist ``nml`` to a Fortran 90 namelist file with file path
-    ``nml_path``.
+    """Output namelist ``nml`` to a Fortran 90 namelist file ``nml_file`` or
+    file path ``nml_path``.
+
+    File object usage:
+
+    >>> with open(nml_path, 'w') as nml_file:
+    >>>     f90nml.write(nml, nml_file)
+
+    File path usage:
 
     >>> f90nml.write(nml, 'data.nml')
 
