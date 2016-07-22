@@ -45,6 +45,9 @@ class Namelist(OrderedDict):
         # Namelist group spacing flag
         self._newline = False
 
+        # Vector starting index tracking
+        self.first_index = {}
+
     def __contains__(self, key):
         return super(Namelist, self).__contains__(key.lower())
 

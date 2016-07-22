@@ -230,7 +230,14 @@ class Parser(object):
             v_idx_bounds = self.parse_indices()
             v_idx = FIndex(v_idx_bounds)
 
-            # TODO: Update start index against namelist?
+            # Update starting index against namelist record
+            if v_name in parent.first_index:
+                p_idx = parent.first_index[v_name]
+
+                v_idx.first = [min(p_i, v_i)
+                               for p_i, v_i in zip(p_idx, v_idx.first)]
+
+            parent.first_index[v_name] = v_idx.first
 
             self.update_tokens()
         else:
@@ -243,7 +250,7 @@ class Parser(object):
             if parent and v_name in parent:
                 v_parent = parent[v_name]
             else:
-                v_parent = []
+                v_parent = Namelist()
 
             self.update_tokens()
             self.update_tokens()
