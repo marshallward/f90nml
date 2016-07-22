@@ -115,3 +115,8 @@ Users without install privileges can append the ``--user`` flag to
 ``setup.py``::
 
    $ python setup.py --user install
+
+
+.. image:: https://badges.gitter.im/marshallward/f90nml.svg
+   :alt: Join the chat at https://gitter.im/marshallward/f90nml
+   :target: https://gitter.im/marshallward/f90nml?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
