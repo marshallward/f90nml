@@ -237,6 +237,12 @@ class Parser(object):
                 v_idx.first = [min(p_i, v_i)
                                for p_i, v_i in zip(p_idx, v_idx.first)]
 
+                # Resize vector based on starting index
+                for i_p, i_v in zip(p_idx, v_idx.first):
+                    if i_v < i_p:
+                        pad = [None for _ in range(i_p - i_v)]
+                        parent[v_name] = pad + parent[v_name]
+
             parent.first_index[v_name] = v_idx.first
 
             self.update_tokens()
@@ -506,7 +512,7 @@ class Parser(object):
                         v_tmp = v_tmp[i_v - i_s]
                     except IndexError:
                         size = len(v_tmp)
-                        v_tmp.extend([] for i in range(size, i_v - i_s + 1))
+                        v_tmp.extend([] for _ in range(size, i_v - i_s + 1))
                         v_tmp = v_tmp[i_v - i_s]
 
                 i_v, i_s = v_i[-1], v_s[-1]
@@ -514,7 +520,7 @@ class Parser(object):
                     v_tmp[i_v - i_s] = next_value
                 except IndexError:
                     size = len(v_tmp)
-                    v_tmp.extend(None for i in range(size, i_v - i_s + 1))
+                    v_tmp.extend(None for _ in range(size, i_v - i_s + 1))
                     v_tmp[i_v - i_s] = next_value
             else:
                 v_values.append(next_value)
