@@ -18,8 +18,8 @@ class FIndex(object):
 
         self.current = self.start[:]
 
-        # Default global starting index (assumes 1-indexing)
-        self.first = [min(1, s) for s in self.start]
+        # Default global starting index
+        self.first = self.start
 
     def __iter__(self):
         return self

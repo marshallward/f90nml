@@ -272,7 +272,7 @@ class Namelist(OrderedDict):
             if not v_idx:
                 v_idx = []
 
-            i_s = 1 # FIXME
+            i_s = v_start[::-1][len(v_idx)]
             for idx, val in enumerate(v_values, start=i_s):
                 v_idx_new = v_idx + [idx]
                 v_strs = self.var_strings(v_name, val, v_idx=v_idx_new,
@@ -284,14 +284,21 @@ class Namelist(OrderedDict):
             for f_name, f_vals in v_values.items():
                 v_title = '%'.join([v_name, f_name])
 
-                v_strs = self.var_strings(v_title, f_vals)
+                v_start_new = v_values.start_index.get(f_name, None)
+
+                v_strs = self.var_strings(v_title, f_vals, v_start=v_start_new)
                 var_strs.extend(v_strs)
 
         # Parse an array of derived types
         elif (isinstance(v_values, list) and
               any(isinstance(v, dict) for v in v_values) and
               all((isinstance(v, dict) or v is None) for v in v_values)):
-            for idx, val in enumerate(v_values, start=1):
+
+            if not v_idx:
+                v_idx = []
+
+            i_s = v_start[::-1][len(v_idx)]
+            for idx, val in enumerate(v_values, start=i_s):
 
                 if val is None:
                     continue

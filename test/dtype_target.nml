@@ -17,7 +17,7 @@
 /
 
 &dtype_field_idx_nml
-    f%x = 1, 2, 3
+    f%x(1:3) = 1, 2, 3
 /
 
 &dtype_vec_nml

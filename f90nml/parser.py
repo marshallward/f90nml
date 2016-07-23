@@ -32,6 +32,7 @@ class Parser(object):
         # Control flags
         self._row_major = False
         self._strict_logical = True
+        self.global_start_index = 1     # TODO: use a property
 
         # Configuration
         self.comment_tokens = '!'
@@ -169,10 +170,7 @@ class Parser(object):
                         v_prior_values = g_vars[v_name]
                         v_values = merge_values(v_prior_values, v_values)
 
-                    if v_name in g_vars and isinstance(g_vars[v_name], dict):
-                        g_vars[v_name].update(v_values)
-                    else:
-                        g_vars[v_name] = v_values
+                    g_vars[v_name] = v_values
 
                     # Deselect variable
                     v_name = None
@@ -243,20 +241,56 @@ class Parser(object):
                         pad = [None for _ in range(i_p - i_v)]
                         parent[v_name] = pad + parent[v_name]
 
+            else:
+                # If variable already existed without an index, then assume a
+                #   1-based index
+                if v_name in parent:
+                    v_idx.first = [self.global_start_index
+                                   for _ in v_idx.first]
+
             parent.start_index[v_name] = v_idx.first
 
             self.update_tokens()
         else:
             v_idx = None
 
+            # If indexed variable already exists, then re-index this new
+            #   non-indexed variable using the global start index
+
+            # FIXME: The `hasattr` check is a hack to deal with the "list of
+            # parents" bug metioned in the `%` parsing block below.  The real
+            # solution here is to prevent the list of parents being set as
+            # parent.
+
+            if hasattr(parent, 'start_index') and v_name in parent.start_index:
+                p_start = parent.start_index[v_name]
+                v_start = [self.global_start_index for _ in p_start]
+
+                # Resize vector based on new starting index
+                for i_p, i_v in zip(p_start, v_start):
+                    if i_v < i_p:
+                        pad = [None for _ in range(i_p - i_v)]
+                        parent[v_name] = pad + parent[v_name]
+
+                parent.start_index[v_name] = v_start
+
         if self.token == '%':
 
             # Resolve the derived type
+
+            # FIXME: If we were in an index (v_idx != None) then v_parent is
+            # incorrectly set as the list of dicts rather than the respective
+            # dict (which must somehow be deduced from v_idx at some later
+            # stage)
+
+            # This is not causing any errors, but the parent value is nonsense
+            # and could be break something in the future.
 
             if parent and v_name in parent:
                 v_parent = parent[v_name]
             else:
                 v_parent = Namelist()
+                parent[v_name] = v_parent
 
             self.update_tokens()
             self.update_tokens()

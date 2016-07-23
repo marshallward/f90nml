@@ -178,7 +178,7 @@ class Test(unittest.TestCase):
                     },
                 'dtype_sparse_vec_nml': {
                     'a': {
-                        'b': [None, {'c': 2}]
+                        'b': [{'c': 2}]     # NOTE: start_index is 2
                         }
                     },
                 'dtype_single_value_vec_nml': {
