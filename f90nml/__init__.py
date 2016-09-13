@@ -99,7 +99,7 @@ def patch(nml_path, nml_patch, out_path=None, row_major=None,
     object with the patch output arguments.
 
     >>> parser = f90nml.Parser()
-    >>> nml = parser.read('data.nml', nml_path, 'patched_data.nml')
+    >>> nml = parser.read('data.nml', nml_patch, 'patched_data.nml')
 
     A patched namelist file will retain any formatting or comments from the
     original namelist file.  Any modified values will be formatted based on the

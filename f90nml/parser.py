@@ -285,7 +285,7 @@ class Parser(object):
             # stage)
 
             # This is not causing any errors, but the parent value is nonsense
-            # and could be break something in the future.
+            # and could break something in the future.
 
             if parent and v_name in parent:
                 v_parent = parent[v_name]

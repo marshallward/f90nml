@@ -314,6 +314,7 @@ class Namelist(OrderedDict):
 
             # Print the index range
 
+            # TODO: Include a check for len(v_values) to determine if vector
             if v_idx or v_start:
                 v_idx_repr = '('
 
@@ -326,6 +327,8 @@ class Namelist(OrderedDict):
                     else:
                         v_idx_repr += '{0}:{1}'.format(i_s, i_e)
                 else:
+                    # NOTE: This is never called!
+                    #       Do we want non-indexed vectors to append '(:)' ?
                     v_idx_repr += ':'
 
                 if v_idx:
@@ -343,7 +346,9 @@ class Namelist(OrderedDict):
             val_line = ''
             for v_val in v_values:
 
-                v_width = self.colwidth - len(self.indent + v_name + ' = ')
+                v_header = v_name + v_idx_repr + ' = '
+
+                v_width = self.colwidth - len(self.indent + v_header)
 
                 if len(val_line) < v_width:
                     val_line += self.f90repr(v_val) + ', '
@@ -366,7 +371,7 @@ class Namelist(OrderedDict):
                                           val_strs[0]).strip())
 
                 for v_str in val_strs[1:]:
-                    var_strs.append(' ' * (len(v_name + ' = ')) + v_str)
+                    var_strs.append(' ' * len(v_header) + v_str)
 
         return var_strs
 

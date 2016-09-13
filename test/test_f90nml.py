@@ -382,6 +382,11 @@ class Test(unittest.TestCase):
         self.assertEqual(self.multiline_nml, test_nml)
         self.assert_write(test_nml, 'multiline.nml')
 
+    def test_multiline_index(self):
+        test_nml = f90nml.read('multiline_index.nml')
+        self.assertEqual(self.multiline_nml, test_nml)
+        self.assert_write(test_nml, 'multiline_index.nml')
+
     def test_ext_token(self):
         test_nml = f90nml.read('ext_token.nml')
         self.assertEqual(self.ext_token_nml, test_nml)
