@@ -32,7 +32,8 @@ class Parser(object):
         # Control flags
         self._row_major = False
         self._strict_logical = True
-        self.global_start_index = 1     # TODO: use a property
+        self.default_start_index = 1        # TODO: use a property
+        self.global_start_index = None      # TODO: Property, vector index
 
         # Configuration
         self.comment_tokens = '!'
@@ -226,7 +227,7 @@ class Parser(object):
         if self.token == '(':
 
             v_idx_bounds = self.parse_indices()
-            v_idx = FIndex(v_idx_bounds)
+            v_idx = FIndex(v_idx_bounds, self.global_start_index)
 
             # Update starting index against namelist record
             if v_name in parent.start_index:
@@ -245,7 +246,7 @@ class Parser(object):
                 # If variable already existed without an index, then assume a
                 #   1-based index
                 if v_name in parent:
-                    v_idx.first = [self.global_start_index
+                    v_idx.first = [self.default_start_index
                                    for _ in v_idx.first]
 
             parent.start_index[v_name] = v_idx.first
@@ -264,7 +265,7 @@ class Parser(object):
 
             if hasattr(parent, 'start_index') and v_name in parent.start_index:
                 p_start = parent.start_index[v_name]
-                v_start = [self.global_start_index for _ in p_start]
+                v_start = [self.default_start_index for _ in p_start]
 
                 # Resize vector based on new starting index
                 for i_p, i_v in zip(p_start, v_start):

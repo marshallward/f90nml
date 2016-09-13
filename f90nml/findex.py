@@ -11,7 +11,7 @@
 class FIndex(object):
     """Column-major multidimensional index iterator"""
 
-    def __init__(self, bounds):
+    def __init__(self, bounds, first=None):
         self.start = [1 if b[0] is None else b[0] for b in bounds]
         self.end = [b[1] for b in bounds]
         self.step = [1 if b[2] is None else b[2] for b in bounds]
@@ -19,7 +19,10 @@ class FIndex(object):
         self.current = self.start[:]
 
         # Default global starting index
-        self.first = self.start
+        if first is not None:
+            self.first = [min(first, s) for s in self.start]
+        else:
+            self.first = self.start
 
     def __iter__(self):
         return self

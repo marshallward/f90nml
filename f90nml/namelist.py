@@ -266,8 +266,8 @@ class Namelist(OrderedDict):
 
         # Parse a multidimensional array
         if (isinstance(v_values, list) and
-              any(isinstance(v, list) for v in v_values) and
-              all((isinstance(v, list) or v is None) for v in v_values)):
+                any(isinstance(v, list) for v in v_values) and
+                all((isinstance(v, list) or v is None) for v in v_values)):
 
             if not v_idx:
                 v_idx = []
@@ -408,4 +408,11 @@ class Namelist(OrderedDict):
 
     def f90str(self, value):
         """Return a Fortran 90 representation of a string."""
-        return repr(value).replace("\\'", "''").replace('\\"', '""').replace('\\\\', '\\')
+
+        # Replace Python quote escape sequence with Fortran
+        result = repr(value).replace("\\'", "''").replace('\\"', '""')
+
+        # Un-escape the Python backslash escape sequence
+        result = result.replace('\\\\', '\\')
+
+        return result
