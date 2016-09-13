@@ -106,6 +106,14 @@ class Test(unittest.TestCase):
                     }
                 }
 
+        self.global_index_nml = {
+            'global_index_nml': {
+                'v_zero': [1, 2, 3, 4],
+                'v_neg': [1, 2, 3, 4],
+                'v_pos': [None, 1, 2, 3, 4]
+            }
+        }
+
         self.float_nml = {
                 'float_nml': {
                     'v_float': 1.,
@@ -450,6 +458,12 @@ class Test(unittest.TestCase):
             self.assert_file_equal('comment_patch.nml', 'tmp.nml')
         finally:
             os.remove('tmp.nml')
+
+    def test_global_index(self):
+        parser = f90nml.Parser()
+        parser.global_start_index = 1
+        test_nml = parser.read('global_index.nml')
+        self.assertEqual(self.global_index_nml, test_nml)
 
     def test_index_syntax(self):
         self.assertRaises(ValueError, f90nml.read, 'index_empty.nml')
