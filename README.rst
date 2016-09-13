@@ -87,7 +87,7 @@ namelist patch and apply it to a target file using the ``patch`` function:
 .. code:: python
 
    patch_nml = {'config_nml': {'visc': 1e-6}}
-   f90nml.patch('sample.nml', 'new_sample.nml', patch_nml)
+   f90nml.patch('sample.nml', patch_nml, 'new_sample.nml')
 
 
 Installation
