@@ -149,7 +149,7 @@ resolved.
 
 * String
 
-Strings acts as a fallback type.  If a value cannot be matched to any other
+Strings act as a fallback type.  If a value cannot be matched to any other
 value, then it is interpreted as a string.
 
 In order to get the best results from ``f90nml``, it is best to follow these
@@ -169,8 +169,8 @@ guidelines:
 Derived Types
 -------------
 
-User-defined types are saved as a nested hierarcy of ``dict``\ s.  For example,
-the following namelist
+User-defined types are saved as a nested hierarchy of ``dict``\ s.  For
+example, the following namelist
 
 .. code:: fortran
 
