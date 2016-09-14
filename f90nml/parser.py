@@ -130,8 +130,13 @@ class Parser(object):
 
         nmls = Namelist()
 
+        # Attempt to get first token; abort on empty file
+        try:
+            self.update_tokens(write_token=False)
+        except StopIteration:
+            return nmls
+
         # TODO: Replace "while True" with an update_token() iterator
-        self.update_tokens(write_token=False)
         while True:
             try:
                 # Check for classic group terminator
