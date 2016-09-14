@@ -233,18 +233,24 @@ class Parser(object):
             if v_name in parent.start_index:
                 p_idx = parent.start_index[v_name]
 
-                v_idx.first = [min(p_i, v_i)
-                               for p_i, v_i in zip(p_idx, v_idx.first)]
+                for idx, pv in enumerate(zip(p_idx, v_idx.first)):
+                    if all(i is None for i in pv):
+                        i_first = None
+                    else:
+                        i_first = min(i for i in pv if i is not None)
+
+                    v_idx.first[idx] = i_first
 
                 # Resize vector based on starting index
                 for i_p, i_v in zip(p_idx, v_idx.first):
-                    if i_v < i_p:
+                    if i_p is not None and i_v is not None and i_v < i_p:
                         pad = [None for _ in range(i_p - i_v)]
                         parent[v_name] = pad + parent[v_name]
 
             else:
                 # If variable already existed without an index, then assume a
                 #   1-based index
+                # FIXME: Need to respect undefined `None` starting indexes?
                 if v_name in parent:
                     v_idx.first = [self.default_start_index
                                    for _ in v_idx.first]
@@ -534,7 +540,9 @@ class Parser(object):
         for _ in range(n_vals):
             if v_idx:
                 v_i = next(v_idx)
-                v_s = v_idx.first
+                #v_s = v_idx.first
+                v_s = [self.default_start_index if idx is None else idx
+                       for idx in v_idx.first]
 
                 if not self.row_major:
                     v_i = v_i[::-1]

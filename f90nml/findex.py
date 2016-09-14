@@ -22,7 +22,7 @@ class FIndex(object):
         if first is not None:
             self.first = [min(first, s) for s in self.start]
         else:
-            self.first = self.start
+            self.first = [b[0] for b in bounds]
 
     def __iter__(self):
         return self

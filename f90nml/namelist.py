@@ -273,6 +273,19 @@ class Namelist(OrderedDict):
                 v_idx = []
 
             i_s = v_start[::-1][len(v_idx)]
+
+            # FIXME: We incorrectly assume 1-based indexing if it is
+            # unspecified.  This is necessary because our output method always
+            # separates the outer axes to one per line.  But we cannot do this
+            # if we don't know the first index (which we are no longer assuming
+            # to be 1-based elsewhere).  Unfortunately, the solution needs a
+            # rethink of multidimensional output.
+
+            # For now, we will assume 1-based indexing here, just to keep
+            # things working smoothly.
+            if i_s is None:
+                i_s = 1
+
             for idx, val in enumerate(v_values, start=i_s):
                 v_idx_new = v_idx + [idx]
                 v_strs = self.var_strings(v_name, val, v_idx=v_idx_new,
@@ -300,8 +313,11 @@ class Namelist(OrderedDict):
             i_s = v_start[::-1][len(v_idx)]
             for idx, val in enumerate(v_values, start=i_s):
 
-                if val is None:
-                    continue
+                # NOTE: This would only be called if arrays of derived types
+                # could be written on a single entry.  As far as I know, this
+                # is not possible.
+                #if val is None:
+                #    continue
 
                 v_title = v_name + '({0})'.format(idx)
 
@@ -320,16 +336,22 @@ class Namelist(OrderedDict):
 
                 if v_start:
                     i_s = v_start[0]
-                    i_e = i_s + len(v_values) - 1
 
-                    if i_s == i_e:
-                        v_idx_repr += '{0}'.format(i_s)
+                    if i_s is None:
+                        v_idx_repr += ':'
+
                     else:
-                        v_idx_repr += '{0}:{1}'.format(i_s, i_e)
-                else:
-                    # NOTE: This is never called!
-                    #       Do we want non-indexed vectors to append '(:)' ?
-                    v_idx_repr += ':'
+                        i_e = i_s + len(v_values) - 1
+
+                        if i_s == i_e:
+                            v_idx_repr += '{0}'.format(i_s)
+                        else:
+                            v_idx_repr += '{0}:{1}'.format(i_s, i_e)
+                # NOTE: This is never called!
+                # We don't write the empty index if none was provided.
+                # But maybe someday we might want to add this option.
+                #else:
+                #    v_idx_repr += ':'
 
                 if v_idx:
                     v_idx_repr += ', '
