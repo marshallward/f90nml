@@ -22,6 +22,8 @@ from f90nml.findex import FIndex
 class Test(unittest.TestCase):
 
     def setUp(self):
+        self.empty_file = {}
+
         self.empty_nml = {'empty_nml': {}}
 
         self.null_nml = {
@@ -291,7 +293,11 @@ class Test(unittest.TestCase):
             os.remove(tmp_fname)
 
     # Tests
-    def test_empty(self):
+    def test_empty_file(self):
+        test_nml = f90nml.read('empty_file')
+        self.assertEqual(self.empty_file, test_nml)
+
+    def test_empty_nml(self):
         test_nml = f90nml.read('empty.nml')
         self.assertEqual(self.empty_nml, test_nml)
         self.assert_write(test_nml, 'empty.nml')
