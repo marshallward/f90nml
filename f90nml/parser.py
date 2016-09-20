@@ -383,19 +383,25 @@ class Parser(object):
                     break
                 else:
                     prior_ws_sep = ws_sep
-                    if (patch_values and p_idx < len(patch_values) and
-                            len(patch_values) > 0 and self.token != ','):
-                        p_val = patch_values[p_idx]
-                        p_repr = patch_nml.f90repr(patch_values[p_idx])
-                        p_idx += 1
-                        ws_sep = self.update_tokens(override=p_repr)
-                        if isinstance(p_val, complex):
-                            # Skip over the complex content
-                            # NOTE: Assumes input and patch are complex
-                            self.update_tokens(write_token=False)
-                            self.update_tokens(write_token=False)
-                            self.update_tokens(write_token=False)
-                            self.update_tokens(write_token=False)
+                    if patch_values:
+                        if (p_idx < len(patch_values) and
+                                len(patch_values) > 0 and self.token != ','):
+                            p_val = patch_values[p_idx]
+                            p_repr = patch_nml.f90repr(patch_values[p_idx])
+                            p_idx += 1
+                            ws_sep = self.update_tokens(override=p_repr)
+                            if isinstance(p_val, complex):
+                                # Skip over the complex content
+                                # NOTE: Assumes input and patch are complex
+                                self.update_tokens(write_token=False)
+                                self.update_tokens(write_token=False)
+                                self.update_tokens(write_token=False)
+                                self.update_tokens(write_token=False)
+
+                        else:
+                            # Skip any values beyond the patch size
+                            skip = (p_idx >= len(patch_values))
+                            self.update_tokens(patch_skip=skip)
                     else:
                         ws_sep = self.update_tokens()
 
@@ -509,15 +515,18 @@ class Parser(object):
             except ValueError:
                 continue
 
-    def update_tokens(self, write_token=True, override=None):
+    def update_tokens(self, write_token=True, override=None, patch_skip=False):
         """Update tokens to the next available values."""
 
         ws_sep = False
         next_token = next(self.tokens)
 
+        patch_value = ''
+        patch_tokens = ''
+
         if self.pfile and write_token:
             token = override if override else self.token
-            self.pfile.write(token)
+            patch_value += token
 
         # Commas between values are interpreted as whitespace
         if self.token == ',':
@@ -528,13 +537,32 @@ class Parser(object):
             if self.pfile:
                 if next_token == '!':
                     while not next_token == '\n':
-                        self.pfile.write(next_token)
+                        patch_tokens += next_token
                         next_token = next(self.tokens)
-                self.pfile.write(next_token)
+                patch_tokens += next_token
 
             ws_sep = True
-            next_token = next(self.tokens)
 
+            # Several sections rely on StopIteration to terminate token search
+            # If that occurs, dump the patched tokens immediately
+            try:
+                next_token = next(self.tokens)
+            except StopIteration:
+                if not patch_skip or next_token == '=':
+                    patch_tokens = patch_value + patch_tokens
+
+                if self.pfile:
+                    self.pfile.write(patch_tokens)
+                raise
+
+        # Write patched values and whitespace + comments to file
+        if not patch_skip or next_token == '=':
+            patch_tokens = patch_value + patch_tokens
+
+        if self.pfile:
+            self.pfile.write(patch_tokens)
+
+        # Update tokens, ignoring padding
         self.token, self.prior_token = next_token, self.token
 
         return ws_sep
