@@ -298,6 +298,11 @@ class Parser(object):
             # This is not causing any errors, but the parent value is nonsense
             # and could break something in the future.
 
+            # Check for value in patch
+            v_patch_nml = None
+            if v_name in patch_nml:
+                v_patch_nml = patch_nml.pop(v_name.lower())
+
             if parent and v_name in parent:
                 v_parent = parent[v_name]
             else:
@@ -307,7 +312,8 @@ class Parser(object):
             self.update_tokens()
             self.update_tokens()
 
-            v_att, v_att_vals = self.parse_variable(v_parent)
+            v_att, v_att_vals = self.parse_variable(v_parent,
+                                                    patch_nml=v_patch_nml)
 
             next_value = Namelist()
             next_value[v_att] = v_att_vals
