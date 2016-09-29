@@ -1,3 +1,11 @@
+v0.20:
+    - Indexing is no longer assumed to be 1-based.  The initial index is now
+      implicit if unspecifed in the namelist file.  Properties have been added
+      to control the index base.
+    - Patching a vector with a shorter vector now correctly removes the old
+      tail values.
+    - Derived type patching is now supported.
+
 v0.19:
     - Array patching is now supported
     - Numpy primitives can be converted to Fortran types
