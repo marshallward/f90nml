@@ -252,6 +252,13 @@ class Test(unittest.TestCase):
 
         self.ext_token_nml = {'ext_token_nml': {'x': 1}}
 
+        self.repatch_nml = {
+                'repatch_nml': {
+                    'x': [5, 6],
+                    'y': {'z': 7}
+                    }
+                }
+
         if has_numpy:
             self.numpy_nml = {
                 'numpy_nml': OrderedDict((
@@ -443,6 +450,14 @@ class Test(unittest.TestCase):
     def test_patch_valueerror(self):
         self.assertRaises(ValueError, f90nml.patch, 'types.nml', 'xyz',
                           'tmp.nml')
+
+    def test_repatch(self):
+        f90nml.patch('repatch.nml', self.repatch_nml, 'tmp.nml')
+        test_nml = f90nml.read('tmp.nml')
+        try:
+            self.assertEqual(test_nml, self.repatch_nml)
+        finally:
+            os.remove('tmp.nml')
 
     def test_default_patch(self):
         patch_nml = f90nml.read('types_patch.nml')

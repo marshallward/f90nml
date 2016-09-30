@@ -554,7 +554,7 @@ class Parser(object):
             try:
                 next_token = next(self.tokens)
             except StopIteration:
-                if not patch_skip or next_token == '=':
+                if not patch_skip or next_token in ('=', '(', '%'):
                     patch_tokens = patch_value + patch_tokens
 
                 if self.pfile:
@@ -562,7 +562,7 @@ class Parser(object):
                 raise
 
         # Write patched values and whitespace + comments to file
-        if not patch_skip or next_token == '=':
+        if not patch_skip or next_token in ('=', '(', '%'):
             patch_tokens = patch_value + patch_tokens
 
         if self.pfile:
