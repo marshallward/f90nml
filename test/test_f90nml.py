@@ -108,6 +108,18 @@ class Test(unittest.TestCase):
                     }
                 }
 
+        self.default_one_index_nml = {
+            'default_index_nml': {
+                'v' : [1, 2, 3, 4, 5]
+            }
+        }
+
+        self.default_zero_index_nml = {
+            'default_index_nml': {
+                'v' : [1, 2, None, 3, 4, 5]
+            }
+        }
+
         self.global_index_nml = {
             'global_index_nml': {
                 'v_zero': [1, 2, 3, 4],
@@ -484,6 +496,17 @@ class Test(unittest.TestCase):
             self.assert_file_equal('comment_patch.nml', 'tmp.nml')
         finally:
             os.remove('tmp.nml')
+
+    def test_default_index(self):
+        parser = f90nml.Parser()
+
+        parser.default_start_index = 1
+        test_nml = parser.read('default_index.nml')
+        self.assertEqual(self.default_one_index_nml, test_nml)
+
+        parser.default_start_index = 0
+        test_nml = parser.read('default_index.nml')
+        self.assertEqual(self.default_zero_index_nml, test_nml)
 
     def test_global_index(self):
         parser = f90nml.Parser()

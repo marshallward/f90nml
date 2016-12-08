@@ -579,7 +579,6 @@ class Parser(object):
         for _ in range(n_vals):
             if v_idx:
                 v_i = next(v_idx)
-                #v_s = v_idx.first
                 v_s = [self.default_start_index if idx is None else idx
                        for idx in v_idx.first]
 

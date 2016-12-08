@@ -1,0 +1,4 @@
+&default_index_nml
+    v(3:5) = 3, 4, 5
+    v = 1, 2
+/
