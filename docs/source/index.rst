@@ -226,34 +226,34 @@ following property is available:
 
 ``parser.default_start_index`` (default: 1)
 
-	The default starting index for any new vectors.  This primarily affects
+   The default starting index for any new vectors.  This primarily affects
    vectors whose values are set both with and without explicit indices.
 
    For the namelist ``idx.nml`` shown below,
 
    .. code:: fortran
 
-		&idx_nml
-			 v(3:5) = 3, 4, 5
-			 v = 1, 2
-		/
+      &idx_nml
+          v(3:5) = 3, 4, 5
+          v = 1, 2
+      /
 
    the indices of the second entry in ``v`` are ambiguous.  The result for
    different values of ``default_start_index`` are shown below.
 
-	.. code:: python
+   .. code:: python
 
-		>>> from f90nml import Parser
-		>>> parser = Parser()
-		>>> parser.default_start_index = 1  # Default
-		>>> nml = parser.read('idx.nml')
-		>>> nml['idx_nml']['v']
-		[1, 2, 3, 4, 5]
+      >>> from f90nml import Parser
+      >>> parser = Parser()
+      >>> parser.default_start_index = 1  # Default
+      >>> nml = parser.read('idx.nml')
+      >>> nml['idx_nml']['v']
+      [1, 2, 3, 4, 5]
 
-		>>> parser.default_start_index = 0
-		>>> nml = parser.read('idx.nml')
-		>>> nml['idx_nml']['v']
-		[1, 2, None, 3, 4, 5]
+      >>> parser.default_start_index = 0
+      >>> nml = parser.read('idx.nml')
+      >>> nml['idx_nml']['v']
+      [1, 2, None, 3, 4, 5]
 
 ``parser.global_start_index`` (default: ``None``)
 
@@ -299,21 +299,21 @@ instance (``nml``), the property is specified below.
 
    .. code:: fortran
 
-		&vec_nml
-			 a = 1, 2, 3
-			 b(0:2) = 0, 1, 2
-			 c(3:5) = 3, 4, 5
-			 d(:,:) = 1, 2, 3, 4
-		/
+      &vec_nml
+          a = 1, 2, 3
+          b(0:2) = 0, 1, 2
+          c(3:5) = 3, 4, 5
+          d(:,:) = 1, 2, 3, 4
+      /
 
-	the ``start_index`` contents are
+   the ``start_index`` contents are
 
-	.. code:: python
+   .. code:: python
 
-		>>> import f90nml
-		>>> nml = f90nml.read('vec.nml')
-		>>> nml['vec_nml'].start_index
-		{'d': [None, None], 'b': [0], 'c': [3]}
+      >>> import f90nml
+      >>> nml = f90nml.read('vec.nml')
+      >>> nml['vec_nml'].start_index
+      {'d': [None, None], 'b': [0], 'c': [3]}
 
    The starting index of ``a`` is absent from ``start_index``, since its values
    cannot be assigned to any index without referring to the corresponding
