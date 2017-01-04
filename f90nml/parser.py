@@ -236,7 +236,7 @@ class Parser(object):
 
             # Update starting index against namelist record
             if v_name in parent.start_index:
-                p_idx = parent.start_index[v_name]
+                p_idx = parent.start_index[v_name.lower()]
 
                 for idx, pv in enumerate(zip(p_idx, v_idx.first)):
                     if all(i is None for i in pv):
@@ -260,7 +260,7 @@ class Parser(object):
                     v_idx.first = [self.default_start_index
                                    for _ in v_idx.first]
 
-            parent.start_index[v_name] = v_idx.first
+            parent.start_index[v_name.lower()] = v_idx.first
 
             self.update_tokens()
         else:
@@ -275,7 +275,7 @@ class Parser(object):
             # parent.
 
             if hasattr(parent, 'start_index') and v_name in parent.start_index:
-                p_start = parent.start_index[v_name]
+                p_start = parent.start_index[v_name.lower()]
                 v_start = [self.default_start_index for _ in p_start]
 
                 # Resize vector based on new starting index
@@ -284,7 +284,7 @@ class Parser(object):
                         pad = [None for _ in range(i_p - i_v)]
                         parent[v_name] = pad + parent[v_name]
 
-                parent.start_index[v_name] = v_start
+                parent.start_index[v_name.lower()] = v_start
 
         if self.token == '%':
 
