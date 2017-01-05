@@ -339,6 +339,8 @@ class Parser(object):
                 v_parent = Namelist()
                 parent[v_name] = v_parent
 
+            v_parent.start_index = parent.start_index
+
             self.update_tokens()
             self.update_tokens()
 
