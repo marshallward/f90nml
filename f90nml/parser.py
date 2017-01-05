@@ -229,6 +229,9 @@ class Parser(object):
         # Patch state
         patch_values = None
 
+        # Derived type parent index (see notes below)
+        dt_idx = None
+
         if self.token == '(':
 
             v_idx_bounds = self.parse_indices()
@@ -263,6 +266,18 @@ class Parser(object):
             parent.start_index[v_name.lower()] = v_idx.first
 
             self.update_tokens()
+
+            # Derived type parent check
+            # NOTE: This assumes single-dimension derived type vectors
+            #       (which I think is the only case supported in Fortran)
+            if self.token == '%':
+                assert(v_idx_bounds[0][1] - v_idx_bounds[0][0] == 1)
+                dt_idx = v_idx_bounds[0][0] - v_idx.first[0]
+
+                # NOTE: This is the sensible play to call `parse_variable`
+                # but not yet sure how to implement it, so we currently pass
+                # along `dt_idx` to the `%` handler.
+
         else:
             v_idx = None
 
@@ -273,6 +288,8 @@ class Parser(object):
             # parents" bug metioned in the `%` parsing block below.  The real
             # solution here is to prevent the list of parents being set as
             # parent.
+
+            # (Has this now been fixed?)
 
             if hasattr(parent, 'start_index') and v_name in parent.start_index:
                 p_start = parent.start_index[v_name.lower()]
@@ -298,13 +315,26 @@ class Parser(object):
             # This is not causing any errors, but the parent value is nonsense
             # and could break something in the future.
 
+            # (Has this now been fixed?)
+
             # Check for value in patch
             v_patch_nml = None
             if v_name in patch_nml:
                 v_patch_nml = patch_nml.pop(v_name.lower())
 
-            if parent and v_name in parent:
-                v_parent = parent[v_name]
+            if parent:
+                vpar = parent.get(v_name)
+                if vpar and isinstance(vpar, list):
+                    assert dt_idx is not None
+                    try:
+                        v_parent = vpar[dt_idx]
+                    except IndexError:
+                        v_parent = Namelist()
+                elif vpar:
+                    v_parent = vpar
+                else:
+                    # When does this happen?
+                    v_parent = Namelist()
             else:
                 v_parent = Namelist()
                 parent[v_name] = v_parent
