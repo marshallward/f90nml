@@ -238,7 +238,7 @@ class Parser(object):
             v_idx = FIndex(v_idx_bounds, self.global_start_index)
 
             # Update starting index against namelist record
-            if v_name in parent.start_index:
+            if v_name.lower() in parent.start_index:
                 p_idx = parent.start_index[v_name.lower()]
 
                 for idx, pv in enumerate(zip(p_idx, v_idx.first)):
