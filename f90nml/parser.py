@@ -323,7 +323,7 @@ class Parser(object):
                 v_patch_nml = patch_nml.pop(v_name.lower())
 
             if parent:
-                vpar = parent.get(v_name)
+                vpar = parent.get(v_name.lower())
                 if vpar and isinstance(vpar, list):
                     assert dt_idx is not None
                     try:
@@ -333,13 +333,10 @@ class Parser(object):
                 elif vpar:
                     v_parent = vpar
                 else:
-                    # When does this happen?
                     v_parent = Namelist()
             else:
                 v_parent = Namelist()
                 parent[v_name] = v_parent
-
-            v_parent.start_index = parent.start_index
 
             self.update_tokens()
             self.update_tokens()
