@@ -313,11 +313,9 @@ class Namelist(OrderedDict):
             i_s = v_start[::-1][len(v_idx)]
             for idx, val in enumerate(v_values, start=i_s):
 
-                # NOTE: This would only be called if arrays of derived types
-                # could be written on a single entry.  As far as I know, this
-                # is not possible.
-                #if val is None:
-                #    continue
+                # Skip any empty elements in a list of derived types
+                if val is None:
+                    continue
 
                 v_title = v_name + '({0})'.format(idx)
 
