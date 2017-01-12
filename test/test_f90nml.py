@@ -213,6 +213,48 @@ class Test(unittest.TestCase):
                     }
                 }
 
+        self.dtype_case_nml = {
+            'dtype_mixed': {
+                'b': {
+                    'c_d_e': [{'id': 1}, {'id': 2}]
+                }
+            },
+            'dtype_list_in_list': {
+                'b': {
+                    'c': [
+                        {'id': 1},
+                        {'id': 2},
+                        {'id': 3},
+                        {'id': 4, 'd': {'e': [10, 11]}}
+                    ]
+                }
+            },
+            'dtype_upper_scalar': {
+                'b': {
+                    'c': 1,
+                    'd': [{'id': 2}],
+                }
+            },
+            'dtype_upper_list': {
+                'b': {
+                    'c': [{'id': 1}, {'id': 2}]
+                }
+            },
+            'dtype_index_overwrite': {
+                'b': {
+                    'c': [{'d': 1, 'e': 2, 'f': 3, 'g': 4, 'h': 5}]
+                }
+            },
+            'dtype_list_staggered': {
+                'b': {
+                    'c': [
+                        {'a': 1}, None, None, {'a': 1},
+                        None, None, None, {'a': 1}
+                    ]
+                }
+            }
+        }
+
         self.bcast_nml = {
                 'bcast_nml': {
                     'x': [2.0, 2.0],
@@ -370,6 +412,11 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('dtype.nml')
         self.assertEqual(self.dtype_nml, test_nml)
         self.assert_write(test_nml, 'dtype_target.nml')
+
+    def test_dtype_case(self):
+        test_nml = f90nml.read('dtype_case.nml')
+        self.assertEqual(self.dtype_case_nml, test_nml)
+        self.assert_write(test_nml, 'dtype_case_target.nml')
 
     def test_bcast(self):
         test_nml = f90nml.read('bcast.nml')

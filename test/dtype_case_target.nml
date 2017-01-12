@@ -1,0 +1,36 @@
+&dtype_mixed
+    b%c_d_e(1)%id = 1
+    b%c_d_e(2)%id = 2
+/
+
+&dtype_list_in_list
+    b%c(1)%id = 1
+    b%c(2)%id = 2
+    b%c(3)%id = 3
+    b%c(4)%id = 4
+    b%c(4)%d%e(1:2) = 10, 11
+/
+
+&dtype_upper_scalar
+    b%c = 1
+    b%d(1)%id = 2
+/
+
+&dtype_upper_list
+    b%c(1)%id = 1
+    b%c(2)%id = 2
+/
+
+&dtype_index_overwrite
+    b%c(5)%d = 1
+    b%c(5)%e = 2
+    b%c(5)%f = 3
+    b%c(5)%g = 4
+    b%c(5)%h = 5
+/
+
+&dtype_list_staggered
+    b%c(1)%a = 1
+    b%c(4)%a = 1
+    b%c(8)%a = 1
+/
