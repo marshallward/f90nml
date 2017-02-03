@@ -284,14 +284,7 @@ class Parser(object):
             # If indexed variable already exists, then re-index this new
             #   non-indexed variable using the global start index
 
-            # FIXME: The `hasattr` check is a hack to deal with the "list of
-            # parents" bug metioned in the `%` parsing block below.  The real
-            # solution here is to prevent the list of parents being set as
-            # parent.
-
-            # (Has this now been fixed?)
-
-            if hasattr(parent, 'start_index') and v_name in parent.start_index:
+            if v_name in parent.start_index:
                 p_start = parent.start_index[v_name.lower()]
                 v_start = [self.default_start_index for _ in p_start]
 
@@ -306,16 +299,6 @@ class Parser(object):
         if self.token == '%':
 
             # Resolve the derived type
-
-            # FIXME: If we were in an index (v_idx != None) then v_parent is
-            # incorrectly set as the list of dicts rather than the respective
-            # dict (which must somehow be deduced from v_idx at some later
-            # stage)
-
-            # This is not causing any errors, but the parent value is nonsense
-            # and could break something in the future.
-
-            # (Has this now been fixed?)
 
             # Check for value in patch
             v_patch_nml = None

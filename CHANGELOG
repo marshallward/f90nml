@@ -1,3 +1,10 @@
+v0.21:
+    - Several bug fixes related to derived types and start index tracking
+        - Stricter checks for existing parent when modifying a derived type
+    - When parsing lists of nested derived types, we now correctly set the
+      parent as the respective list element, rather than the entire list.  This
+      allows us to remove several redundant code checks from the parser.
+
 v0.20:
     - Indexing is no longer assumed to be 1-based.  The initial index is now
       implicit if unspecifed in the namelist file.  Properties have been added
