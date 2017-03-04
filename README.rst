@@ -54,7 +54,7 @@ which would would point ``nml`` to the following ``dict``:
             {'input': 'wind.nc',
              'steps': 864,
              'layout': [8, 16],
-             'visc': 0.0001
+             'visc': 0.0001,
              'use_biharmonic': False
             }
          }
