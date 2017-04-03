@@ -323,6 +323,9 @@ class Test(unittest.TestCase):
                 )
             }
 
+        if os.path.isfile('tmp.nml'):
+            os.remove('tmp.nml')
+
     # Support functions
     def assert_file_equal(self, source_fname, target_fname):
         with open(source_fname) as source:
@@ -678,6 +681,15 @@ class Test(unittest.TestCase):
 
     def test_dict_write(self):
         self.assert_write(self.types_nml, 'types_dict.nml')
+
+    def test_dict_assign(self):
+        test_nml = f90nml.Namelist()
+        test_nml['dict_group'] = {'a': 1, 'b':2}
+        try:
+            test_nml.write('tmp.nml')
+        finally:
+            os.remove('tmp.nml')
+
 
     if has_numpy:
         def test_numpy_write(self):
