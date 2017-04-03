@@ -110,13 +110,13 @@ class Test(unittest.TestCase):
 
         self.default_one_index_nml = {
             'default_index_nml': {
-                'v' : [1, 2, 3, 4, 5]
+                'v': [1, 2, 3, 4, 5]
             }
         }
 
         self.default_zero_index_nml = {
             'default_index_nml': {
-                'v' : [1, 2, None, 3, 4, 5]
+                'v': [1, 2, None, 3, 4, 5]
             }
         }
 
@@ -684,16 +684,16 @@ class Test(unittest.TestCase):
 
     def test_dict_assign(self):
         test_nml = f90nml.Namelist()
-        test_nml['dict_group'] = {'a': 1, 'b':2}
+        test_nml['dict_group'] = {'a': 1, 'b': 2}
         try:
             test_nml.write('tmp.nml')
         finally:
             os.remove('tmp.nml')
 
-
     if has_numpy:
         def test_numpy_write(self):
             self.assert_write(self.numpy_nml, 'numpy_types.nml')
+
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
