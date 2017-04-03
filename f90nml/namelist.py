@@ -58,6 +58,9 @@ class Namelist(OrderedDict):
         return super(Namelist, self).__getitem__(key.lower())
 
     def __setitem__(self, key, value):
+        # if passed a dict, convert it to a Namelist
+        if isinstance(value, dict):
+            value = Namelist(value)
         super(Namelist, self).__setitem__(key.lower(), value)
 
     # Format configuration
