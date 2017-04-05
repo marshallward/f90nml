@@ -58,7 +58,6 @@ class Namelist(OrderedDict):
         return super(Namelist, self).__getitem__(key.lower())
 
     def __setitem__(self, key, value):
-        # if the value is dict-like, but not a Namelist, convert it to a Namelist
         if isinstance(value, dict) and not isinstance(value, Namelist):
             value = Namelist(value)
         super(Namelist, self).__setitem__(key.lower(), value)
@@ -351,8 +350,8 @@ class Namelist(OrderedDict):
                 # NOTE: This is never called!
                 # We don't write the empty index if none was provided.
                 # But maybe someday we might want to add this option.
-                #else:
-                #    v_idx_repr += ':'
+                # else:
+                #     v_idx_repr += ':'
 
                 if v_idx:
                     v_idx_repr += ', '

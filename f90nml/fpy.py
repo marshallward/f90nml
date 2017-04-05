@@ -1,11 +1,10 @@
-"""f90nml.fpy
-   =============
+"""Conversion of Fortran values (as strings) to equivalent Python values.
 
-   Module for conversion between basic data types and Fortran string
-   representations.
+The functions in this module are used to convert the string representation of
+the values of basic Fortran data types into equivalent Python values.
 
-   :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
-   :license: Apache License, Version 2.0, see LICENSE for details.
+:copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
+:license: Apache License, Version 2.0, see LICENSE for details.
 """
 import re
 
