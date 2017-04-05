@@ -1,10 +1,7 @@
-"""f90nml
-   ======
+"""A Fortran 90 namelist parser and generator.
 
-   A Fortran 90 namelist parser and generator.
-
-   :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
-   :license: Apache License, Version 2.0, see LICENSE for details.
+:copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
+:license: Apache License, Version 2.0, see LICENSE for details.
 """
 from f90nml.parser import Parser
 from f90nml.namelist import Namelist
@@ -13,8 +10,7 @@ __version__ = '0.21'
 
 
 def read(nml_path, row_major=None, strict_logical=None):
-    """Parse a Fortran 90 namelist file ``nml_file`` or file path ``nml_path``
-    and return its contents as a ``Namelist``.
+    """Parse a Fortran namelist file and return its contents.
 
     File object usage:
 
@@ -48,8 +44,8 @@ def read(nml_path, row_major=None, strict_logical=None):
 
     When ``strict_logical`` is disabled, any value starting with ``.t`` or
     ``t`` are interpreted as ``True``, while any string starting with ``.f`` or
-    ``f`` is interpreted as ``False``."""
-
+    ``f`` is interpreted as ``False``.
+    """
     parser = Parser()
     parser.row_major = row_major
     parser.strict_logical = strict_logical
@@ -58,8 +54,7 @@ def read(nml_path, row_major=None, strict_logical=None):
 
 
 def write(nml, nml_path, force=False):
-    """Output namelist ``nml`` to a Fortran 90 namelist file ``nml_file`` or
-    file path ``nml_path``.
+    """Save a namelist to disk using either a file object or its file path.
 
     File object usage:
 
@@ -78,8 +73,8 @@ def write(nml, nml_path, force=False):
     By default, ``write`` will not overwrite an existing file.  To override
     this, use the ``force`` flag.
 
-    >>> nml.write('data.nml', force=True)"""
-
+    >>> nml.write('data.nml', force=True)
+    """
     # Promote dicts to Namelists
     if not isinstance(nml, Namelist) and isinstance(nml, dict):
         nml_in = Namelist(nml)
@@ -103,8 +98,8 @@ def patch(nml_path, nml_patch, out_path=None, row_major=None,
 
     A patched namelist file will retain any formatting or comments from the
     original namelist file.  Any modified values will be formatted based on the
-    settings of the ``Namelist`` object."""
-
+    settings of the ``Namelist`` object.
+    """
     parser = Parser()
     parser.row_major = row_major
     parser.strict_logical = strict_logical
