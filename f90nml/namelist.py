@@ -369,8 +369,13 @@ class Namelist(OrderedDict):
             for v_val in v_values:
 
                 v_header = v_name + v_idx_repr + ' = '
+                # Increase column width if the header exceeds this value
+                if len(self.indent + v_header) >= self.colwidth:
+                    colwidth = len(self.indent + v_header) + 1
+                else:
+                    colwidth = self.colwidth
 
-                v_width = self.colwidth - len(self.indent + v_header)
+                v_width = colwidth - len(self.indent + v_header)
 
                 if len(val_line) < v_width:
                     val_line += self.f90repr(v_val) + ', '
