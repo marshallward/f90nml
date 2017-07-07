@@ -13,7 +13,7 @@ from string import whitespace
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import Namelist
 from f90nml.findex import FIndex
-
+from f90nml.tokenizer import Tokenizer
 
 class Parser(object):
     """shlex-based Fortran namelist parser."""
@@ -118,14 +118,25 @@ class Parser(object):
     def readstream(self, nml_file, nml_patch):
         """Parse an input stream containing a Fortran namelist."""
 
-        f90lex = shlex.shlex(nml_file)
-        f90lex.whitespace = ''
-        f90lex.wordchars += '.-+'       # Include floating point tokens
-        if nml_patch:
-            f90lex.commenters = ''
-        else:
-            f90lex.commenters = self.comment_tokens
+        #f90lex = shlex.shlex(nml_file)
+        #f90lex.whitespace = ''
+        #f90lex.wordchars += '.-+'       # Include floating point tokens
+        #if nml_patch:
+        #    f90lex.commenters = ''
+        #else:
+        #    f90lex.commenters = self.comment_tokens
 
+        ##print(list(f90lex))
+        #self.tokens = iter(f90lex)
+
+        tokenizer = Tokenizer()
+        f90lex = []
+        for line in nml_file:
+            toks = tokenizer.parse(line)
+            toks.append('\n')
+            f90lex.extend(toks)
+
+        print(f90lex)
         self.tokens = iter(f90lex)
 
         nmls = Namelist()
@@ -385,16 +396,7 @@ class Parser(object):
 
                 else:
                     next_value = self.parse_value()
-
-                    # Check for escaped strings
-                    if (v_values and isinstance(v_values[-1], str) and
-                            isinstance(next_value, str) and not prior_ws_sep):
-
-                        quote_char = self.prior_token[0]
-                        v_values[-1] = quote_char.join([v_values[-1],
-                                                        next_value])
-                    else:
-                        self.append_value(v_values, next_value, v_idx, n_vals)
+                    self.append_value(v_values, next_value, v_idx, n_vals)
 
                 # Exit for end of nml group (/, &, $) or null broadcast (=)
                 if self.token in ('/', '&', '$', '='):
@@ -550,10 +552,11 @@ class Parser(object):
         if self.token == ',':
             ws_sep = True
 
-        while next_token in tuple(whitespace + '!'):
+        while (all(c in tuple(whitespace) for c in next_token)
+                or next_token[0] in self.comment_tokens):
 
             if self.pfile:
-                if next_token == '!':
+                if next_token[0] in self.comment_tokens:
                     while not next_token == '\n':
                         patch_tokens += next_token
                         next_token = next(self.tokens)
