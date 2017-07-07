@@ -7,7 +7,6 @@ hierarchy of Python dicts containing equivalent intrinsic Python data types.
 :license: Apache License, Version 2.0, see LICENSE for details.
 """
 import copy
-import shlex
 from string import whitespace
 
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
