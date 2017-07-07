@@ -48,7 +48,7 @@ class Tokenizer(object):
                     word += self.char
                     self.update_chars()
 
-            elif self.char.isdigit():
+            elif self.char.isdigit() or self.char == '-':
                 word = self.parse_numeric()
 
             elif self.char in ('!', '#'):
@@ -141,6 +141,10 @@ class Tokenizer(object):
         word = ''
         frac = False
 
+        if self.char == '-':
+            word += self.char
+            self.update_chars()
+
         while self.char.isdigit() or (self.char == '.' and not frac):
             # Only allow one decimal point
             if self.char == '.':
@@ -152,12 +156,13 @@ class Tokenizer(object):
         if self.char in 'eEdD':
             word += self.char
             self.update_chars()
-            if self.char in '+-':
-                word += self.char
-                self.update_chars()
-            while self.char.isdigit():
-                word += self.char
-                self.update_chars()
+
+        if self.char in '+-':
+            word += self.char
+            self.update_chars()
+        while self.char.isdigit():
+            word += self.char
+            self.update_chars()
 
         if self.char == '_':
             word += self.char
