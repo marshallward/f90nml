@@ -539,9 +539,7 @@ class Parser(object):
         if self.token == ',':
             ws_sep = True
 
-        while (all(c in tuple(whitespace) for c in next_token)
-                or next_token[0] in self.comment_tokens):
-
+        while (next_token[0] in self.comment_tokens + whitespace):
             if self.pfile:
                 if next_token[0] in self.comment_tokens:
                     while not next_token == '\n':
