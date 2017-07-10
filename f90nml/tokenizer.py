@@ -30,8 +30,8 @@ class Tokenizer(object):
 
         while self.char != '\n':
             word = ''
-            if self.char in ' \t':
-                while self.char in ' \t':
+            if self.char in ' \t\r':
+                while self.char in ' \t\r':
                     word += self.char
                     self.update_chars()
 
