@@ -61,6 +61,16 @@ def pystr(v_str):
     assert isinstance(v_str, str)
 
     if v_str[0] in ("'", '"') and v_str[0] == v_str[-1]:
-        return v_str[1:-1]
+        quote = v_str[0]
+        out = v_str[1:-1]
     else:
-        return v_str
+        # NOTE: This is non-standard Fortran.
+        #       For example, gfortran rejects non-delimited strings.
+        quote = None
+        out = v_str
+
+    # Replace escaped strings
+    if quote:
+        out = out.replace(2 * quote, quote)
+
+    return out

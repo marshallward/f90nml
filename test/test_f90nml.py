@@ -313,6 +313,8 @@ class Test(unittest.TestCase):
                     }
                 }
 
+        self.winfmt_nml = {'blah': {'blah': 1}}
+
         if has_numpy:
             self.numpy_nml = {
                 'numpy_nml': OrderedDict((
@@ -689,6 +691,10 @@ class Test(unittest.TestCase):
             test_nml.write('tmp.nml')
         finally:
             os.remove('tmp.nml')
+
+    def test_winfmt(self):
+        test_nml = f90nml.read('winfmt.nml')
+        self.assertEqual(self.winfmt_nml, test_nml)
 
     if has_numpy:
         def test_numpy_write(self):
