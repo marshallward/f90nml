@@ -44,9 +44,7 @@ class Tokenizer(object):
                     tokens.append(word)
                     word = self.prior_char
 
-            elif self.char.isalpha() or self.char == '_':
-                # NOTE: Variables cannot start with underscore
-                #       But keep for now to accommodate preprocessed tags
+            elif self.char.isalpha():
                 while self.char.isalnum() or self.char in  '\'"_':
                     word += self.char
                     self.update_chars()

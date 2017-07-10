@@ -334,7 +334,6 @@ class Parser(object):
 
             assert self.token == '='
             n_vals = None
-            prior_ws_sep = ws_sep = False
 
             self.update_tokens()
 
@@ -389,14 +388,13 @@ class Parser(object):
                 if self.token in ('/', '&', '$', '='):
                     break
                 else:
-                    prior_ws_sep = ws_sep
                     if patch_values:
                         if (p_idx < len(patch_values) and
                                 len(patch_values) > 0 and self.token != ','):
                             p_val = patch_values[p_idx]
                             p_repr = patch_nml.f90repr(patch_values[p_idx])
                             p_idx += 1
-                            ws_sep = self.update_tokens(override=p_repr)
+                            self.update_tokens(override=p_repr)
                             if isinstance(p_val, complex):
                                 # Skip over the complex content
                                 # NOTE: Assumes input and patch are complex
@@ -410,7 +408,7 @@ class Parser(object):
                             skip = (p_idx >= len(patch_values))
                             self.update_tokens(patch_skip=skip)
                     else:
-                        ws_sep = self.update_tokens()
+                        self.update_tokens()
 
         if patch_values:
             v_values = patch_values
@@ -525,7 +523,6 @@ class Parser(object):
     def update_tokens(self, write_token=True, override=None, patch_skip=False):
         """Update tokens to the next available values."""
 
-        ws_sep = False
         next_token = next(self.tokens)
 
         patch_value = ''
@@ -535,10 +532,6 @@ class Parser(object):
             token = override if override else self.token
             patch_value += token
 
-        # Commas between values are interpreted as whitespace
-        if self.token == ',':
-            ws_sep = True
-
         while (next_token[0] in self.comment_tokens + whitespace):
             if self.pfile:
                 if next_token[0] in self.comment_tokens:
@@ -546,8 +539,6 @@ class Parser(object):
                         patch_tokens += next_token
                         next_token = next(self.tokens)
                 patch_tokens += next_token
-
-            ws_sep = True
 
             # Several sections rely on StopIteration to terminate token search
             # If that occurs, dump the patched tokens immediately
@@ -570,8 +561,6 @@ class Parser(object):
 
         # Update tokens, ignoring padding
         self.token, self.prior_token = next_token, self.token
-
-        return ws_sep
 
     def append_value(self, v_values, next_value, v_idx=None, n_vals=1):
         """Update a list of parsed values with a new value."""
