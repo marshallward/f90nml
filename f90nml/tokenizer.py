@@ -9,10 +9,6 @@ class Tokenizer(object):
     # I only use this one
     punctuation = '=+-*/\\()[]{},:;%&~<>?`|$#@'    # Unhandled Table 3.1 tokens
 
-    # Token pairs (syntax and operators)
-    # TODO: (/ and /) are currently removed, for reasons discussed below.
-    pairs = ('::', '=>', '**', '//', '==', '/=', '<=', '>=')
-
     def __init__(self):
         self.characters = None
         self.prior_char = None
@@ -74,18 +70,6 @@ class Tokenizer(object):
             elif self.char in Tokenizer.punctuation:
                 word = self.char
                 self.update_chars()
-
-                # NOTE: The following check does not work for (/ and /) because
-                # it produces false tokens inside `operator (/)` declarations.
-                # One potential solution is to check for the `operator` token
-                # inside of `tokens`, but it's a little more complicated...
-                # For now, I just omit (/ and /).
-
-                if self.prior_char + self.char in self.pairs:
-                    word = self.prior_char + self.char
-                    tokens.append(word)
-                    self.update_chars()
-                    continue
 
             else:
                 # This should never happen
