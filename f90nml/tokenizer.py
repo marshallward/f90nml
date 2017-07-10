@@ -1,4 +1,5 @@
 import string
+import itertools
 
 class Tokenizer(object):
 
@@ -41,9 +42,7 @@ class Tokenizer(object):
                     word = self.prior_char
 
             elif self.char.isalpha():
-                while self.char.isalnum() or self.char in  '\'"_':
-                    word += self.char
-                    self.update_chars()
+                word = self.parse_name(line);
 
             elif self.char.isdigit() or self.char == '-':
                 word = self.parse_numeric()
@@ -78,6 +77,23 @@ class Tokenizer(object):
             tokens.append(word)
 
         return tokens
+
+    def parse_name(self, line):
+        end = self.idx
+        for char in line[self.idx:]:
+            if not char.isalnum() and char not in '\'"_':
+                break
+            end += 1
+
+        word = line[self.idx:end]
+
+        self.idx = end - 1
+        # Update iterator, minus first character which was already read
+        self.characters = itertools.islice(self.characters, len(word) - 1,
+                                           None)
+        self.update_chars()
+
+        return word
 
     def parse_string(self):
         word = ''
