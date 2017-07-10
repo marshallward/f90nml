@@ -1,3 +1,5 @@
+import string
+
 class Tokenizer(object):
 
     # I don't use these two
@@ -16,6 +18,7 @@ class Tokenizer(object):
         self.prior_char = None
         self.char = None
         self.idx = None
+        self.whitespace = string.whitespace.replace('\n', '')
 
         self.prior_delim = None
 
@@ -30,8 +33,8 @@ class Tokenizer(object):
 
         while self.char != '\n':
             word = ''
-            if self.char in ' \t\r':
-                while self.char in ' \t\r':
+            if self.char in self.whitespace:
+                while self.char in self.whitespace:
                     word += self.char
                     self.update_chars()
 
