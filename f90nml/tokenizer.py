@@ -22,7 +22,7 @@ class Tokenizer(object):
 
         self.prior_delim = None
 
-    def parse(self, line, macros={}):
+    def parse(self, line):
         """Tokenize a line of Fortran source."""
 
         tokens = []
@@ -90,12 +90,6 @@ class Tokenizer(object):
             else:
                 # This should never happen
                 raise ValueError
-
-            # Modify token if needed
-            if word in macros:
-                # TODO: Multiword substitutions are not tokenized!
-                print('replacing {} with {}'.format(word, macros[word]))
-                word = macros[word]
 
             tokens.append(word)
 
