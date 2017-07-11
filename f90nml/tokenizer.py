@@ -1,6 +1,7 @@
 import string
 import itertools
 
+
 class Tokenizer(object):
 
     # I don't use these two
@@ -16,8 +17,6 @@ class Tokenizer(object):
         self.char = None
         self.idx = None
         self.whitespace = string.whitespace.replace('\n', '')
-
-        self.prior_delim = None
 
     def parse(self, line):
         """Tokenize a line of Fortran source."""
@@ -35,14 +34,11 @@ class Tokenizer(object):
                     word += self.char
                     self.update_chars()
 
-            elif self.char in '"\'' or self.prior_delim:
+            elif self.char in '"\'':
                 word = self.parse_string()
-                if (self.prior_char, self.char) == ('&', '\n'):
-                    tokens.append(word)
-                    word = self.prior_char
 
             elif self.char.isalpha():
-                word = self.parse_name(line);
+                word = self.parse_name(line)
 
             elif self.char.isdigit() or self.char == '-':
                 word = self.parse_numeric()
@@ -98,24 +94,12 @@ class Tokenizer(object):
     def parse_string(self):
         word = ''
 
-        if self.prior_delim:
-            delim = self.prior_delim
-            self.prior_delim = None
-        else:
-            delim = self.char
-            word += self.char
-            self.update_chars()
+        delim = self.char
+        word += self.char
+        self.update_chars()
 
-        next_delim = None
         while True:
-            if self.char == '&':
-                self.update_chars()
-                if self.char == '\n':
-                    next_delim = delim
-                    break
-                else:
-                    word += '&'
-            elif self.char == delim:
+            if self.char == delim:
                 # Check for escaped delimiters
                 self.update_chars()
                 if self.char == delim:
@@ -127,8 +111,6 @@ class Tokenizer(object):
             else:
                 word += self.char
                 self.update_chars()
-
-        self.prior_delim = next_delim
 
         return word
 

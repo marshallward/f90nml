@@ -14,6 +14,7 @@ from f90nml.namelist import Namelist
 from f90nml.findex import FIndex
 from f90nml.tokenizer import Tokenizer
 
+
 class Parser(object):
     """shlex-based Fortran namelist parser."""
 
