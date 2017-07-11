@@ -1,5 +1,6 @@
 &float_nml
     v_float = 1.000
+    v_decimal_start = 0.100
     v_decimal_end = 1.000
     v_negative = -1.000
     v_single = 1.000

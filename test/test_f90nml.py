@@ -131,6 +131,7 @@ class Test(unittest.TestCase):
         self.float_nml = {
                 'float_nml': {
                     'v_float': 1.,
+                    'v_decimal_start': .1,
                     'v_decimal_end': 1.,
                     'v_negative': -1.,
                     'v_single': 1.,
