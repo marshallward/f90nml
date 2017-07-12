@@ -141,16 +141,6 @@ class Tokenizer(object):
             word += self.char
             self.update_chars()
 
-        if self.char == '_':
-            word += self.char
-            self.update_chars()
-            named = self.char.isalpha()
-
-            while (self.char.isdigit() or
-                   (self.char.isalpha() or self.char == '_' and named)):
-                word += self.char
-                self.update_chars()
-
         return word
 
     def update_chars(self):
