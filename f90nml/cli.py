@@ -63,6 +63,8 @@ def parse():
         if not args.group:
             # Use the first available group
             grp = list(input_data.keys())[0]
+            print('f90nml: warning: Assuming variables are in group \'{}\'.'
+                  ''.format(grp))
         else:
             grp = args.group
 
