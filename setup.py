@@ -5,6 +5,7 @@
    Additional configuration settings are in ``setup.cfg``.
 """
 
+import os
 try:
     from setuptools import setup
 except ImportError:
@@ -13,6 +14,7 @@ except ImportError:
 project_name = 'f90nml'
 project_version = __import__(project_name).__version__
 project_readme_fname = 'README.rst'
+project_scripts = [os.path.join('bin', f) for f in os.listdir('bin')]
 
 with open(project_readme_fname) as f:
     project_readme = f.read()
@@ -27,6 +29,7 @@ setup(
     url = 'http://github.com/marshallward/f90nml',
 
     packages = ['f90nml'],
+    scripts=project_scripts,
 
     classifiers = [
         'Development Status :: 4 - Beta',
