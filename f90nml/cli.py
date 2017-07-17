@@ -10,6 +10,11 @@ import os
 import sys
 
 import f90nml
+try:
+    import yaml
+    has_yaml = True
+except ImportError:
+    has_yaml = False
 
 def parse():
     parser = argparse.ArgumentParser()
@@ -36,6 +41,11 @@ def parse():
         if input_ext == '.json':
             with open(input_fname) as input_file:
                 input_data = json.load(input_file)
+
+        elif has_yaml and input_ext == '.yaml':
+            with open(input_fname) as input_file:
+                input_data = yaml.load(input_file)
+
         else:
             # Assume unrecognised extensions are namelists
             input_data = f90nml.read(input_fname)
@@ -47,10 +57,19 @@ def parse():
     if output_fname:
         output_root, output_ext = os.path.splitext(output_fname)
 
-        if output_ext == '.nml':
-            f90nml.write(input_data, output_fname)
+        if output_ext == '.json':
+            with open(output_fname, 'w') as output_file:
+                json.dump(input_data, output_file,
+                          indent=4, separators=(',', ': '))
+                output_file.write('\n')
+
+        elif has_yaml and output_ext == '.yaml':
+            with open(output_fname, 'w') as output_file:
+                yaml.dump(input_data, output_file)
+
         else:
-            # TODO
-            pass
+            # Default to namelist output
+            f90nml.write(input_data, output_fname)
     else:
+        # TODO: Combine with extension output
         f90nml.write(input_data, sys.stdout)
