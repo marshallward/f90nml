@@ -5,6 +5,7 @@
 """
 
 import argparse
+import io
 import json
 import os
 import sys
@@ -21,6 +22,10 @@ def parse():
 
     parser.add_argument('--version', action='version',
                         version='f90nml {}'.format(f90nml.__version__))
+
+    parser.add_argument('--group', '-g', action='store')
+    parser.add_argument('--set', '-s', action='append')
+    parser.add_argument('--patch', '-p', action='store_false')
 
     parser.add_argument('input')
     parser.add_argument('output', nargs='?')
@@ -51,6 +56,21 @@ def parse():
             input_data = f90nml.read(input_fname)
     else:
         input_data = {}
+
+    # Replace any values
+
+    if args.set:
+        if not args.group:
+            # Use the first available group
+            grp = list(input_data.keys())[0]
+        else:
+            grp = args.group
+
+        update_nml = '&{} {} /\n'.format(grp, ', '.join(args.set))
+        with io.StringIO(update_nml) as update_io:
+            update_data = f90nml.read(update_io)
+
+        input_data[grp].update(update_data[grp])
 
     # Target output
 
