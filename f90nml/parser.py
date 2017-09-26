@@ -385,6 +385,9 @@ class Parser(object):
                     next_value = self.parse_value()
                     self.append_value(v_values, next_value, v_idx, n_vals)
 
+                # Reset default repeat factor for subsequent values
+                n_vals = 1
+
                 # Exit for end of nml group (/, &, $) or null broadcast (=)
                 if self.token in ('/', '&', '$', '='):
                     break
