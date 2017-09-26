@@ -261,12 +261,16 @@ class Test(unittest.TestCase):
                     'x': [2.0, 2.0],
                     'y': [None, None, None],
                     'z': [True, True, True, True],
-                    },
+                },
                 'bcast_endnull_nml': {
                     'x': [2.0, 2.0],
                     'y': [None, None, None],
-                    }
+                },
+                'bcast_mixed_nml': {
+                    'x': [1, 1, 1, 2, 3, 4],
+                    'y': [1, 1, 1, 2, 2, 3],
                 }
+        }
 
         self.comment_nml = {
                 'comment_nml': {
