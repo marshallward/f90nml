@@ -113,7 +113,7 @@ The latest version of ``f90nml`` can be installed from source::
 Users without install privileges can append the ``--user`` flag to
 ``setup.py``::
 
-   $ python setup.py --user install
+   $ python setup.py install --user
 
 
 Basic Usage
