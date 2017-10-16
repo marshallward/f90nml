@@ -213,7 +213,7 @@ class Namelist(OrderedDict):
 
     # File output
 
-    def write(self, nml_path, force=False):
+    def write(self, nml_path, force=False, sort=False):
         """Output dict to a Fortran 90 namelist file."""
 
         # Reset newline flag
@@ -223,20 +223,24 @@ class Namelist(OrderedDict):
         if not force and not nml_is_file and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
 
+        if sort:
+            sel = Namelist(sorted(self.items(), key=lambda t: t[0]))
+        else:
+            sel = self
         nml_file = nml_path if nml_is_file else open(nml_path, 'w')
         try:
-            for grp_name, grp_vars in self.items():
+            for grp_name, grp_vars in sel.items():
                 # Check for repeated namelist records (saved as lists)
                 if isinstance(grp_vars, list):
                     for g_vars in grp_vars:
-                        self.write_nmlgrp(grp_name, g_vars, nml_file)
+                        self.write_nmlgrp(grp_name, g_vars, nml_file, sort)
                 else:
-                    self.write_nmlgrp(grp_name, grp_vars, nml_file)
+                    self.write_nmlgrp(grp_name, grp_vars, nml_file, sort)
         finally:
             if not nml_is_file:
                 nml_file.close()
 
-    def write_nmlgrp(self, grp_name, grp_vars, nml_file):
+    def write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False):
         """Write namelist group to target file."""
 
         if self._newline:
@@ -245,6 +249,9 @@ class Namelist(OrderedDict):
 
         if self.uppercase:
             grp_name = grp_name.upper()
+
+        if sort:
+            grp_vars = Namelist(sorted(grp_vars.items(), key=lambda t: t[0]))
 
         print('&{0}'.format(grp_name), file=nml_file)
 
