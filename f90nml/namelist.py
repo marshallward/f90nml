@@ -39,6 +39,7 @@ class Namelist(OrderedDict):
         self._indent = 4 * ' '
         self._end_comma = False
         self._uppercase = False
+        self._sort = False
         self._floatformat = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
 
@@ -138,6 +139,19 @@ class Namelist(OrderedDict):
             raise TypeError('uppercase attribute must be a logical type.')
         self._uppercase = value
 
+    # Sort
+    @property
+    def sort(self):
+        """Return True if namelist is written alphabetically by group / name."""
+        return self._sort
+
+    @sort.setter
+    def sort(self, value):
+        """Validate and set the sort flag."""
+        if not isinstance(value, bool):
+            raise TypeError('sort attribute must be a logical type.')
+        self._sort = value
+
     # Float format
     @property
     def floatformat(self):
@@ -213,7 +227,7 @@ class Namelist(OrderedDict):
 
     # File output
 
-    def write(self, nml_path, force=False, sort=False):
+    def write(self, nml_path, force=False):
         """Output dict to a Fortran 90 namelist file."""
 
         # Reset newline flag
@@ -223,24 +237,24 @@ class Namelist(OrderedDict):
         if not force and not nml_is_file and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
 
-        if sort:
-            sel = Namelist(sorted(self.items(), key=lambda t: t[0]))
+        if self.sort:
+            nml = Namelist(sorted(self.items(), key=lambda t: t[0]))
         else:
-            sel = self
+            nml = self
         nml_file = nml_path if nml_is_file else open(nml_path, 'w')
         try:
-            for grp_name, grp_vars in sel.items():
+            for grp_name, grp_vars in nml.items():
                 # Check for repeated namelist records (saved as lists)
                 if isinstance(grp_vars, list):
                     for g_vars in grp_vars:
-                        self.write_nmlgrp(grp_name, g_vars, nml_file, sort)
+                        self.write_nmlgrp(grp_name, g_vars, nml_file)
                 else:
-                    self.write_nmlgrp(grp_name, grp_vars, nml_file, sort)
+                    self.write_nmlgrp(grp_name, grp_vars, nml_file)
         finally:
             if not nml_is_file:
                 nml_file.close()
 
-    def write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False):
+    def write_nmlgrp(self, grp_name, grp_vars, nml_file):
         """Write namelist group to target file."""
 
         if self._newline:
@@ -250,7 +264,7 @@ class Namelist(OrderedDict):
         if self.uppercase:
             grp_name = grp_name.upper()
 
-        if sort:
+        if self.sort:
             grp_vars = Namelist(sorted(grp_vars.items(), key=lambda t: t[0]))
 
         print('&{0}'.format(grp_name), file=nml_file)
