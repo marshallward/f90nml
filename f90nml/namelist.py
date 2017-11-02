@@ -112,6 +112,16 @@ class Namelist(OrderedDict):
             raise TypeError('Indentation must be specified by string or space '
                             'width.')
 
+    def update_values(self, namelist):
+        """Update the namelist from another partial or full namelist.
+
+        This is different from `Namelist.update` as it does not replace
+        namelist sections, instead it performs an update on the section."""
+        for sec in namelist:
+            if sec not in self:
+                self[sec] = Namelist()
+            self[sec].update(namelist[sec])
+
     # Terminal comma
     @property
     def end_comma(self):

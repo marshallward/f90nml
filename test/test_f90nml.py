@@ -701,6 +701,24 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('winfmt.nml')
         self.assertEqual(self.winfmt_nml, test_nml)
 
+    def test_update_values(self):
+        nml = f90nml.Namelist({
+            'a_nml': {
+                'x': 1,
+                'y': 2,
+            }
+        })
+        # check overwriting values
+        nml.update_values({'a_nml': {'x': 3}})
+        self.assertEqual(nml['a_nml']['x'], 3)
+        self.assertEqual(nml['a_nml']['y'], 2)
+        # check appending values doesn't remove previous
+        nml.update_values({'a_nml': {'z': 5}})
+        self.assertEqual(nml['a_nml']['x'], 3)
+        self.assertEqual(nml['a_nml']['y'], 2)
+        self.assertEqual(nml['a_nml']['z'], 5)
+
+
     if has_numpy:
         def test_numpy_write(self):
             self.assert_write(self.numpy_nml, 'numpy_types.nml')
