@@ -717,6 +717,14 @@ class Test(unittest.TestCase):
         self.assertEqual(nml['a_nml']['x'], 3)
         self.assertEqual(nml['a_nml']['y'], 2)
         self.assertEqual(nml['a_nml']['z'], 5)
+        # check adding a new section also works
+        nml.update_values({
+            'b_nml': {'q': 33},
+            'a_nml': {'z': 4}
+        })
+        self.assertEqual(nml['a_nml']['z'], 4)
+        self.assertEqual(nml['b_nml']['q'], 33)
+        self.assertRaises(KeyError, nml['b_nml'].__getitem__, 'z')
 
 
     if has_numpy:
