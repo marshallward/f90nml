@@ -701,7 +701,7 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('winfmt.nml')
         self.assertEqual(self.winfmt_nml, test_nml)
 
-    def test_update_values(self):
+    def test_namelist_patch(self):
         nml = f90nml.Namelist({
             'a_nml': {
                 'x': 1,
@@ -709,16 +709,16 @@ class Test(unittest.TestCase):
             }
         })
         # check overwriting values
-        nml.update_values({'a_nml': {'x': 3}})
+        nml.patch({'a_nml': {'x': 3}})
         self.assertEqual(nml['a_nml']['x'], 3)
         self.assertEqual(nml['a_nml']['y'], 2)
         # check appending values doesn't remove previous
-        nml.update_values({'a_nml': {'z': 5}})
+        nml.patch({'a_nml': {'z': 5}})
         self.assertEqual(nml['a_nml']['x'], 3)
         self.assertEqual(nml['a_nml']['y'], 2)
         self.assertEqual(nml['a_nml']['z'], 5)
         # check adding a new section also works
-        nml.update_values({
+        nml.patch({
             'b_nml': {'q': 33},
             'a_nml': {'z': 4}
         })
