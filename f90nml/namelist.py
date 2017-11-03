@@ -39,6 +39,7 @@ class Namelist(OrderedDict):
         self._indent = 4 * ' '
         self._end_comma = False
         self._uppercase = False
+        self._sort = False
         self._floatformat = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
 
@@ -148,6 +149,19 @@ class Namelist(OrderedDict):
             raise TypeError('uppercase attribute must be a logical type.')
         self._uppercase = value
 
+    # Sort
+    @property
+    def sort(self):
+        """Return True if namelist is written alphabetically by group / name."""
+        return self._sort
+
+    @sort.setter
+    def sort(self, value):
+        """Validate and set the sort flag."""
+        if not isinstance(value, bool):
+            raise TypeError('sort attribute must be a logical type.')
+        self._sort = value
+
     # Float format
     @property
     def floatformat(self):
@@ -233,9 +247,13 @@ class Namelist(OrderedDict):
         if not force and not nml_is_file and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
 
+        if self.sort:
+            nml = Namelist(sorted(self.items(), key=lambda t: t[0]))
+        else:
+            nml = self
         nml_file = nml_path if nml_is_file else open(nml_path, 'w')
         try:
-            for grp_name, grp_vars in self.items():
+            for grp_name, grp_vars in nml.items():
                 # Check for repeated namelist records (saved as lists)
                 if isinstance(grp_vars, list):
                     for g_vars in grp_vars:
@@ -255,6 +273,9 @@ class Namelist(OrderedDict):
 
         if self.uppercase:
             grp_name = grp_name.upper()
+
+        if self.sort:
+            grp_vars = Namelist(sorted(grp_vars.items(), key=lambda t: t[0]))
 
         print('&{0}'.format(grp_name), file=nml_file)
 
