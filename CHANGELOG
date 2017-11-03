@@ -1,3 +1,15 @@
+v0.22 (prerelease):
+    - A command line interface has been added, see `f90nml -h` for details.
+    - We now use a native Python tokenizer, and no longer use shlex.  This has
+      led to some modest performance speedups.
+    - JSON and YAML files can now be read as namelists, and vice versa.
+    - Bugfix: Repeated values in arrays were incorrectly applied to subsequent
+      list elements (e.g. y = 5*1, 2, 3 was applying 5 to all three explicit
+      elements, instead of just the first).  Thanks to @fizzysister for
+      reporting.
+    - Bugfix: Dicts can once again be assigned to namelist groups.
+    - Documentation typos were fixed, and some docstrings have been cleaned up.
+
 v0.21:
     - Several bug fixes related to derived types and start index tracking
         - Stricter checks for existing parent when modifying a derived type
