@@ -17,6 +17,7 @@ try:
 except ImportError:
     has_yaml = False
 
+
 def parse():
     parser = argparse.ArgumentParser()
 
