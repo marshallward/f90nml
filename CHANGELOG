@@ -7,8 +7,10 @@ v0.22 (prerelease):
       list elements (e.g. y = 5*1, 2, 3 was applying 5 to all three explicit
       elements, instead of just the first).  Thanks to @fizzysister for
       reporting.
-    - Bugfix: Dicts can once again be assigned to namelist groups.  Thanks to
-      James Penn for reporting and fixing.
+    - Bugfix: Dicts can once again be assigned to namelist groups.  (James
+      Penn)
+    - Namelist patching using a second namelist (James Penn)
+    - Sorted namelist field output.  (Andrew Kiss)
     - Documentation typos were fixed, and some docstrings have been cleaned up.
 
 v0.21:
