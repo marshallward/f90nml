@@ -341,22 +341,22 @@ class Test(unittest.TestCase):
                 target_str = target.read()
                 self.assertEqual(source_str, target_str)
 
-    def assert_write(self, nml, target_fname):
-        self.assert_write_path(nml, target_fname)
-        self.assert_write_file(nml, target_fname)
+    def assert_write(self, nml, target_fname, sort=False):
+        self.assert_write_path(nml, target_fname, sort)
+        self.assert_write_file(nml, target_fname, sort)
 
-    def assert_write_path(self, nml, target_fname):
+    def assert_write_path(self, nml, target_fname, sort=False):
         tmp_fname = 'tmp.nml'
-        f90nml.write(nml, tmp_fname)
+        f90nml.write(nml, tmp_fname, sort=sort)
         try:
             self.assert_file_equal(tmp_fname, target_fname)
         finally:
             os.remove(tmp_fname)
 
-    def assert_write_file(self, nml, target_fname):
+    def assert_write_file(self, nml, target_fname, sort=False):
         tmp_fname = 'tmp.nml'
         with open(tmp_fname, 'w') as tmp_file:
-            f90nml.write(nml, tmp_file)
+            f90nml.write(nml, tmp_file, sort=sort)
             self.assertFalse(tmp_file.closed)
         try:
             self.assert_file_equal(tmp_fname, target_fname)
@@ -708,24 +708,33 @@ class Test(unittest.TestCase):
                 'y': 2,
             }
         })
-        # check overwriting values
+
+        # Check overwriting values
         nml.patch({'a_nml': {'x': 3}})
+
         self.assertEqual(nml['a_nml']['x'], 3)
         self.assertEqual(nml['a_nml']['y'], 2)
-        # check appending values doesn't remove previous
+
+        # Check appending values doesn't remove previous
         nml.patch({'a_nml': {'z': 5}})
+
         self.assertEqual(nml['a_nml']['x'], 3)
         self.assertEqual(nml['a_nml']['y'], 2)
         self.assertEqual(nml['a_nml']['z'], 5)
-        # check adding a new section also works
+
+        # Check adding a new section also works
         nml.patch({
             'b_nml': {'q': 33},
             'a_nml': {'z': 4}
         })
+
         self.assertEqual(nml['a_nml']['z'], 4)
         self.assertEqual(nml['b_nml']['q'], 33)
         self.assertRaises(KeyError, nml['b_nml'].__getitem__, 'z')
 
+    def test_sorted_output(self):
+        test_nml = f90nml.read('types.nml')
+        self.assert_write(test_nml, 'types_sorted.nml', sort=True)
 
     if has_numpy:
         def test_numpy_write(self):

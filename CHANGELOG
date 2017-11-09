@@ -1,4 +1,4 @@
-v0.22 (prerelease):
+v0.22:
     - A command line interface has been added, see `f90nml -h` for details.
     - We now use a native Python tokenizer, and no longer use shlex.  This has
       led to some modest performance speedups.

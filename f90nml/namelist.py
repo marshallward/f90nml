@@ -364,9 +364,11 @@ class Namelist(OrderedDict):
                             v_idx_repr += '{0}'.format(i_s)
                         else:
                             v_idx_repr += '{0}:{1}'.format(i_s, i_e)
-                # NOTE: This is never called!
+
+                # NOTE: The block below is never called!
                 # We don't write the empty index if none was provided.
                 # But maybe someday we might want to add this option.
+
                 # else:
                 #     v_idx_repr += ':'
 
@@ -375,6 +377,7 @@ class Namelist(OrderedDict):
                     v_idx_repr += ', '.join(str(i) for i in v_idx[::-1])
 
                 v_idx_repr += ')'
+
             else:
                 v_idx_repr = ''
 
