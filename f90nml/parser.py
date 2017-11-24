@@ -122,6 +122,12 @@ class Parser(object):
         f90lex = []
         for line in nml_file:
             toks = tokenizer.parse(line)
+            while tokenizer.prior_delim:
+                new_toks = tokenizer.parse(next(nml_file))
+                if new_toks[0].isspace():
+                    toks[-1] += new_toks.pop(0)
+                toks[-1] += new_toks[0]
+                toks.extend(new_toks[1:])
             toks.append('\n')
             f90lex.extend(toks)
 

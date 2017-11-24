@@ -17,6 +17,7 @@ class Tokenizer(object):
         self.char = None
         self.idx = None
         self.whitespace = string.whitespace.replace('\n', '')
+        self.prior_delim = None
 
     def parse(self, line):
         """Tokenize a line of Fortran source."""
@@ -34,7 +35,7 @@ class Tokenizer(object):
                     word += self.char
                     self.update_chars()
 
-            elif self.char in '"\'':
+            elif self.char in '"\'' or self.prior_delim:
                 word = self.parse_string()
 
             elif self.char.isalpha():
@@ -94,9 +95,13 @@ class Tokenizer(object):
     def parse_string(self):
         word = ''
 
-        delim = self.char
-        word += self.char
-        self.update_chars()
+        if self.prior_delim:
+            delim = self.prior_delim
+            self.prior_delim = None
+        else:
+            delim = self.char
+            word += self.char
+            self.update_chars()
 
         while True:
             if self.char == delim:
@@ -108,6 +113,9 @@ class Tokenizer(object):
                 else:
                     word += delim
                     break
+            elif self.char == '\n':
+                self.prior_delim = delim
+                break
             else:
                 word += self.char
                 self.update_chars()
