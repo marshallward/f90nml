@@ -129,13 +129,18 @@ class Parser(object):
                 if not new_toks:
                     continue
 
-                # Append leading whitespace to the string token
+                # The tokenizer always pre-tokenizes the whitespace (leftover
+                # behaviour from Fortran source parsing) so this must be added
+                # manually.
                 if new_toks[0].isspace():
                     toks[-1] += new_toks.pop(0)
 
-                toks[-1] += new_toks[0]
+                # Append the rest of the string (if present)
+                if new_toks:
+                    toks[-1] += new_toks[0]
 
-                toks.extend(new_toks[1:])
+                    # Attach the rest of the tokens
+                    toks.extend(new_toks[1:])
 
             toks.append('\n')
             f90lex.extend(toks)
