@@ -164,6 +164,13 @@ class Test(unittest.TestCase):
                     }
                 }
 
+        self.string_multiline_nml = {
+                'string_multiline_nml': {
+                    'empty': '',
+                    'trailing_whitespace': '  '
+                    }
+                }
+
         self.dtype_nml = {
                 'dtype_nml': {
                     'dt_scalar': {'val': 1},
@@ -417,6 +424,10 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('string.nml')
         self.assertEqual(self.string_nml, test_nml)
         self.assert_write(test_nml, 'string_target.nml')
+
+    def test_string_multiline(self):
+        test_nml = f90nml.read('string_multiline.nml')
+        self.assertEqual(self.string_multiline_nml, test_nml)
 
     def test_dtype(self):
         test_nml = f90nml.read('dtype.nml')
