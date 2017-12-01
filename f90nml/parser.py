@@ -115,33 +115,44 @@ class Parser(object):
             if self.pfile and patch_is_path:
                 self.pfile.close()
 
+    def filter_preprocess(self,nml_file):
+        """Filter out few lines prior to & sign
+           Older fortran dialects allows comments before encountering  & sign
+           example 
+
+           comment1 
+           comment2
+            &efitin
+            var = 0.04
+            ...
+          
+           This function trims the first two lines for future parsing
+        """
+        foundAmpersand = False
+        local_nml = []
+ 
+        for idx,val in enumerate(nml_file):
+            if val.lstrip().startswith('&'):
+                foundAmpersand = True
+            
+            if foundAmpersand:
+                local_nml.append(val)
+        #end for
+    
+        if not foundAmpersand:
+          return []
+        else:
+          return local_nml
+
     def readstream(self, nml_file, nml_patch):
         """Parse an input stream containing a Fortran namelist."""
 
         tokenizer = Tokenizer()
         f90lex = []
-        for line in nml_file:
+
+        nml_file_preprocessed = self.filter_preprocess(nml_file)
+        for line in nml_file_preprocessed:
             toks = tokenizer.parse(line)
-            while tokenizer.prior_delim:
-                new_toks = tokenizer.parse(next(nml_file))
-
-                # Skip empty lines
-                if not new_toks:
-                    continue
-
-                # The tokenizer always pre-tokenizes the whitespace (leftover
-                # behaviour from Fortran source parsing) so this must be added
-                # manually.
-                if new_toks[0].isspace():
-                    toks[-1] += new_toks.pop(0)
-
-                # Append the rest of the string (if present)
-                if new_toks:
-                    toks[-1] += new_toks[0]
-
-                    # Attach the rest of the tokens
-                    toks.extend(new_toks[1:])
-
             toks.append('\n')
             f90lex.extend(toks)
 
