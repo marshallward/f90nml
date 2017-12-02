@@ -19,6 +19,9 @@ class Tokenizer(object):
         self.whitespace = string.whitespace.replace('\n', '')
         self.prior_delim = None
 
+        # Set to true if inside a namelist group
+        self.group_token = None
+
     def parse(self, line):
         """Tokenize a line of Fortran source."""
 
@@ -29,11 +32,25 @@ class Tokenizer(object):
         self.update_chars()
 
         while self.char != '\n':
+
+            # Update namelist group status
+            if self.char in ('&', '$'):
+                self.group_token = self.char
+
+            if self.group_token and (
+                    (self.group_token, self.char) in (('&', '/'), ('$', '$'))):
+                self.group_token = False
+
             word = ''
             if self.char in self.whitespace:
                 while self.char in self.whitespace:
                     word += self.char
                     self.update_chars()
+
+            elif self.char in ('!', '#') or self.group_token is None:
+                # Abort the iteration and build the comment token
+                word = line[self.idx:-1]
+                self.char = '\n'
 
             elif self.char in '"\'' or self.prior_delim:
                 word = self.parse_string()
@@ -43,11 +60,6 @@ class Tokenizer(object):
 
             elif self.char.isdigit() or self.char == '-':
                 word = self.parse_numeric()
-
-            elif self.char in ('!', '#'):
-                # Abort the iteration and build the comment token
-                word = line[self.idx:-1]
-                self.char = '\n'
 
             elif self.char == '.':
                 self.update_chars()
