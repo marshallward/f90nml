@@ -327,6 +327,12 @@ class Test(unittest.TestCase):
 
         self.winfmt_nml = {'blah': {'blah': 1}}
 
+        self.extern_cmt_nml = {
+            'efitin': {
+                'abc': 0,
+            }
+        }
+
         if has_numpy:
             self.numpy_nml = {
                 'numpy_nml': OrderedDict((
@@ -746,6 +752,10 @@ class Test(unittest.TestCase):
     def test_sorted_output(self):
         test_nml = f90nml.read('types.nml')
         self.assert_write(test_nml, 'types_sorted.nml', sort=True)
+
+    def test_extern_cmt(self):
+        test_nml = f90nml.read('extern_cmt.nml')
+        self.assertEqual(self.extern_cmt_nml, test_nml)
 
     if has_numpy:
         def test_numpy_write(self):
