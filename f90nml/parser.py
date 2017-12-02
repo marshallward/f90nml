@@ -115,12 +115,43 @@ class Parser(object):
             if self.pfile and patch_is_path:
                 self.pfile.close()
 
+    def filter_preprocess(self,nml_file):
+        """Filter out few lines prior to & sign
+           Older fortran dialects allows comments before encountering  & sign
+           example 
+
+           comment1 
+           comment2
+            &efitin
+            var = 0.04
+            ...
+          
+           This function trims the first two lines for future parsing
+           input: nml_file object
+           output: a list of filtered string. If no line starting with & is found, return empty list
+        """
+        foundAmpersand = False
+        local_nml = []
+
+        for idx,val in enumerate(nml_file):
+            if val.lstrip().startswith('&'):
+                foundAmpersand = True
+
+            if foundAmpersand:
+                local_nml.append(val)
+
+        return local_nml
+
+
     def readstream(self, nml_file, nml_patch):
         """Parse an input stream containing a Fortran namelist."""
 
         tokenizer = Tokenizer()
         f90lex = []
-        for line in nml_file:
+        
+        nml_file_preprocessed = self.filter_preprocess(nml_file)
+
+        for line in nml_file_preprocessed:
             toks = tokenizer.parse(line)
             while tokenizer.prior_delim:
                 new_toks = tokenizer.parse(next(nml_file))
@@ -143,7 +174,7 @@ class Parser(object):
                     toks.extend(new_toks[1:])
 
             toks.append('\n')
-            f90lex.extend(toks)
+            f90lex.extend(toks) 
 
         self.tokens = iter(f90lex)
 
