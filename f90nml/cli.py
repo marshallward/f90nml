@@ -22,7 +22,7 @@ def parse():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--version', action='version',
-                        version='f90nml {}'.format(f90nml.__version__))
+                        version='f90nml {0}'.format(f90nml.__version__))
 
     parser.add_argument('--group', '-g', action='store')
     parser.add_argument('--set', '-s', action='append')
@@ -64,12 +64,12 @@ def parse():
         if not args.group:
             # Use the first available group
             grp = list(input_data.keys())[0]
-            print('f90nml: warning: Assuming variables are in group \'{}\'.'
+            print('f90nml: warning: Assuming variables are in group \'{0}\'.'
                   ''.format(grp))
         else:
             grp = args.group
 
-        update_nml = '&{} {} /\n'.format(grp, ', '.join(args.set))
+        update_nml = '&{0} {1} /\n'.format(grp, ', '.join(args.set))
         with io.StringIO(update_nml) as update_io:
             update_data = f90nml.read(update_io)
 
