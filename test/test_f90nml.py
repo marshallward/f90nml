@@ -1,3 +1,4 @@
+from io import StringIO
 import os
 import sys
 import unittest
@@ -14,6 +15,7 @@ except ImportError:
 
 sys.path.insert(1, '../')
 import f90nml
+import f90nml.cli
 from f90nml.fpy import pybool
 from f90nml.namelist import Namelist
 from f90nml.findex import FIndex
@@ -761,6 +763,26 @@ class Test(unittest.TestCase):
         def test_numpy_write(self):
             self.assert_write(self.numpy_nml, 'numpy_types.nml')
 
+    # CLI tests
+    def test_cli_help(self):
+        old_argv = sys.argv
+        old_stdout = sys.stdout
+        sys.argv = ['f90nml']
+
+        sys.stdout = StringIO()
+        try:
+            f90nml.cli.parse()
+        except SystemExit:
+            pass
+
+        # TODO: We should probably assert the help page here, although it's a
+        # bit tautological since we use argparse to generate the help page.
+        # The `parser` object inside `cli` is lost after the `parse` call, and
+        # I don't want to save it solely to support a test case.
+        # Anyway, might be more work to do here someday.
+
+        sys.stdout = old_stdout
+        sys.argv = old_argv
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
