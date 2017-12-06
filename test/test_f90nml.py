@@ -1,4 +1,4 @@
-from io import StringIO
+import io
 import os
 import sys
 import unittest
@@ -7,6 +7,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
+
 try:
     import numpy
     has_numpy = True
@@ -24,6 +25,19 @@ from f90nml.findex import FIndex
 class Test(unittest.TestCase):
 
     def setUp(self):
+        # Construct the stdout capture stream
+
+        # Test for unicode or bytes
+        try:
+            test_stream = io.StringIO()
+            test_stream.write('')
+            self.stringIO = io.StringIO
+        except TypeError:
+            # Fallback to bytestream strings
+            self.stringIO = io.BytesIO
+
+        # Construct the reference namelist values
+
         self.empty_file = {}
 
         self.empty_nml = {'empty_nml': {}}
@@ -766,13 +780,13 @@ class Test(unittest.TestCase):
     # CLI tests
     def test_cli_help(self):
         argv, stdout = sys.argv, sys.stdout
-        sys.argv = ['f90nml']
-        sys.stdout = StringIO()
 
-        try:
-            f90nml.cli.parse()
-        except SystemExit:
-            pass
+        sys.argv = ['f90nml']
+        with self.stringIO() as sys.stdout:
+            try:
+                f90nml.cli.parse()
+            except SystemExit:
+                pass
 
         # TODO: We should probably assert the help page here, although it's a
         # bit tautological since we use argparse to generate the help page.
@@ -783,20 +797,22 @@ class Test(unittest.TestCase):
         sys.argv, sys.stdout = argv, stdout
 
     def test_cli_read(self):
-        argv, stdout = sys.argv, sys.stdout
+        argv_in, stdout_in = sys.argv, sys.stdout
+
         sys.argv = ['f90nml', 'types.nml']
-        sys.stdout = StringIO()
+        with self.stringIO() as sys.stdout:
+            try:
+                f90nml.cli.parse()
+            except SystemExit:
+                pass
 
-        try:
-            f90nml.cli.parse()
-        except SystemExit:
-            pass
+            sys.stdout.seek(0)
+            with open('types.nml') as target, sys.stdout as source:
+                source_str = source.read()
+                target_str = target.read()
+                self.assertEqual(source_str, target_str)
 
-        with open('types.nml') as target:
-            target_str = target.read()
-            self.assertEqual(sys.stdout.getvalue(), target_str)
-
-        sys.argv, sys.stdout = argv, stdout
+        sys.argv, sys.stdout = argv_in, stdout_in
 
 
 if __name__ == '__main__':
