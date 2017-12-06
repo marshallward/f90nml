@@ -765,11 +765,10 @@ class Test(unittest.TestCase):
 
     # CLI tests
     def test_cli_help(self):
-        old_argv = sys.argv
-        old_stdout = sys.stdout
+        argv, stdout = sys.argv, sys.stdout
         sys.argv = ['f90nml']
-
         sys.stdout = StringIO()
+
         try:
             f90nml.cli.parse()
         except SystemExit:
@@ -781,8 +780,24 @@ class Test(unittest.TestCase):
         # I don't want to save it solely to support a test case.
         # Anyway, might be more work to do here someday.
 
-        sys.stdout = old_stdout
-        sys.argv = old_argv
+        sys.argv, sys.stdout = argv, stdout
+
+    def test_cli_read(self):
+        argv, stdout = sys.argv, sys.stdout
+        sys.argv = ['f90nml', 'types.nml']
+        sys.stdout = StringIO()
+
+        try:
+            f90nml.cli.parse()
+        except SystemExit:
+            pass
+
+        with open('types.nml') as target:
+            target_str = target.read()
+            self.assertEqual(sys.stdout.getvalue(), target_str)
+
+        sys.argv, sys.stdout = argv, stdout
+
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
