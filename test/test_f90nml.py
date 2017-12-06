@@ -807,11 +807,10 @@ class Test(unittest.TestCase):
                 pass
 
             sys.stdout.seek(0)
-            with open(sys.stdout) as source:
-                with open('types.nml') as target:
-                    source_str = source.read()
-                    target_str = target.read()
-                    self.assertEqual(source_str, target_str)
+            with open('types.nml') as target:
+                source_str = sys.stdout.read()
+                target_str = target.read()
+                self.assertEqual(source_str, target_str)
 
         sys.argv, sys.stdout = argv_in, stdout_in
 
