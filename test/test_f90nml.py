@@ -1,12 +1,15 @@
-import io
 import os
 import sys
 import unittest
+try:
+    from StringIO import StringIO   # Python 2.x
+except ImportError:
+    from io import StringIO # Python 3.x
 
 try:
-    from collections import OrderedDict
+    from collections import OrderedDict # Python 3.x
 except ImportError:
-    from ordereddict import OrderedDict
+    from ordereddict import OrderedDict # Python 2.x
 
 try:
     import numpy
@@ -25,17 +28,6 @@ from f90nml.findex import FIndex
 class Test(unittest.TestCase):
 
     def setUp(self):
-        # Construct the stdout capture stream
-
-        # Test for unicode or bytes
-        try:
-            test_stream = io.StringIO()
-            test_stream.write('')
-            self.stringIO = io.StringIO
-        except TypeError:
-            # Fallback to bytestream strings
-            self.stringIO = io.BytesIO
-
         # Construct the reference namelist values
 
         self.empty_file = {}
@@ -43,86 +35,87 @@ class Test(unittest.TestCase):
         self.empty_nml = {'empty_nml': {}}
 
         self.null_nml = {
-                'null_nml': {'null_value': None},
-                'null_comma_nml': {'null_comma': None},
-                'null_nocomma_rpt_nml': {
-                    'null_one': None,
-                    'null_two': None,
-                    }
-                }
+            'null_nml': {'null_value': None},
+            'null_comma_nml': {'null_comma': None},
+            'null_nocomma_rpt_nml': {
+                'null_one': None,
+                'null_two': None,
+            }
+        }
 
         self.unset_nml = {
-                'unset_nml': {
-                    'x': None,
-                    'y': None
-                    }
-                }
+            'unset_nml': {
+                'x': None,
+                'y': None
+            }
+        }
 
         self.types_nml = {
-                'types_nml': {
-                    'v_integer': 1,
-                    'v_float': 1.0,
-                    'v_complex': 1+2j,
-                    'v_logical': True,
-                    'v_string': 'Hello',
-                    }
-                }
+            'types_nml': {
+                'v_integer': 1,
+                'v_float': 1.0,
+                'v_complex': 1+2j,
+                'v_logical': True,
+                'v_string': 'Hello',
+            }
+        }
 
         self.vector_nml = {
-                'vector_nml': {
-                    'v': [1, 2, 3, 4, 5],
-                    'v_idx': [1, 2, 3, 4],
-                    'v_idx_ooo': [1, 2, 3, 4],
-                    'v_range': [1, 2, 3, 4],
-                    'v_start_zero': [1, 2, 3, 4],
-                    'v_start_minusone': [1, 2, 3, 4, 5],
-                    'v_zero_adj': [1, None, 3, 4],
-                    'v_zero_adj_ooo': [1, None, 3, 4],
-                    'v_implicit_start': [1, 2, 3, 4],
-                    'v_implicit_end': [1, 2, 3, 4],
-                    'v_implicit_all': [1, 2, 3, 4],
-                    'v_null_start': [None, 2, 3, 4],
-                    'v_null_interior': [1, 2, None, 4],
-                    'v_null_end': [1, 2, 3, None],
-                    'v_zero': [1, 0, 3],
-                    'v_stride': [1, None, 3, None, 5, None, 7],
-                    'v_single': [1],
-                    'v_implicit_merge': [1, 2],
-                    'v_explicit_merge': [1, 2],
-                    }
-                }
+            'vector_nml': {
+                'v': [1, 2, 3, 4, 5],
+                'v_idx': [1, 2, 3, 4],
+                'v_idx_ooo': [1, 2, 3, 4],
+                'v_range': [1, 2, 3, 4],
+                'v_start_zero': [1, 2, 3, 4],
+                'v_start_minusone': [1, 2, 3, 4, 5],
+                'v_zero_adj': [1, None, 3, 4],
+                'v_zero_adj_ooo': [1, None, 3, 4],
+                'v_implicit_start': [1, 2, 3, 4],
+                'v_implicit_end': [1, 2, 3, 4],
+                'v_implicit_all': [1, 2, 3, 4],
+                'v_null_start': [None, 2, 3, 4],
+                'v_null_interior': [1, 2, None, 4],
+                'v_null_end': [1, 2, 3, None],
+                'v_zero': [1, 0, 3],
+                'v_stride': [1, None, 3, None, 5, None, 7],
+                'v_single': [1],
+                'v_implicit_merge': [1, 2],
+                'v_explicit_merge': [1, 2],
+                'v_complex': [1+2j, 3+4j, 5+6j],
+            }
+        }
 
         self.multidim_nml = {
-                'multidim_nml': {
-                    'v2d': [[1, 2], [3, 4]],
-                    'v3d': [[[1, 2], [3, 4]], [[5, 6], [7, 8]]],
-                    'w3d': [[[1, 2, 3, 4],
-                             [5, 6, 7, 8],
-                             [9, 10, 11, 12]],
-                            [[13, 14, 15, 16],
-                             [17, 18, 19, 20],
-                             [21, 22, 23, 24]]],
-                    'v2d_explicit': [[1, 2], [3, 4]],
-                    'v2d_outer': [[1], [2], [3], [4]],
-                    'v2d_inner': [[1, 2, 3, 4]],
-                    'v2d_sparse': [[1, 2], [], [5, 6]]
-                    }
-                }
+            'multidim_nml': {
+                'v2d': [[1, 2], [3, 4]],
+                'v3d': [[[1, 2], [3, 4]], [[5, 6], [7, 8]]],
+                'w3d': [[[1, 2, 3, 4],
+                         [5, 6, 7, 8],
+                         [9, 10, 11, 12]],
+                        [[13, 14, 15, 16],
+                         [17, 18, 19, 20],
+                         [21, 22, 23, 24]]],
+                'v2d_explicit': [[1, 2], [3, 4]],
+                'v2d_outer': [[1], [2], [3], [4]],
+                'v2d_inner': [[1, 2, 3, 4]],
+                'v2d_sparse': [[1, 2], [], [5, 6]]
+            }
+        }
 
         self.md_rowmaj_nml = {
-                'multidim_nml': {
-                    'v2d': [[1, 3], [2, 4]],
-                    'v3d': [[[1, 5], [3, 7]], [[2, 6], [4, 8]]],
-                    'w3d': [[[1, 13], [5, 17], [9, 21]],
-                            [[2, 14], [6, 18], [10, 22]],
-                            [[3, 15], [7, 19], [11, 23]],
-                            [[4, 16], [8, 20], [12, 24]]],
-                    'v2d_explicit': [[1, 3], [2, 4]],
-                    'v2d_outer': [[1, 2, 3, 4]],
-                    'v2d_inner': [[1], [2], [3], [4]],
-                    'v2d_sparse': [[1, None, 5], [2, None, 6]]
-                    }
-                }
+            'multidim_nml': {
+                'v2d': [[1, 3], [2, 4]],
+                'v3d': [[[1, 5], [3, 7]], [[2, 6], [4, 8]]],
+                'w3d': [[[1, 13], [5, 17], [9, 21]],
+                        [[2, 14], [6, 18], [10, 22]],
+                        [[3, 15], [7, 19], [11, 23]],
+                        [[4, 16], [8, 20], [12, 24]]],
+                'v2d_explicit': [[1, 3], [2, 4]],
+                'v2d_outer': [[1, 2, 3, 4]],
+                'v2d_inner': [[1], [2], [3], [4]],
+                'v2d_sparse': [[1, None, 5], [2, None, 6]]
+            }
+        }
 
         self.default_one_index_nml = {
             'default_index_nml': {
@@ -166,76 +159,76 @@ class Test(unittest.TestCase):
         }
 
         self.string_nml = {
-                'string_nml': {
-                    'str_basic': 'hello',
-                    'str_no_delim': 'hello',
-                    'str_no_delim_no_esc': "a''b",
-                    'single_esc_delim': "a 'single' delimiter",
-                    'double_esc_delim': 'a "double" delimiter',
-                    'double_nested': "''x'' \"y\"",
-                    'str_list': ['a', 'b', 'c'],
-                    'slist_no_space': ['a', 'b', 'c'],
-                    'slist_no_quote': ['a', 'b', 'c'],
-                    'slash': 'back\\slash',
-                    }
-                }
+            'string_nml': {
+                'str_basic': 'hello',
+                'str_no_delim': 'hello',
+                'str_no_delim_no_esc': "a''b",
+                'single_esc_delim': "a 'single' delimiter",
+                'double_esc_delim': 'a "double" delimiter',
+                'double_nested': "''x'' \"y\"",
+                'str_list': ['a', 'b', 'c'],
+                'slist_no_space': ['a', 'b', 'c'],
+                'slist_no_quote': ['a', 'b', 'c'],
+                'slash': 'back\\slash',
+            }
+        }
 
         self.string_multiline_nml = {
-                'string_multiline_nml': {
-                    'empty': '',
-                    'trailing_whitespace': '  '
-                    }
-                }
+            'string_multiline_nml': {
+                'empty': '',
+                'trailing_whitespace': '  '
+            }
+        }
 
         self.dtype_nml = {
-                'dtype_nml': {
-                    'dt_scalar': {'val': 1},
-                    'dt_stack': {'outer': {'inner': 2}},
-                    'dt_vector': {'vec': [1, 2, 3]}
-                    },
-                'dtype_multi_nml': {
-                    'dt': {
+            'dtype_nml': {
+                'dt_scalar': {'val': 1},
+                'dt_stack': {'outer': {'inner': 2}},
+                'dt_vector': {'vec': [1, 2, 3]}
+            },
+            'dtype_multi_nml': {
+                'dt': {
+                    'x': 1,
+                    'y': 2,
+                    'z': 3,
+                }
+            },
+            'dtype_nested_nml': {
+                'f': {
+                    'g': {
                         'x': 1,
                         'y': 2,
                         'z': 3,
-                        }
-                    },
-                'dtype_nested_nml': {
-                    'f': {
-                        'g': {
-                            'x': 1,
-                            'y': 2,
-                            'z': 3,
-                            }
-                        }
-                    },
-                'dtype_field_idx_nml': {
-                    'f': {
-                        'x': [1, 2, 3]}
-                    },
-                'dtype_vec_nml': {
-                    'a': {
-                        'b': [
-                            {'c': 1, 'd': 2},
-                            {'c': 3, 'd': 4},
-                            {'c': 5, 'd': 6}
-                            ]
-                        }
-                    },
-                'dtype_sparse_vec_nml': {
-                    'a': {
-                        'b': [{'c': 2}]     # NOTE: start_index is 2
-                        }
-                    },
-                'dtype_single_value_vec_nml': {
-                    'a': [{'b': 1}]
-                    },
-                'dtype_single_vec_merge_nml': {
-                    'a': {
-                        'b': [{'c': 1, 'd': 2}]
-                        }
                     }
                 }
+            },
+            'dtype_field_idx_nml': {
+                'f': {
+                    'x': [1, 2, 3]}
+                },
+            'dtype_vec_nml': {
+                'a': {
+                    'b': [
+                        {'c': 1, 'd': 2},
+                        {'c': 3, 'd': 4},
+                        {'c': 5, 'd': 6}
+                    ]
+                }
+            },
+            'dtype_sparse_vec_nml': {
+                'a': {
+                    'b': [{'c': 2}]     # NOTE: start_index is 2
+                }
+            },
+            'dtype_single_value_vec_nml': {
+                'a': [{'b': 1}]
+            },
+            'dtype_single_vec_merge_nml': {
+                'a': {
+                    'b': [{'c': 1, 'd': 2}]
+                }
+            }
+        }
 
         self.dtype_case_nml = {
             'dtype_mixed': {
@@ -280,66 +273,66 @@ class Test(unittest.TestCase):
         }
 
         self.bcast_nml = {
-                'bcast_nml': {
-                    'x': [2.0, 2.0],
-                    'y': [None, None, None],
-                    'z': [True, True, True, True],
-                },
-                'bcast_endnull_nml': {
-                    'x': [2.0, 2.0],
-                    'y': [None, None, None],
-                },
-                'bcast_mixed_nml': {
-                    'x': [1, 1, 1, 2, 3, 4],
-                    'y': [1, 1, 1, 2, 2, 3],
-                }
+            'bcast_nml': {
+                'x': [2.0, 2.0],
+                'y': [None, None, None],
+                'z': [True, True, True, True],
+            },
+            'bcast_endnull_nml': {
+                'x': [2.0, 2.0],
+                'y': [None, None, None],
+            },
+            'bcast_mixed_nml': {
+                'x': [1, 1, 1, 2, 3, 4],
+                'y': [1, 1, 1, 2, 2, 3],
+            }
         }
 
         self.comment_nml = {
-                'comment_nml': {
-                    'v_cmt_inline': 123,
-                    'v_cmt_in_str': 'This token ! is not a comment',
-                    'v_cmt_after_str': 'This ! is not a comment',
-                    }
-                }
+            'comment_nml': {
+                'v_cmt_inline': 123,
+                'v_cmt_in_str': 'This token ! is not a comment',
+                'v_cmt_after_str': 'This ! is not a comment',
+            }
+        }
 
         self.comment_alt_nml = {
-                'comment_alt_nml': {
-                    'x': 1,
-                    'z': 3}
-                }
+            'comment_alt_nml': {
+                'x': 1,
+                'z': 3}
+        }
 
         self.grp_repeat_nml = {
-                'grp_repeat_nml': [{'x': 1}, {'x': 2}],
-                'case_check_nml': [{'y': 1}, {'y': 2}],
-                }
+            'grp_repeat_nml': [{'x': 1}, {'x': 2}],
+            'case_check_nml': [{'y': 1}, {'y': 2}],
+        }
 
         self.f77_nml = {
-                'f77_nml': {'x': 123},
-                'next_f77_nml': {'y': 'abc'},
-                }
+            'f77_nml': {'x': 123},
+            'next_f77_nml': {'y': 'abc'},
+        }
 
         self.dollar_nml = {'dollar_nml': {'v': 1.}}
 
         self.multiline_nml = {
-                'multiline_nml': {
-                    'x': [
-                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                        1, 1, 1, 1, 1, 1, 1, 1
-                        ]
-                    }
-                }
+            'multiline_nml': {
+                'x': [
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1
+                ]
+            }
+        }
 
         self.ext_token_nml = {'ext_token_nml': {'x': 1}}
 
         self.repatch_nml = {
-                'repatch_nml': {
-                    'x': [5, 6],
-                    'y': {'z': 7}
-                    }
-                }
+            'repatch_nml': {
+                'x': [5, 6],
+                'y': {'z': 7}
+            }
+        }
 
         self.winfmt_nml = {'blah': {'blah': 1}}
 
@@ -782,36 +775,34 @@ class Test(unittest.TestCase):
         argv, stdout = sys.argv, sys.stdout
 
         sys.argv = ['f90nml']
-        with self.stringIO() as sys.stdout:
-            try:
-                f90nml.cli.parse()
-            except SystemExit:
-                pass
+        sys.stdout = StringIO()
 
-        # TODO: We should probably assert the help page here, although it's a
-        # bit tautological since we use argparse to generate the help page.
-        # The `parser` object inside `cli` is lost after the `parse` call, and
-        # I don't want to save it solely to support a test case.
-        # Anyway, might be more work to do here someday.
+        try:
+            f90nml.cli.parse()
+        except SystemExit:
+            pass
 
+        sys.stdout.close()
         sys.argv, sys.stdout = argv, stdout
 
     def test_cli_read(self):
         argv_in, stdout_in = sys.argv, sys.stdout
 
         sys.argv = ['f90nml', 'types.nml']
-        with self.stringIO() as sys.stdout:
-            try:
-                f90nml.cli.parse()
-            except SystemExit:
-                pass
+        sys.stdout = StringIO()
 
-            sys.stdout.seek(0)
-            with open('types.nml') as target:
-                source_str = sys.stdout.read()
-                target_str = target.read()
-                self.assertEqual(source_str, target_str)
+        try:
+            f90nml.cli.parse()
+        except SystemExit:
+            pass
 
+        sys.stdout.seek(0)
+        with open('types.nml') as target:
+            source_str = sys.stdout.read()
+            target_str = target.read()
+            self.assertEqual(source_str, target_str)
+
+        sys.stdout.close()
         sys.argv, sys.stdout = argv_in, stdout_in
 
 

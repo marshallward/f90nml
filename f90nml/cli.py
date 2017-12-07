@@ -9,6 +9,10 @@ import io
 import json
 import os
 import sys
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 import f90nml
 try:
@@ -46,11 +50,12 @@ def parse():
         input_root, input_ext = os.path.splitext(input_fname)
         if input_ext == '.json':
             with open(input_fname) as input_file:
-                input_data = json.load(input_file)
+                input_data = json.load(input_file,
+                                       object_pairs_hook=OrderedDict)
 
         elif has_yaml and input_ext == '.yaml':
             with open(input_fname) as input_file:
-                input_data = yaml.load(input_file)
+                input_data = yaml.safe_load(input_file)
 
         else:
             # Assume unrecognised extensions are namelists
@@ -80,15 +85,23 @@ def parse():
     if output_fname:
         output_root, output_ext = os.path.splitext(output_fname)
 
+        # TODO: Better control of output format
         if output_ext == '.json':
+            input_data = input_data.todict(decomplex=True)
             with open(output_fname, 'w') as output_file:
                 json.dump(input_data, output_file,
                           indent=4, separators=(',', ': '))
                 output_file.write('\n')
 
-        elif has_yaml and output_ext == '.yaml':
-            with open(output_fname, 'w') as output_file:
-                yaml.dump(input_data, output_file)
+        elif output_ext == '.yaml':
+            if has_yaml:
+                input_data = input_data.todict(decomplex=True)
+                with open(output_fname, 'w') as output_file:
+                    yaml.dump(input_data, output_file,
+                              default_flow_style=False)
+            else:
+                print('f90nml: error: YAML module could not be found.')
+                sys.exit(-1)
 
         else:
             # Default to namelist output

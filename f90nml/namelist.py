@@ -10,6 +10,11 @@ from __future__ import print_function
 
 import numbers
 import os
+import sys
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 try:
     from collections import OrderedDict
 except ImportError:
@@ -34,6 +39,22 @@ class Namelist(OrderedDict):
             if isinstance(val, dict):
                 self[key] = Namelist(val)
 
+        # Update any metadata
+        if '_complex' in self:
+            for key in self['_complex']:
+                if all(isinstance(v, list) for v in self[key]):
+                    self[key] = [complex(*v) for v in self[key]]
+                else:
+                    self[key] = complex(*self[key])
+            self.pop('_complex')
+
+        # Vector starting index tracking
+        if '_start_index' in self:
+            self.start_index = self['_start_index']
+            self.pop('_start_index')
+        else:
+            self.start_index = {}
+
         # Formatting properties
         self._colwidth = 72
         self._indent = 4 * ' '
@@ -44,9 +65,6 @@ class Namelist(OrderedDict):
 
         # Namelist group spacing flag
         self._newline = False
-
-        # Vector starting index tracking
-        self.start_index = {}
 
     def __contains__(self, key):
         return super(Namelist, self).__contains__(key.lower())
@@ -61,6 +79,13 @@ class Namelist(OrderedDict):
         if isinstance(value, dict) and not isinstance(value, Namelist):
             value = Namelist(value)
         super(Namelist, self).__setitem__(key.lower(), value)
+
+    def __str__(self):
+        output = StringIO()
+        self.writestream(output)
+        nml_string = output.getvalue().rstrip()
+        output.close()
+        return nml_string
 
     # Format configuration
 
@@ -224,31 +249,37 @@ class Namelist(OrderedDict):
     # File output
 
     def write(self, nml_path, force=False, sort=False):
-        """Output dict to a Fortran 90 namelist file."""
-
-        # Reset newline flag
-        self._newline = False
+        """Write Namelist to a Fortran 90 namelist file."""
 
         nml_is_file = hasattr(nml_path, 'read')
         if not force and not nml_is_file and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
 
+        nml_file = nml_path if nml_is_file else open(nml_path, 'w')
+        try:
+            self.writestream(nml_file, force, sort)
+        finally:
+            if not nml_is_file:
+                nml_file.close()
+
+    def writestream(self, nml_file, force=False, sort=False):
+        """Output Namelist to a streamable file object."""
+
+        # Reset newline flag
+        self._newline = False
+
         if sort:
             sel = Namelist(sorted(self.items(), key=lambda t: t[0]))
         else:
             sel = self
-        nml_file = nml_path if nml_is_file else open(nml_path, 'w')
-        try:
-            for grp_name, grp_vars in sel.items():
-                # Check for repeated namelist records (saved as lists)
-                if isinstance(grp_vars, list):
-                    for g_vars in grp_vars:
-                        self.write_nmlgrp(grp_name, g_vars, nml_file, sort)
-                else:
-                    self.write_nmlgrp(grp_name, grp_vars, nml_file, sort)
-        finally:
-            if not nml_is_file:
-                nml_file.close()
+
+        for grp_name, grp_vars in sel.items():
+            # Check for repeated namelist records (saved as lists)
+            if isinstance(grp_vars, list):
+                for g_vars in grp_vars:
+                    self.write_nmlgrp(grp_name, g_vars, nml_file, sort)
+            else:
+                self.write_nmlgrp(grp_name, grp_vars, nml_file, sort)
 
     def write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False):
         """Write namelist group to target file."""
@@ -299,6 +330,9 @@ class Namelist(OrderedDict):
             # if we don't know the first index (which we are no longer assuming
             # to be 1-based elsewhere).  Unfortunately, the solution needs a
             # rethink of multidimensional output.
+
+            # NOTE: Fixing this would also clean up the output of todict(),
+            # which is now incorrectly documenting unspecified indices as 1.
 
             # For now, we will assume 1-based indexing here, just to keep
             # things working smoothly.
@@ -421,6 +455,56 @@ class Namelist(OrderedDict):
                     var_strs.append(' ' * len(v_header) + v_str)
 
         return var_strs
+
+    def todict(self, decomplex=False):
+        """Return a dict equivalent to the namelist."""
+        # NOTE: Since namelists cannot start with `_`, we use these keys to
+        # include metadata.
+
+        # TODO: Preserve ordering
+        nmldict = dict(self)
+
+        # Search for namelists within the namelist
+        # TODO: Move repeated stuff to new functions
+        for key, value in self.items():
+            if isinstance(value, Namelist):
+                nmldict[key] = value.todict(decomplex)
+
+            elif isinstance(value, complex) and decomplex:
+                nmldict[key] = [value.real, value.imag]
+                try:
+                    nmldict['_complex'].append(key)
+                except KeyError:
+                    nmldict['_complex'] = [key]
+
+            elif isinstance(value, list):
+                complex_list = False
+                for idx, entry in enumerate(value):
+                    if isinstance(entry, Namelist):
+                        nmldict[key][idx] = entry.todict(decomplex)
+
+                    elif isinstance(entry, complex) and decomplex:
+                        nmldict[key][idx] = [entry.real, entry.imag]
+                        complex_list = True
+
+                if complex_list:
+                    try:
+                        nmldict['_complex'].append(key)
+                    except KeyError:
+                        nmldict['_complex'] = [key]
+
+        # Append the start index if present
+        if self.start_index:
+            start_index = {}
+            for key, value in self.start_index.items():
+                # NOTE: This only supports default values of 1
+                if all(v != 1 for v in value):
+                    start_index[key] = value
+
+            if start_index:
+                nmldict['_start_index'] = start_index
+
+        return nmldict
 
     def f90repr(self, value):
         """Convert primitive Python types to equivalent Fortran strings."""

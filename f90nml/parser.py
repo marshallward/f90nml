@@ -371,7 +371,7 @@ class Parser(object):
 
             # Add variables until next variable trigger
             while (self.token not in ('=', '(', '%') or
-                   (self.prior_token, self.token) == ('=', '(')):
+                   (self.prior_token, self.token) in (('=', '('), (',', '('))):
 
                 # Check for repeated values
                 if self.token == '*':

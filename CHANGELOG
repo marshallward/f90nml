@@ -1,3 +1,13 @@
+v1.0 (prerelease):
+    - Namelist method `todict` for conversion to native Python dict
+    - CLI: YAML output now defaults to long-form with standard types, where
+      possible.
+    - Bugfix: Content outside of namelist groupss are now tokenized as
+      comments.  (Thanks to Martin Margo for reporting.)
+    - Bugfix: String line continuation under the new tokenizer.  (Thanks to
+      Robert Gieseke for reporting.)
+    - Bugfix: Complex lists are now parsed correctly.
+
 v0.22:
     - A command line interface has been added, see `f90nml -h` for details.
     - We now use a native Python tokenizer, and no longer use shlex.  This has
@@ -15,7 +25,7 @@ v0.22:
 
 v0.21:
     - Several bug fixes related to derived types and start index tracking
-        - Stricter checks for existing parent when modifying a derived type
+    - Stricter checks for existing parent when modifying a derived type
     - When parsing lists of nested derived types, we now correctly set the
       parent as the respective list element, rather than the entire list.  This
       allows us to remove several redundant code checks from the parser.
@@ -30,7 +40,7 @@ v0.20:
 
 v0.19:
     - Array patching is now supported
-    - Numpy primitives can be converted to Fortran types
+    - NumPy primitives can be converted to Fortran types
     - File objects can now be used as input arguments
 
 v0.18:
@@ -64,5 +74,5 @@ v0.12:
     - Arch (AUR) distribution configuration
     - Setuptools is now the install default
 
-v0.11:
-    - TODO
+v0.1--0.11:
+    - Lost to history

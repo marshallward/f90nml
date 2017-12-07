@@ -58,4 +58,7 @@
     ! Explicit merge
     v_explicit_merge = 1
     v_explicit_merge(2) = 2
+
+    ! Complex vector
+    v_complex = (1, 2), (3, 4), (5, 6)
 /
