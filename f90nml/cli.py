@@ -64,7 +64,6 @@ def parse():
         input_data = {}
 
     input_data = f90nml.Namelist(input_data)
-    print(input_data)
 
     # Replace any values
 
