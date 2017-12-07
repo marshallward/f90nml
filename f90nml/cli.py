@@ -50,8 +50,7 @@ def parse():
         _, input_ext = os.path.splitext(input_fname)
         if input_ext == '.json':
             with open(input_fname) as input_file:
-                input_data = json.load(input_file,
-                                       object_pairs_hook=OrderedDict)
+                input_data = json.load(input_file)
 
         elif has_yaml and input_ext == '.yaml':
             with open(input_fname) as input_file:
