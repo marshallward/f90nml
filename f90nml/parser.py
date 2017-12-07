@@ -290,7 +290,7 @@ class Parser(object):
             # NOTE: This assumes single-dimension derived type vectors
             #       (which I think is the only case supported in Fortran)
             if self.token == '%':
-                assert(v_idx_bounds[0][1] - v_idx_bounds[0][0] == 1)
+                assert v_idx_bounds[0][1] - v_idx_bounds[0][0] == 1
                 dt_idx = v_idx_bounds[0][0] - v_idx.first[0]
 
                 # NOTE: This is the sensible play to call `parse_variable`
@@ -556,7 +556,7 @@ class Parser(object):
             token = override if override else self.token
             patch_value += token
 
-        while (next_token[0] in self.comment_tokens + whitespace):
+        while next_token[0] in self.comment_tokens + whitespace:
             if self.pfile:
                 if next_token[0] in self.comment_tokens:
                     while not next_token == '\n':
@@ -679,5 +679,5 @@ def delist(values):
         return None
     elif len(values) == 1:
         return values[0]
-    else:
-        return values
+
+    return values

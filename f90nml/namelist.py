@@ -10,7 +10,6 @@ from __future__ import print_function
 
 import numbers
 import os
-import sys
 try:
     from StringIO import StringIO
 except ImportError:
@@ -257,12 +256,12 @@ class Namelist(OrderedDict):
 
         nml_file = nml_path if nml_is_file else open(nml_path, 'w')
         try:
-            self.writestream(nml_file, force, sort)
+            self.writestream(nml_file, sort)
         finally:
             if not nml_is_file:
                 nml_file.close()
 
-    def writestream(self, nml_file, force=False, sort=False):
+    def writestream(self, nml_file, sort=False):
         """Output Namelist to a streamable file object."""
 
         # Reset newline flag

@@ -385,6 +385,25 @@ class Test(unittest.TestCase):
         finally:
             os.remove(tmp_fname)
 
+    def get_cli_output(self, args):
+        argv_in, stdout_in = sys.argv, sys.stdout
+
+        sys.argv = args
+        sys.stdout = StringIO()
+
+        try:
+            f90nml.cli.parse()
+        except SystemExit:
+            pass
+
+        sys.stdout.seek(0)
+        stdout = sys.stdout.read()
+
+        sys.stdout.close()
+        sys.argv, sys.stdout = argv_in, stdout_in
+
+        return stdout
+
     # Tests
     def test_empty_file(self):
         test_nml = f90nml.read('empty_file')
@@ -772,38 +791,24 @@ class Test(unittest.TestCase):
 
     # CLI tests
     def test_cli_help(self):
-        argv, stdout = sys.argv, sys.stdout
-
-        sys.argv = ['f90nml']
-        sys.stdout = StringIO()
-
-        try:
-            f90nml.cli.parse()
-        except SystemExit:
-            pass
-
-        sys.stdout.close()
-        sys.argv, sys.stdout = argv, stdout
+        cmd = ['f90nml']
+        self.get_cli_output(cmd)
 
     def test_cli_read(self):
-        argv_in, stdout_in = sys.argv, sys.stdout
+        cmd = ['f90nml', 'types.nml']
+        source_str = self.get_cli_output(cmd)
 
-        sys.argv = ['f90nml', 'types.nml']
-        sys.stdout = StringIO()
-
-        try:
-            f90nml.cli.parse()
-        except SystemExit:
-            pass
-
-        sys.stdout.seek(0)
         with open('types.nml') as target:
-            source_str = sys.stdout.read()
             target_str = target.read()
             self.assertEqual(source_str, target_str)
 
-        sys.stdout.close()
-        sys.argv, sys.stdout = argv_in, stdout_in
+    def test_cli_json_read(self):
+        cmd = ['f90nml', 'types.json']
+        json_str = self.get_cli_output(cmd)
+
+        with open('types.nml') as types_nml:
+            target_str = types_nml.read()
+            self.assertEqual(json_str, target_str)
 
 
 if __name__ == '__main__':

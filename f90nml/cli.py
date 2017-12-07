@@ -47,7 +47,7 @@ def parse():
     # Input config
 
     if input_fname:
-        input_root, input_ext = os.path.splitext(input_fname)
+        _, input_ext = os.path.splitext(input_fname)
         if input_ext == '.json':
             with open(input_fname) as input_file:
                 input_data = json.load(input_file,
@@ -62,6 +62,9 @@ def parse():
             input_data = f90nml.read(input_fname)
     else:
         input_data = {}
+
+    input_data = f90nml.Namelist(input_data)
+    print(input_data)
 
     # Replace any values
 
@@ -83,7 +86,7 @@ def parse():
     # Target output
 
     if output_fname:
-        output_root, output_ext = os.path.splitext(output_fname)
+        _, output_ext = os.path.splitext(output_fname)
 
         # TODO: Better control of output format
         if output_ext == '.json':
