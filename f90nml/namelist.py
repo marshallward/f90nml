@@ -461,7 +461,7 @@ class Namelist(OrderedDict):
         # include metadata.
 
         # TODO: Preserve ordering
-        nmldict = dict(self)
+        nmldict = OrderedDict(self)
 
         # Search for namelists within the namelist
         # TODO: Move repeated stuff to new functions

@@ -812,7 +812,6 @@ class Test(unittest.TestCase):
 
         self.assertEqual(source_str, target_str)
 
-
     def test_cli_replace_no_group(self):
         cmd = ['f90nml', '-s', 'v_integer=5', '-s', 'v_logical=.false.',
                'types.nml']
@@ -824,6 +823,15 @@ class Test(unittest.TestCase):
         with open('types_cli_set.nml') as target:
             target_str += target.read()
             self.assertEqual(source_str, target_str)
+
+    def test_cli_json_write(self):
+        cmd = ['f90nml', 'types.nml', 'tmp.json']
+        out = self.get_cli_output(cmd)
+
+        try:
+            self.assert_file_equal('types.json', 'tmp.json')
+        finally:
+            os.remove('tmp.json')
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
