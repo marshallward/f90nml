@@ -17,6 +17,12 @@ try:
 except ImportError:
     has_numpy = False
 
+try:
+    import yaml
+    has_yaml = True
+except ImportError:
+    has_yaml = False
+
 sys.path.insert(1, '../')
 import f90nml
 import f90nml.cli
@@ -828,10 +834,16 @@ class Test(unittest.TestCase):
         cmd = ['f90nml', 'types.nml', 'tmp.json']
         out = self.get_cli_output(cmd)
 
-        try:
-            self.assert_file_equal('types.json', 'tmp.json')
-        finally:
-            os.remove('tmp.json')
+        self.assert_file_equal('types.json', 'tmp.json')
+        os.remove('tmp.json')
+
+    if has_yaml:
+        def test_cli_yaml_write(self):
+            cmd = ['f90nml', 'types.nml', 'tmp.yaml']
+            out = self.get_cli_output(cmd)
+
+            self.assert_file_equal('types.yaml', 'tmp.yaml')
+            os.remove('tmp.yaml')
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
