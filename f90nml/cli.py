@@ -13,7 +13,6 @@ try:
     from StringIO import StringIO   # Python 2.x
 except ImportError:
     from io import StringIO         # Python 3.x
-
 try:
     from collections import OrderedDict
 except ImportError:
@@ -23,6 +22,13 @@ import f90nml
 try:
     import yaml
     has_yaml = True
+
+    # Preserve ordering in YAML output
+    #   https://stackoverflow.com/a/31609484/317172
+    represent_dict_order = (lambda self, data:
+        self.represent_mapping('tag:yaml.org,2002:map', data.items()))
+    yaml.add_representer(OrderedDict, represent_dict_order)
+
 except ImportError:
     has_yaml = False
 
@@ -57,7 +63,22 @@ def parse():
               ''.format(valid_formats))
         sys.exit(-1)
 
-    if args.format == 'yaml' and not has_yaml:
+    # Get output format
+    if not args.format:
+        if output_fname:
+            _, output_ext = os.path.splitext(output_fname)
+            if output_ext == '.json':
+                output_fmt = 'json'
+            elif output_ext in ('.yaml', '.yml'):
+                output_fmt = 'yaml'
+            else:
+                output_fmt = 'nml'
+        else:
+            output_fmt = 'nml'
+    else:
+        output_fmt = args.format
+
+    if output_fmt == 'yaml' and not has_yaml:
         print('f90nml: error: YAML module could not be found.')
         sys.exit(-1)
 
@@ -99,21 +120,6 @@ def parse():
 
     # Target output
     output_file = open(output_fname, 'w') if output_fname else sys.stdout
-
-    # Get output format
-    if not args.format:
-        if output_fname:
-            _, output_ext = os.path.splitext(output_fname)
-            if output_ext == '.json':
-                output_fmt = 'json'
-            elif output_ext in ('.yaml', '.yml'):
-                output_fmt = 'yaml'
-            else:
-                output_fmt = 'nml'
-        else:
-            output_fmt = 'nml'
-    else:
-        output_fmt = args.format
 
     # Write to output
     if output_fmt in ('json', 'yaml'):
