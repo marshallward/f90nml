@@ -10,6 +10,11 @@ import json
 import os
 import sys
 try:
+    from StringIO import StringIO   # Python 2.x
+except ImportError:
+    from io import StringIO         # Python 3.x
+
+try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
@@ -86,8 +91,9 @@ def parse():
             grp = args.group
 
         update_nml = '&{0} {1} /\n'.format(grp, ', '.join(args.set))
-        with io.StringIO(update_nml) as update_io:
-            update_data = f90nml.read(update_io)
+        update_io = StringIO(update_nml)
+        update_data = f90nml.read(update_io)
+        update_io.close()
 
         input_data[grp].update(update_data[grp])
 

@@ -4,7 +4,7 @@ import unittest
 try:
     from StringIO import StringIO   # Python 2.x
 except ImportError:
-    from io import StringIO # Python 3.x
+    from io import StringIO         # Python 3.x
 
 try:
     from collections import OrderedDict # Python 3.x
@@ -802,6 +802,28 @@ class Test(unittest.TestCase):
             target_str = target.read()
             self.assertEqual(source_str, target_str)
 
+    def test_cli_replace(self):
+        cmd = ['f90nml', '-g', 'types_nml', '-s', 'v_integer=5',
+               '-s', 'v_logical=.false.', 'types.nml']
+        source_str = self.get_cli_output(cmd)
+
+        with open('types_cli_set.nml') as target:
+            target_str = target.read()
+
+        self.assertEqual(source_str, target_str)
+
+
+    def test_cli_replace_no_group(self):
+        cmd = ['f90nml', '-s', 'v_integer=5', '-s', 'v_logical=.false.',
+               'types.nml']
+        source_str = self.get_cli_output(cmd)
+
+        # Prepend assumed group warning
+        target_str = ("f90nml: warning: Assuming variables are in group "
+                      "'types_nml'.\n")
+        with open('types_cli_set.nml') as target:
+            target_str += target.read()
+            self.assertEqual(source_str, target_str)
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
