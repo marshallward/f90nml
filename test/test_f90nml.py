@@ -802,14 +802,6 @@ class Test(unittest.TestCase):
             target_str = target.read()
             self.assertEqual(source_str, target_str)
 
-    def test_cli_json_read(self):
-        cmd = ['f90nml', 'types.json']
-        json_str = self.get_cli_output(cmd)
-
-        with open('types.nml') as types_nml:
-            target_str = types_nml.read()
-            self.assertEqual(json_str, target_str)
-
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
