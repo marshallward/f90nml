@@ -808,6 +808,15 @@ class Test(unittest.TestCase):
             target_str = target.read()
             self.assertEqual(source_str, target_str)
 
+    def test_cli_bad_format(self):
+        cmd = ['f90nml', '-f', 'blah', 'types.nml']
+        source_str = self.get_cli_output(cmd)
+        # TODO: Automate the format list
+        target_str = ("f90nml: error: format must be one of the following: "
+                      "('json', 'yaml', 'nml')\n")
+
+        self.assertEqual(source_str, target_str)
+
     def test_cli_replace(self):
         cmd = ['f90nml', '-g', 'types_nml', '-s', 'v_integer=5',
                '-s', 'v_logical=.false.', 'types.nml']

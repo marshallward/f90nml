@@ -43,8 +43,9 @@ def parse():
     parser.add_argument('--set', '-s', action='append')
     parser.add_argument('--patch', '-p', action='store_false')
     parser.add_argument('--format', '-f', action='store')
+    parser.add_argument('--output', '-o', action='store')
 
-    parser.add_argument('input')
+    parser.add_argument('input', nargs='?')
     parser.add_argument('output', nargs='?')
 
     if len(sys.argv) == 1:
@@ -116,7 +117,10 @@ def parse():
         update_data = f90nml.read(update_io)
         update_io.close()
 
-        input_data[grp].update(update_data[grp])
+        try:
+            input_data[grp].update(update_data[grp])
+        except KeyError:
+            input_data[grp] = update_data[grp]
 
     # Target output
     output_file = open(output_fname, 'w') if output_fname else sys.stdout
