@@ -808,15 +808,6 @@ class Test(unittest.TestCase):
             target_str = target.read()
             self.assertEqual(source_str, target_str)
 
-    def test_cli_bad_format(self):
-        cmd = ['f90nml', '-f', 'blah', 'types.nml']
-        source_str = self.get_cli_output(cmd)
-        # TODO: Automate the format list
-        target_str = ("f90nml: error: format must be one of the following: "
-                      "('json', 'yaml', 'nml')\n")
-
-        self.assertEqual(source_str, target_str)
-
     def test_cli_replace(self):
         cmd = ['f90nml', '-g', 'types_nml', '-s', 'v_integer=5',
                '-s', 'v_logical=.false.', 'types.nml']
@@ -849,7 +840,16 @@ class Test(unittest.TestCase):
                 source_str = source.read()
                 target_str = target.read()
 
-                self.assertEqual(source_str, target_str)
+        self.assertEqual(source_str, target_str)
+
+    def test_cli_bad_format(self):
+        cmd = ['f90nml', '-f', 'blah', 'types.nml']
+        source_str = self.get_cli_output(cmd)
+        # TODO: Automate the format list
+        target_str = ("f90nml: error: format must be one of the following: "
+                      "('json', 'yaml', 'nml')\n")
+
+        self.assertEqual(source_str, target_str)
 
     def test_cli_json_write(self):
         cmd = ['f90nml', 'types.nml', 'tmp.json']
@@ -857,6 +857,15 @@ class Test(unittest.TestCase):
 
         self.assert_file_equal('types.json', 'tmp.json')
         os.remove('tmp.json')
+
+    def test_cli_json_fmt(self):
+        cmd = ['f90nml', '-f', 'json', 'types.nml']
+        source_str = self.get_cli_output(cmd)
+
+        with open('types.json') as target:
+            target_str = target.read()
+
+        self.assertEqual(source_str, target_str)
 
     if has_yaml:
         def test_cli_yaml_write(self):
