@@ -839,6 +839,18 @@ class Test(unittest.TestCase):
             target_str += target.read()
             self.assertEqual(source_str, target_str)
 
+    def test_cli_replace_write(self):
+        cmd = ['f90nml', '-g', 'types_nml', '-s', 'v_integer=5',
+               '-s', 'v_logical=.false.', 'types.nml', 'tmp.nml']
+        self.get_cli_output(cmd)
+
+        with open('tmp.nml') as source:
+            with open('types_cli_set.nml') as target:
+                source_str = source.read()
+                target_str = target.read()
+
+                self.assertEqual(source_str, target_str)
+
     def test_cli_json_write(self):
         cmd = ['f90nml', 'types.nml', 'tmp.json']
         out = self.get_cli_output(cmd)
