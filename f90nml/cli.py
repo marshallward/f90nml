@@ -26,7 +26,8 @@ try:
     # Preserve ordering in YAML output
     #   https://stackoverflow.com/a/31609484/317172
     represent_dict_order = (lambda self, data:
-        self.represent_mapping('tag:yaml.org,2002:map', data.items()))
+                            self.represent_mapping('tag:yaml.org,2002:map',
+                                                   data.items()))
     yaml.add_representer(OrderedDict, represent_dict_order)
 
 except ImportError:
