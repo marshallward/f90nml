@@ -445,10 +445,13 @@ class Namelist(OrderedDict):
 
             # Append any remaining values
             if val_line:
+                val_strs.append(val_line.rstrip())
+
+            if val_strs:
                 if self.end_comma or v_values[-1] is None:
-                    val_strs.append(val_line)
+                    pass
                 else:
-                    val_strs.append(val_line[:-2])
+                    val_strs[-1] = val_strs[-1][:-1]
 
             # Complete the set of values
             if val_strs:

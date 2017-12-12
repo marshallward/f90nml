@@ -520,6 +520,11 @@ class Test(unittest.TestCase):
         self.assertEqual(self.multiline_nml, test_nml)
         self.assert_write(test_nml, 'multiline_index.nml')
 
+    def test_long_varname(self):
+        test_nml = f90nml.read('types.nml')
+        test_nml.colwidth = 10
+        self.assert_write(test_nml, 'types.nml')
+
     def test_ext_token(self):
         test_nml = f90nml.read('ext_token.nml')
         self.assertEqual(self.ext_token_nml, test_nml)
