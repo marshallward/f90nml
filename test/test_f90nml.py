@@ -879,8 +879,11 @@ class Test(unittest.TestCase):
     def test_cli_json_read(self):
         cmd = ['f90nml', 'types.json']
         source_str = self.get_cli_output(cmd)
-
         # TODO: Check output after resolving the ordering issue
+
+        # Quickly test some of the list features
+        cmd = ['f90nml', 'vector.json']
+        source_str = self.get_cli_output(cmd)
 
     if has_yaml:
         def test_cli_yaml_write(self):
@@ -893,7 +896,6 @@ class Test(unittest.TestCase):
         def test_cli__read(self):
             cmd = ['f90nml', 'types.yaml']
             source_str = self.get_cli_output(cmd)
-
             # TODO: Check output after resolving the ordering issue
 
     def test_cli_missing_yaml(self):
