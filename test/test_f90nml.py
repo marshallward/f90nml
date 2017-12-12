@@ -890,6 +890,12 @@ class Test(unittest.TestCase):
             self.assert_file_equal('types.yaml', 'tmp.yaml')
             os.remove('tmp.yaml')
 
+        def test_cli__read(self):
+            cmd = ['f90nml', 'types.yaml']
+            source_str = self.get_cli_output(cmd)
+
+            # TODO: Check output after resolving the ordering issue
+
     def test_cli_missing_yaml(self):
         orig_has_yaml = f90nml.cli.has_yaml
         f90nml.cli.has_yaml = False
