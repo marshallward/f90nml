@@ -867,6 +867,14 @@ class Test(unittest.TestCase):
         self.assert_file_equal('types.json', 'tmp.json')
         os.remove('tmp.json')
 
+        # TODO: These are just throwaway tests that need to be moved after the
+        # sorting issues have been sorted
+        cmd = ['f90nml', 'vector.nml', 'tmp.json']
+        out = self.get_cli_output(cmd)
+
+        cmd = ['f90nml', 'dtype.nml', 'tmp.json']
+        out = self.get_cli_output(cmd)
+
     def test_cli_json_fmt(self):
         cmd = ['f90nml', '-f', 'json', 'types.nml']
         source_str = self.get_cli_output(cmd)
