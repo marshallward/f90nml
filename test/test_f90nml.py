@@ -876,6 +876,12 @@ class Test(unittest.TestCase):
 
         self.assertEqual(source_str, target_str)
 
+    def test_cli_json_read(self):
+        cmd = ['f90nml', 'types.json']
+        source_str = self.get_cli_output(cmd)
+
+        # TODO: Check output after resolving the ordering issue
+
     if has_yaml:
         def test_cli_yaml_write(self):
             cmd = ['f90nml', 'types.nml', 'tmp.yaml']
@@ -885,6 +891,7 @@ class Test(unittest.TestCase):
             os.remove('tmp.yaml')
 
     def test_cli_missing_yaml(self):
+        orig_has_yaml = f90nml.cli.has_yaml
         f90nml.cli.has_yaml = False
 
         cmd = ['f90nml', 'types.yaml']
@@ -893,7 +900,7 @@ class Test(unittest.TestCase):
         target_str = 'f90nml: error: YAML module could not be found.\n'
         self.assertEqual(source_str, target_str)
 
-        f90nml.cli.has_yaml = True
+        f90nml.cli.has_yaml = orig_has_yaml
 
 
 if __name__ == '__main__':

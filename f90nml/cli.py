@@ -112,7 +112,11 @@ def parse():
     else:
         input_data = {}
 
-    input_data = f90nml.Namelist(input_data)
+    # TODO: This is not the correct fix, the constructor is actually erasing
+    # its own attributes, particularly _complex and _start_index.
+    # Once the constructor is fixed, this is no longer necessary.
+    if not isinstance(input_data, f90nml.Namelist):
+        input_data = f90nml.Namelist(input_data)
 
     # Replace any values
     if args.variable:
