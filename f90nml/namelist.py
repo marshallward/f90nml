@@ -11,13 +11,17 @@ from __future__ import print_function
 import numbers
 import os
 try:
-    from StringIO import StringIO
+    from StringIO import StringIO   # Python 2.x
 except ImportError:
-    from io import StringIO
+    from io import StringIO         # Python 3.x
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
+try:
+    basestring          # Python 2.x
+except NameError:
+    basestring = str    # Python 3.x
 
 
 class Namelist(OrderedDict):
@@ -516,7 +520,8 @@ class Namelist(OrderedDict):
             return self.f90float(value)
         elif isinstance(value, numbers.Complex):
             return self.f90complex(value)
-        elif isinstance(value, str):
+        #elif isinstance(value, str):
+        elif isinstance(value, basestring):
             return self.f90str(value)
         elif value is None:
             return ''
@@ -545,7 +550,7 @@ class Namelist(OrderedDict):
         """Return a Fortran 90 representation of a string."""
 
         # Replace Python quote escape sequence with Fortran
-        result = repr(value).replace("\\'", "''").replace('\\"', '""')
+        result = repr(str(value)).replace("\\'", "''").replace('\\"', '""')
 
         # Un-escape the Python backslash escape sequence
         result = result.replace('\\\\', '\\')

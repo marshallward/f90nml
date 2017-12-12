@@ -808,9 +808,18 @@ class Test(unittest.TestCase):
             target_str = target.read()
             self.assertEqual(source_str, target_str)
 
+    def test_cli_gen(self):
+        cmd = ['f90nml', '-g', 'gen_nml', '-v', 'x=1']
+        source_str = self.get_cli_output(cmd)
+
+        with open('gen.nml') as target:
+            target_str = target.read()
+
+        self.assertEqual(source_str, target_str)
+
     def test_cli_replace(self):
-        cmd = ['f90nml', '-g', 'types_nml', '-s', 'v_integer=5',
-               '-s', 'v_logical=.false.', 'types.nml']
+        cmd = ['f90nml', '-g', 'types_nml', '-v', 'v_integer=5',
+               '-v', 'v_logical=.false.', 'types.nml']
         source_str = self.get_cli_output(cmd)
 
         with open('types_cli_set.nml') as target:
@@ -819,7 +828,7 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, target_str)
 
     def test_cli_replace_no_group(self):
-        cmd = ['f90nml', '-s', 'v_integer=5', '-s', 'v_logical=.false.',
+        cmd = ['f90nml', '-v', 'v_integer=5', '-v', 'v_logical=.false.',
                'types.nml']
         source_str = self.get_cli_output(cmd)
 
@@ -831,8 +840,8 @@ class Test(unittest.TestCase):
             self.assertEqual(source_str, target_str)
 
     def test_cli_replace_write(self):
-        cmd = ['f90nml', '-g', 'types_nml', '-s', 'v_integer=5',
-               '-s', 'v_logical=.false.', 'types.nml', 'tmp.nml']
+        cmd = ['f90nml', '-g', 'types_nml', '-v', 'v_integer=5',
+               '-v', 'v_logical=.false.', 'types.nml', 'tmp.nml']
         self.get_cli_output(cmd)
 
         with open('tmp.nml') as source:
@@ -874,6 +883,18 @@ class Test(unittest.TestCase):
 
             self.assert_file_equal('types.yaml', 'tmp.yaml')
             os.remove('tmp.yaml')
+
+    def test_cli_missing_yaml(self):
+        f90nml.cli.has_yaml = False
+
+        cmd = ['f90nml', 'types.yaml']
+        source_str = self.get_cli_output(cmd)
+
+        target_str = 'f90nml: error: YAML module could not be found.\n'
+        self.assertEqual(source_str, target_str)
+
+        f90nml.cli.has_yaml = True
+
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):

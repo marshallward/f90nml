@@ -41,7 +41,7 @@ def parse():
                         version='f90nml {0}'.format(f90nml.__version__))
 
     parser.add_argument('--group', '-g', action='store')
-    parser.add_argument('--set', '-s', action='append')
+    parser.add_argument('--variable', '-v', action='append')
     parser.add_argument('--patch', '-p', action='store_false')
     parser.add_argument('--format', '-f', action='store')
     parser.add_argument('--output', '-o', action='store')
@@ -58,7 +58,20 @@ def parse():
     input_fname = args.input
     output_fname = args.output
 
-    # Format validation
+    # Get input format
+    # TODO: Combine with output format
+    if input_fname:
+        _, input_ext = os.path.splitext(input_fname)
+        if input_ext == '.json':
+            input_fmt = 'json'
+        elif input_ext == '.yaml':
+            input_fmt = 'yaml'
+        else:
+            input_fmt = 'nml'
+    else:
+        input_fmt = 'nml'
+
+    # Output format flag validation
     valid_formats = ('json', 'yaml', 'nml')
     if args.format and args.format not in valid_formats:
         print('f90nml: error: format must be one of the following: {0}'
@@ -66,6 +79,7 @@ def parse():
         sys.exit(-1)
 
     # Get output format
+    # TODO: Combine with input format
     if not args.format:
         if output_fname:
             _, output_ext = os.path.splitext(output_fname)
@@ -80,23 +94,20 @@ def parse():
     else:
         output_fmt = args.format
 
-    if output_fmt == 'yaml' and not has_yaml:
+    if (input_fmt == 'yaml' or output_fmt == 'yaml') and not has_yaml:
         print('f90nml: error: YAML module could not be found.')
         sys.exit(-1)
 
-    # Input config
+    # Read the input file
     if input_fname:
-        _, input_ext = os.path.splitext(input_fname)
-        if input_ext == '.json':
-            with open(input_fname) as input_file:
-                input_data = json.load(input_file)
-
-        elif has_yaml and input_ext == '.yaml':
-            with open(input_fname) as input_file:
-                input_data = yaml.safe_load(input_file)
-
+        if input_fmt in ('json', 'yaml'):
+            if input_fmt == 'json':
+                with open(input_fname) as input_file:
+                    input_data = json.load(input_file)
+            elif input_ext == '.yaml':
+                with open(input_fname) as input_file:
+                    input_data = yaml.safe_load(input_file)
         else:
-            # Assume unrecognised extensions are namelists
             input_data = f90nml.read(input_fname)
     else:
         input_data = {}
@@ -104,7 +115,7 @@ def parse():
     input_data = f90nml.Namelist(input_data)
 
     # Replace any values
-    if args.set:
+    if args.variable:
         if not args.group:
             # Use the first available group
             grp = list(input_data.keys())[0]
@@ -113,7 +124,7 @@ def parse():
         else:
             grp = args.group
 
-        update_nml = '&{0} {1} /\n'.format(grp, ', '.join(args.set))
+        update_nml = '&{0} {1} /\n'.format(grp, ', '.join(args.variable))
         update_io = StringIO(update_nml)
         update_data = f90nml.read(update_io)
         update_io.close()
