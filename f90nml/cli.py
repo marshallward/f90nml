@@ -42,7 +42,7 @@ def parse():
 
     parser.add_argument('--group', '-g', action='store')
     parser.add_argument('--variable', '-v', action='append')
-    parser.add_argument('--patch', '-p', action='store_false')
+    parser.add_argument('--patch', '-p', action='store_true')
     parser.add_argument('--format', '-f', action='store')
     parser.add_argument('--output', '-o', action='store')
 
@@ -118,7 +118,8 @@ def parse():
     if not isinstance(input_data, f90nml.Namelist):
         input_data = f90nml.Namelist(input_data)
 
-    # Replace any values
+    # Construct the update namelist
+    update_nml = {}
     if args.variable:
         if not args.group:
             # Use the first available group
@@ -128,34 +129,45 @@ def parse():
         else:
             grp = args.group
 
-        update_nml = '&{0} {1} /\n'.format(grp, ', '.join(args.variable))
-        update_io = StringIO(update_nml)
-        update_data = f90nml.read(update_io)
+        update_nml_str = '&{0} {1} /\n'.format(grp, ', '.join(args.variable))
+        update_io = StringIO(update_nml_str)
+        update_nml = f90nml.read(update_io)
         update_io.close()
-
-        try:
-            input_data[grp].update(update_data[grp])
-        except KeyError:
-            input_data[grp] = update_data[grp]
 
     # Target output
     output_file = open(output_fname, 'w') if output_fname else sys.stdout
 
-    # Write to output
-    if output_fmt in ('json', 'yaml'):
-        if output_fmt == 'json':
-            input_data = input_data.todict(decomplex=True)
-            json.dump(input_data, output_file,
-                      indent=4, separators=(',', ': '))
-            output_file.write('\n')
+    if args.patch:
+        # We have to read the file twice for a patch.  The main reason is
+        # to identify the default group, in case this is not provided.
+        # It could be avoided if a group is provided, but logically that could
+        # a mess that I do not want to sort out right now.
+        f90nml.patch(input_fname, update_nml, output_file)
 
-        elif output_fmt == 'yaml':
-            input_data = input_data.todict(decomplex=True)
-            yaml.dump(input_data, output_file,
-                      default_flow_style=False)
     else:
-        # Default to namelist output
-        f90nml.write(input_data, output_file)
+        # Update the input namelist directly
+        if update_nml:
+            try:
+                input_data[grp].update(update_nml[grp])
+            except KeyError:
+                input_data[grp] = update_nml[grp]
+
+        # Write to output
+        if not args.patch:
+            if output_fmt in ('json', 'yaml'):
+                if output_fmt == 'json':
+                    input_data = input_data.todict(decomplex=True)
+                    json.dump(input_data, output_file,
+                              indent=4, separators=(',', ': '))
+                    output_file.write('\n')
+
+                elif output_fmt == 'yaml':
+                    input_data = input_data.todict(decomplex=True)
+                    yaml.dump(input_data, output_file,
+                              default_flow_style=False)
+            else:
+                # Default to namelist output
+                f90nml.write(input_data, output_file)
 
     # Cleanup
     if output_file != sys.stdout:
