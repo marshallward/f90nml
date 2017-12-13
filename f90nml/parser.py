@@ -600,6 +600,7 @@ class Parser(object):
                     v_s = v_s[::-1]
 
                 # Multidimensional arrays
+                # XXX: Some dangerous mangling of v_values pointer here...
                 for (i_v, i_s) in zip(v_i[:-1], v_s[:-1]):
                     try:
                         v_values = v_values[i_v - i_s]
@@ -620,6 +621,15 @@ class Parser(object):
 
 
 # Support functions
+
+def gen_dense_array(idx):
+    i_v, i_s = idx[0]
+    v_len = i_v - i_s
+
+    if len(idx) > 1:
+        return [gen_dense_array(idx[1:]) for _ in range(v_len)]
+    else:
+        return [None for _ in range(v_len)]
 
 def merge_values(src, new):
     """Merge two lists or dicts into a single element."""
