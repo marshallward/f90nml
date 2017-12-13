@@ -37,6 +37,7 @@ class Parser(object):
 
         # Configuration
         self.comment_tokens = '!'
+        self.dense_arrays = False
 
     @property
     def row_major(self):
@@ -600,6 +601,9 @@ class Parser(object):
                     v_s = v_s[::-1]
 
                 # Multidimensional arrays
+                if self.dense_arrays:
+                    pad_array(v_values, list(zip(v_i, v_s)))
+
                 # XXX: Some dangerous mangling of v_values pointer here...
                 for (i_v, i_s) in zip(v_i[:-1], v_s[:-1]):
                     try:
@@ -622,14 +626,19 @@ class Parser(object):
 
 # Support functions
 
-def gen_dense_array(idx):
+def pad_array(v, idx):
     i_v, i_s = idx[0]
-    v_len = i_v - i_s
 
     if len(idx) > 1:
-        return [gen_dense_array(idx[1:]) for _ in range(v_len)]
+        # Append missing subarrays
+        v.extend([[] for _ in range(len(v), i_v - i_s + 1)])
+
+        # Pad elements
+        for e in v:
+            pad_array(e, idx[1:])
     else:
-        return [None for _ in range(v_len)]
+        v.extend([None for _ in range(len(v), i_v - i_s + 1)])
+
 
 def merge_values(src, new):
     """Merge two lists or dicts into a single element."""
