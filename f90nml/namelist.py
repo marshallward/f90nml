@@ -28,9 +28,6 @@ class Namelist(OrderedDict):
     """Case-insensitive Python dict"""
 
     def __init__(self, *args, **kwds):
-        # TODO: There is a bug where Namelist(nml) will overwrite the Namelist
-        # attributes of nml with null values.  This needs to be fixed!
-
         s_args = list(args)
 
         # If using (unordered) dict, then resort the keys for reproducibility

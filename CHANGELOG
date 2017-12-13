@@ -1,12 +1,17 @@
-v1.0 (prerelease):
+v0.23:
+    - CLI: Thorough support for JSON, YAML, updating, and patching
     - Namelist method `todict` for conversion to native Python dict
-    - CLI: YAML output now defaults to long-form with standard types, where
-      possible.
+    - User-friendly print() output for namelist files
+    - Most CLI features are integrated into the test suite
     - Bugfix: Content outside of namelist groupss are now tokenized as
-      comments.  (Thanks to Martin Margo for reporting.)
+        comments.  (Thanks to Martin Margo for reporting.)
     - Bugfix: String line continuation under the new tokenizer.  (Thanks to
-      Robert Gieseke for reporting.)
+        Robert Gieseke for reporting.)
+    - Bugfix: Entries longer than colwidth no longer append commas, unless
+        end_comma is specified
     - Bugfix: Complex lists are now parsed correctly.
+    - Bugfix: Constructor now preserves start_index
+    - Bugfix: f90str is now more unicode/str (2.x/3.x) compatible
 
 v0.22:
     - A command line interface has been added, see `f90nml -h` for details.
