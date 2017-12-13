@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import sys
 import unittest
@@ -798,10 +800,12 @@ class Test(unittest.TestCase):
 
     def test_print_nml(self):
         nml = f90nml.read('types.nml')
-        with StringIO() as stdout:
-            print(nml, file=stdout)
-            stdout.seek(0)
-            source_str = stdout.read()
+
+        stdout = StringIO()
+        print(nml, file=stdout)
+        stdout.seek(0)
+        source_str = stdout.read()
+        stdout.close()
 
         with open('types.nml') as target:
             target_str = target.read()
@@ -810,10 +814,12 @@ class Test(unittest.TestCase):
 
     def test_print_group(self):
         nml = f90nml.read('types.nml')
-        with StringIO() as stdout:
-            print(nml['types_nml'], file=stdout)
-            stdout.seek(0)
-            source_str = stdout.read().rstrip('\n')
+
+        stdout = StringIO()
+        print(nml['types_nml'], file=stdout)
+        stdout.seek(0)
+        source_str = stdout.read().rstrip('\n')
+        stdout.close()
 
         target_str = repr(nml['types_nml'])
 
