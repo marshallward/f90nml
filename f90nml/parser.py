@@ -600,22 +600,21 @@ class Parser(object):
                     v_s = v_s[::-1]
 
                 # Multidimensional arrays
-                v_tmp = v_values
                 for (i_v, i_s) in zip(v_i[:-1], v_s[:-1]):
                     try:
-                        v_tmp = v_tmp[i_v - i_s]
+                        v_values = v_values[i_v - i_s]
                     except IndexError:
-                        size = len(v_tmp)
-                        v_tmp.extend([] for _ in range(size, i_v - i_s + 1))
-                        v_tmp = v_tmp[i_v - i_s]
+                        size = len(v_values)
+                        v_values.extend([] for _ in range(size, i_v - i_s + 1))
+                        v_values = v_values[i_v - i_s]
 
                 i_v, i_s = v_i[-1], v_s[-1]
                 try:
-                    v_tmp[i_v - i_s] = next_value
+                    v_values[i_v - i_s] = next_value
                 except IndexError:
-                    size = len(v_tmp)
-                    v_tmp.extend(None for _ in range(size, i_v - i_s + 1))
-                    v_tmp[i_v - i_s] = next_value
+                    size = len(v_values)
+                    v_values.extend(None for _ in range(size, i_v - i_s + 1))
+                    v_values[i_v - i_s] = next_value
             else:
                 v_values.append(next_value)
 
