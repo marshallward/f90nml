@@ -796,6 +796,29 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('extern_cmt.nml')
         self.assertEqual(self.extern_cmt_nml, test_nml)
 
+    def test_print_nml(self):
+        nml = f90nml.read('types.nml')
+        with StringIO() as stdout:
+            print(nml, file=stdout)
+            stdout.seek(0)
+            source_str = stdout.read()
+
+        with open('types.nml') as target:
+            target_str = target.read()
+
+        self.assertEqual(source_str, target_str)
+
+    def test_print_group(self):
+        nml = f90nml.read('types.nml')
+        with StringIO() as stdout:
+            print(nml['types_nml'], file=stdout)
+            stdout.seek(0)
+            source_str = stdout.read().rstrip('\n')
+
+        target_str = repr(nml['types_nml'])
+
+        self.assertEqual(source_str, target_str)
+
     if has_numpy:
         def test_numpy_write(self):
             self.assert_write(self.numpy_nml, 'numpy_types.nml')
