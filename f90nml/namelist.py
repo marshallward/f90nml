@@ -31,8 +31,9 @@ class Namelist(OrderedDict):
         # TODO: There is a bug where Namelist(nml) will overwrite the Namelist
         # attributes of nml with null values.  This needs to be fixed!
 
-        # If using (unordered) dict, then resort the keys for reproducibility
         s_args = list(args)
+
+        # If using (unordered) dict, then resort the keys for reproducibility
         if (args and not isinstance(args[0], OrderedDict) and
                 isinstance(args[0], dict)):
             s_args[0] = sorted(args[0].items())
@@ -57,6 +58,8 @@ class Namelist(OrderedDict):
         if '_start_index' in self:
             self.start_index = self['_start_index']
             self.pop('_start_index')
+        if args and isinstance(args[0], Namelist):
+            self.start_index = args[0].start_index
         else:
             self.start_index = {}
 
@@ -87,7 +90,11 @@ class Namelist(OrderedDict):
 
     def __str__(self):
         output = StringIO()
-        self.writestream(output)
+        if all(isinstance(v, Namelist) for v in self.values()):
+            self.writestream(output)
+        else:
+            print(repr(self), file=output)
+
         nml_string = output.getvalue().rstrip()
         output.close()
         return nml_string

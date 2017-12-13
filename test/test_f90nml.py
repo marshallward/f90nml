@@ -856,6 +856,16 @@ class Test(unittest.TestCase):
 
         self.assertEqual(source_str, target_str)
 
+    def test_cli_patch(self):
+        cmd = ['f90nml', '-p', '-g', 'comment_nml', '-v', 'v_cmt_inline=456',
+               'comment.nml']
+        source_str = self.get_cli_output(cmd)
+
+        with open('comment_patch.nml') as target:
+            target_str = target.read()
+
+        self.assertEqual(source_str, target_str)
+
     def test_cli_bad_format(self):
         cmd = ['f90nml', '-f', 'blah', 'types.nml']
         source_str = self.get_cli_output(cmd)
