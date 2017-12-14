@@ -604,22 +604,28 @@ class Parser(object):
                 if self.dense_arrays:
                     pad_array(v_values, list(zip(v_i, v_s)))
 
-                # XXX: Some dangerous mangling of v_values pointer here...
+                # We iterate inside the v_values and inspect successively
+                # deeper lists within the list tree.  If the requested index is
+                # missing, we re-size that particular entry.
+                # (NOTE: This is unnecessary when dense_arrays is enabled.)
+
+                v_subval = v_values
                 for (i_v, i_s) in zip(v_i[:-1], v_s[:-1]):
                     try:
-                        v_values = v_values[i_v - i_s]
+                        v_subval = v_subval[i_v - i_s]
                     except IndexError:
-                        size = len(v_values)
-                        v_values.extend([] for _ in range(size, i_v - i_s + 1))
-                        v_values = v_values[i_v - i_s]
+                        size = len(v_subval)
+                        v_subval.extend([] for _ in range(size, i_v - i_s + 1))
+                        v_subval = v_subval[i_v - i_s]
 
+                # On the deepest level, we explicitly assign the value
                 i_v, i_s = v_i[-1], v_s[-1]
                 try:
-                    v_values[i_v - i_s] = next_value
+                    v_subval[i_v - i_s] = next_value
                 except IndexError:
-                    size = len(v_values)
-                    v_values.extend(None for _ in range(size, i_v - i_s + 1))
-                    v_values[i_v - i_s] = next_value
+                    size = len(v_subval)
+                    v_subval.extend(None for _ in range(size, i_v - i_s + 1))
+                    v_subval[i_v - i_s] = next_value
             else:
                 v_values.append(next_value)
 
