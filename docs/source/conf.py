@@ -182,8 +182,12 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'f90nml', u'f90nml Documentation',
-     [u'Marshall Ward'], 1)
+    ('manpage',
+     'f90nml',
+     u'A Fortran namelist parser and manipulator',
+     [u'Marshall Ward <f90nml@marshallward.org>'],
+     1
+    )
 ]
 
 # If true, show URL addresses after external links.
