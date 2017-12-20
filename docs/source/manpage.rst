@@ -7,20 +7,16 @@ f90nml
 SYNPOSIS
 ========
 
-f90nml [-h] [--version] [--group GROUP] [--variable VARIABLE]
-       [--patch] [--format FORMAT] [--output OUTPUT]
-       [input] [output]
+f90nml
+   [-h] [--version] [--group GROUP] [--variable VARIABLE] [--patch]
+   [--format FORMAT] [--output OUTPUT] [input] [output]
 
 
 DESCRIPTION
 ===========
 
-``f90nml`` is a Python module that provides a simple interface for the reading,
-writing, and the general manipulation of Fortran namelist files.
-
-A namelist file is parsed and converted into an ``Namelist`` object, which
-behaves like a standard Python ``dict``.  Values are converted from Fortran
-data types to equivalent primitive Python types.
+``f90nml`` is a command line tool for the reading, writing, and the general
+manipulation of Fortran namelist files.
 
 
 OPTIONS
