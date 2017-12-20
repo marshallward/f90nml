@@ -49,7 +49,7 @@ project_scripts = [os.path.join('bin', f) for f in os.listdir('bin')]
 # Generate the man page if present
 data_files = []
 cmd_class = {}
-if has_sphinx and install_man_page:
+if has_sphinx:
     # Create manpage build rule
     class ProjectBuildMan(BuildDoc):
         def initialize_options(self):
