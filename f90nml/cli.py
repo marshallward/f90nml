@@ -78,11 +78,6 @@ def parse():
               ''.format(valid_formats))
         sys.exit(-1)
 
-    # Do not patch non-namelist output
-    if args.format != 'nml' and args.patch:
-        print('f90nml: error: Only namelist output can be patched.')
-        sys.exit(-1)
-
     # Get output format
     # TODO: Combine with input format
     if not args.format:
@@ -99,8 +94,14 @@ def parse():
     else:
         output_fmt = args.format
 
+    # Confirm that YAML module is available
     if (input_fmt == 'yaml' or output_fmt == 'yaml') and not has_yaml:
         print('f90nml: error: YAML module could not be found.')
+        sys.exit(-1)
+
+    # Do not patch non-namelist output
+    if output_fmt != 'nml' and args.patch:
+        print('f90nml: error: Only namelist output can be patched.')
         sys.exit(-1)
 
     # Read the input file
