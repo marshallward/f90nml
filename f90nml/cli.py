@@ -78,6 +78,11 @@ def parse():
               ''.format(valid_formats))
         sys.exit(-1)
 
+    # Do not patch non-namelist output
+    if args.format != 'nml' and args.patch:
+        print('f90nml: error: Only namelist output can be patched.')
+        sys.exit(-1)
+
     # Get output format
     # TODO: Combine with input format
     if not args.format:
