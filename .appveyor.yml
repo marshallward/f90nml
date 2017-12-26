@@ -1,0 +1,14 @@
+environment:
+    matrix:
+        PYTHON: 27
+        PYTHON: 36
+        PYTHON: 36-x64
+
+install:
+    - C:\Python%PYTHON%\python.exe -m pip install -U pip setuptools
+
+build: off
+
+# before_test:
+# test_script:
+# after_test:
