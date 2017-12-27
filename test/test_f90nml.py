@@ -946,7 +946,7 @@ class Test(unittest.TestCase):
             self.assert_file_equal('types.yaml', 'tmp.yaml')
             os.remove('tmp.yaml')
 
-        def test_cli__read(self):
+        def test_cli_yaml_read(self):
             cmd = ['f90nml', 'types.yaml']
             source_str = self.get_cli_output(cmd)
             # TODO: Check output after resolving the ordering issue
