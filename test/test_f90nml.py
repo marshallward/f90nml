@@ -60,7 +60,7 @@ class Test(unittest.TestCase):
 
         self.types_nml = {
             'types_nml': {
-                'v_integer': 1,
+                'v_integer': 5,
                 'v_float': 1.0,
                 'v_complex': 1+2j,
                 'v_logical': True,
