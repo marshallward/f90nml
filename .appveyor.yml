@@ -10,5 +10,10 @@ install:
 build: off
 
 # before_test:
-# test_script:
+test_script:
+    - ps: |
+        Push-Location test
+        "C:\\Python$($env:PYTHON)\python.exe" test_f90nml.py
+        if ($LastExitCode -ne 0) { Write-Host "Test failed" }
+
 # after_test:
