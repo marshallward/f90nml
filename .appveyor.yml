@@ -14,6 +14,6 @@ test_script:
     - ps: |
         Push-Location test
         "C:\\Python%PYTHON_VERSION%\python.exe test_f90nml.py"
-        if ($LastExitCode -ne 0) { Write-Host "Test failed" }
+        if ($LastExitCode -ne 0) { Write-Host "Test failed"; exit $LastExitCode }
 
 # after_test:
