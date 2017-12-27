@@ -1,8 +1,8 @@
 environment:
     matrix:
-        - PYTHON: 27
-        - PYTHON: 36
-        - PYTHON: 36-x64
+        - PYTHON_VERSION: 27
+        - PYTHON_VERSION: 36
+        - PYTHON_VERSION: 36-x64
 
 install:
     - C:\Python%PYTHON%\python.exe -m pip install -U pip setuptools
@@ -13,7 +13,7 @@ build: off
 test_script:
     - ps: |
         Push-Location test
-        "C:\\Python$($env:PYTHON)\python.exe" test_f90nml.py
+        "C:\\Python%PYTHON_VERSION%\python.exe test_f90nml.py"
         if ($LastExitCode -ne 0) { Write-Host "Test failed" }
 
 # after_test:
