@@ -13,6 +13,9 @@ A Python module for parsing Fortran namelist files
 .. image:: https://ci.appveyor.com/api/projects/status/bcugyoqxiyyvemy8?svg=true
    :target: https://ci.appveyor.com/project/marshallward/f90nml
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1112518.svg
+   :target: https://doi.org/10.5281/zenodo.1112518
+
 Documentation: http://f90nml.readthedocs.org/en/latest/
 
 
