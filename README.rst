@@ -1,8 +1,8 @@
-======
-f90nml
-======
+==============================================================
+``f90nml`` -- A Fortran namelist parser, generator, and editor
+==============================================================
 
-A Python module for parsing Fortran namelist files
+A Python module and command line tool for parsing Fortran namelist files
 
 .. image:: https://travis-ci.org/marshallward/f90nml.svg?branch=master
     :target: https://travis-ci.org/marshallward/f90nml
@@ -28,6 +28,8 @@ writing, and the general manipulation of Fortran namelist files.
 A namelist file is parsed and converted into an ``Namelist`` object, which
 behaves like a standard Python ``dict``.  Values are converted from Fortran
 data types to equivalent primitive Python types.
+
+``f90nml`` also includes a command line tool for use in a shell environment.
 
 
 Quick usage guide
