@@ -1,3 +1,7 @@
 div.code {
     font-variant-ligatures: none;
 }
+
+td.option-group {
+    width: 25%;
+}
