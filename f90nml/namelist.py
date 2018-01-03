@@ -529,7 +529,6 @@ class Namelist(OrderedDict):
             return self.f90float(value)
         elif isinstance(value, numbers.Complex):
             return self.f90complex(value)
-        #elif isinstance(value, str):
         elif isinstance(value, basestring):
             return self.f90str(value)
         elif value is None:

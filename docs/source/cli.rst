@@ -1,5 +1,5 @@
-f90nml command line interface
-=============================
+Command line interface
+======================
 
 Command line interface info here
 

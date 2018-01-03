@@ -1,3 +1,5 @@
+.. highlight:: none
+
 The examples below use the namelist file ``config.nml`` with the following
 data.
 ::
