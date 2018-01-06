@@ -22,14 +22,12 @@ Documentation: http://f90nml.readthedocs.org/en/latest/
 About f90nml
 ============
 
-``f90nml`` is a Python module that provides a simple interface for the reading,
-writing, and modifying Fortran namelist files.
+``f90nml`` is a Python module and command line tool that provides a simple
+interface for the reading, writing, and modifying Fortran namelist files.
 
 A namelist file is parsed and converted into an ``Namelist`` object, which
 behaves like a standard Python ``dict``.  Values are converted from Fortran
 data types to equivalent primitive Python types.
-
-``f90nml`` also includes a command line tool for use in a shell environment.
 
 
 Quick usage guide
@@ -96,6 +94,28 @@ namelist patch and apply it to a target file using the ``patch`` function:
 
    patch_nml = {'config_nml': {'visc': 1e-6}}
    f90nml.patch('sample.nml', patch_nml, 'new_sample.nml')
+
+
+Command line interface
+----------------------
+
+A command line tool is provided to manipulate namelist files within the shell:
+
+.. code:: sh
+
+   $ f90nml config.nml -g config_nml -v steps=432
+
+.. code-block:: fortran
+
+   &config_nml
+      input = 'wind.nc'
+      steps = 432
+      layout = 8, 16
+      visc = 1.0e-4
+      use_biharmonic = .false.
+   /
+
+For more information, see the `CLI` documentation.
 
 
 Installation
