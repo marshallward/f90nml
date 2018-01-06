@@ -23,7 +23,7 @@ About f90nml
 ============
 
 ``f90nml`` is a Python module that provides a simple interface for the reading,
-writing, and the general manipulation of Fortran namelist files.
+writing, and modifying Fortran namelist files.
 
 A namelist file is parsed and converted into an ``Namelist`` object, which
 behaves like a standard Python ``dict``.  Values are converted from Fortran
@@ -37,13 +37,13 @@ Quick usage guide
 
 To read a namelist file ``sample.nml`` which contains the following namelists:
 
-.. code:: fortran
+.. code-block:: fortran
 
    &config_nml
       input = 'wind.nc'
       steps = 864
       layout = 8, 16
-      visc = 1e-4
+      visc = 1.0e-4
       use_biharmonic = .false.
    /
 
