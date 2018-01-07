@@ -18,7 +18,8 @@ Classes
    :members: comment_tokens, dense_arrays, row_major, strict_logical
 
 .. autoclass:: f90nml.namelist.Namelist
-   :members:
+   :members: colwidth, end_comma, false_repr, floatformat, indent,
+             logical_repr, patch, todict, true_repr, uppercase
 
 .. autoclass:: f90nml.findex.FIndex
    :members:

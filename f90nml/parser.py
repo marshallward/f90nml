@@ -100,7 +100,8 @@ class Parser(object):
 
     @property
     def strict_logical(self):
-        """Use strict parsing rules for logical data.
+        """Use strict parsing rules for logical data, as described in the
+        Fortran specification.
 
         The ``strict_logical`` flag will limit the parsing of non-delimited
         logical strings as logical values.  The default value is ``True``.

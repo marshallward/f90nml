@@ -101,7 +101,11 @@ class Namelist(OrderedDict):
     # Column width
     @property
     def colwidth(self):
-        """Return the target column width of the namelist file."""
+        """Maximum number of characters per line of the namelist file.  Tokens
+        longer than ``colwidth`` are allowed to extend past this limit.
+        (Default: 72)
+        """
+
         return self._colwidth
 
     @colwidth.setter
@@ -118,7 +122,10 @@ class Namelist(OrderedDict):
     # Variable indent
     @property
     def indent(self):
-        """Return the indentation string within namelist group entries."""
+        """Whitespace indentation.  This can be set to an integer, denoting the
+        number of spaces, or to an explicit whitespace character, such as a tab
+        (``\\t``).  (Default: 4)
+        """
         return self._indent
 
     @indent.setter
@@ -126,7 +133,6 @@ class Namelist(OrderedDict):
         """Validate and set the indent width, either as an explicit whitespace
         string or by the number of whitespace characters.
         """
-
         # Explicit indent setting
         if isinstance(value, str):
             if value.isspace():
@@ -145,16 +151,6 @@ class Namelist(OrderedDict):
         else:
             raise TypeError('Indentation must be specified by string or space '
                             'width.')
-
-    def patch(self, nml_patch):
-        """Update the namelist from another partial or full namelist.
-
-        This is different from `Namelist.update` as it does not replace
-        namelist sections, instead it performs an update on the section."""
-        for sec in nml_patch:
-            if sec not in self:
-                self[sec] = Namelist()
-            self[sec].update(nml_patch[sec])
 
     # Terminal comma
     @property
@@ -203,7 +199,10 @@ class Namelist(OrderedDict):
     # NOTE: This presumes that bools and ints are identical as dict keys
     @property
     def logical_repr(self):
-        """Return the namelist representations of logical values."""
+        """String representation of logical values ``False`` and ``True``.  The
+        properties ``true_repr`` and ``false_repr`` are also provided as interfaces
+        to the ``logical_repr`` tuple.  (Default: `.false., .true.`)
+        """
         return self._logical_repr
 
     @logical_repr.setter
@@ -270,6 +269,16 @@ class Namelist(OrderedDict):
         finally:
             if not nml_is_file:
                 nml_file.close()
+
+    def patch(self, nml_patch):
+        """Update the namelist from another partial or full namelist.
+
+        This is different from `Namelist.update` as it does not replace
+        namelist sections, instead it performs an update on the section."""
+        for sec in nml_patch:
+            if sec not in self:
+                self[sec] = Namelist()
+            self[sec].update(nml_patch[sec])
 
     def writestream(self, nml_file, sort=False):
         """Output Namelist to a streamable file object."""
