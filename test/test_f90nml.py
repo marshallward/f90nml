@@ -959,7 +959,7 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, error_str)
 
         # JSON output patch
-        cmd = ['f90nml', '-p', '-v', 'steps=432', 'config.yaml', 'tmp.json']
+        cmd = ['f90nml', '-p', '-v', 'steps=432', 'config.nml', 'tmp.json']
         source_str = self.get_cli_output(cmd, get_stderr=True)
         self.assertEqual(source_str, error_str)
 
