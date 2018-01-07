@@ -16,7 +16,7 @@ from f90nml.tokenizer import Tokenizer
 
 
 class Parser(object):
-    """shlex-based Fortran namelist parser."""
+    """Fortran namelist parser."""
 
     def __init__(self):
         """Create the parser object."""
@@ -28,15 +28,51 @@ class Parser(object):
         # Patching
         self.pfile = None
 
-        # Control flags
+        # Configuration
         self._row_major = False
         self._strict_logical = True
         self.default_start_index = 1        # TODO: use a property
         self.global_start_index = None      # TODO: Property, vector index
+        self._comment_tokens = '!'
+        self._dense_arrays = False
 
-        # Configuration
-        self.comment_tokens = '!'
-        self.dense_arrays = False
+    @property
+    def comment_tokens(self):
+        """Tokens used to designate comments in a namelist file.
+
+        Some Fortran programs will introduce alternative comment tokens (e.g. ``#``)
+        for internal preprocessing.
+
+        If you need to support these tokens, create a ``Parser`` object and set the
+        comment token as follows:
+
+        >>> parser = f90nml.Parser()
+        >>> parser.comment_tokens += '#'
+        >>> nml = Parser.read('sample.nml')
+
+        Be aware that this is non-standard Fortran and could mangle any strings using
+        the ``#`` characters.  Characters inside string delimiters should be protected.
+        """
+        return self._comment_tokens
+
+    @comment_tokens.setter
+    def comment_tokens(self, value):
+        """Validate and set the comment token string."""
+        if not isinstance(value, str):
+            raise TypeError('dense_arrays attribute must be a string.')
+        self._comment_tokens = value
+
+    @property
+    def dense_arrays(self):
+        """Expand multidimensional arrays and fill unassigned values."""
+        return self._dense_arrays
+
+    @dense_arrays.setter
+    def dense_arrays(self, value):
+        """Validate and set the dense arrays flag."""
+        if not isinstance(value, bool):
+            raise TypeError('dense_arrays attribute must be a logical type.')
+        self._dense_arrays = value
 
     @property
     def row_major(self):

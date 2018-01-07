@@ -1,3 +1,8 @@
+Upcoming:
+    - strict_logical and row_major arguments were removed from the top-level
+      API functions.  These should now controlled by Parser objects.
+    - Manpage installation by setup.py for CLI (if Sphinx is available)
+
 v0.23:
     - CLI: Thorough support for JSON, YAML, updating, and patching
     - Namelist method `todict` for conversion to native Python dict
