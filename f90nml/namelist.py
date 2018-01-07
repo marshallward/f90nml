@@ -1,10 +1,10 @@
-"""f90nml.namelist
-   ===============
+"""Fortran namelist interface.
 
-   Tools for creating Fortran namelist files from Python ``dict``s.
+The ``Namelist`` is a representation of a Fortran namelist and its contents in
+a Python environment.
 
-   :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
-   :license: Apache License, Version 2.0, see LICENSE for details.
+:copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
+:license: Apache License, Version 2.0, see LICENSE for details.
 """
 from __future__ import print_function
 
@@ -25,9 +25,10 @@ except NameError:
 
 
 class Namelist(OrderedDict):
-    """Case-insensitive Python dict"""
+    """Representation of Fortran namelist in a Python environment."""
 
     def __init__(self, *args, **kwds):
+        """Create the Namelist object."""
         s_args = list(args)
 
         # If using (unordered) dict, then resort the keys for reproducibility
@@ -101,11 +102,11 @@ class Namelist(OrderedDict):
     # Column width
     @property
     def colwidth(self):
-        """Maximum number of characters per line of the namelist file.  Tokens
-        longer than ``colwidth`` are allowed to extend past this limit.
-        (Default: 72)
-        """
+        """Maximum number of characters per line of the namelist file.
 
+        Tokens longer than ``colwidth`` are allowed to extend past this limit
+        (Default: 72).
+        """
         return self._colwidth
 
     @colwidth.setter
@@ -119,12 +120,12 @@ class Namelist(OrderedDict):
         else:
             raise TypeError('Column width must be a nonnegative integer.')
 
-    # Variable indent
     @property
     def indent(self):
-        """Whitespace indentation.  This can be set to an integer, denoting the
-        number of spaces, or to an explicit whitespace character, such as a tab
-        (``\\t``).  (Default: 4)
+        r"""Whitespace indentation count.
+
+        This can be set to an integer, denoting the number of spaces, or to an
+        explicit whitespace character, such as a tab (``\t``)  (Default: 4).
         """
         return self._indent
 
@@ -152,7 +153,6 @@ class Namelist(OrderedDict):
             raise TypeError('Indentation must be specified by string or space '
                             'width.')
 
-    # Terminal comma
     @property
     def end_comma(self):
         """Return True if entries are terminated with commas."""
@@ -199,9 +199,11 @@ class Namelist(OrderedDict):
     # NOTE: This presumes that bools and ints are identical as dict keys
     @property
     def logical_repr(self):
-        """String representation of logical values ``False`` and ``True``.  The
-        properties ``true_repr`` and ``false_repr`` are also provided as interfaces
-        to the ``logical_repr`` tuple.  (Default: `.false., .true.`)
+        """String representation of logical values ``False`` and ``True``.
+
+        The properties ``true_repr`` and ``false_repr`` are also provided as
+        interfaces to the ``logical_repr`` tuple
+        (Default: ``.false., .true.``).
         """
         return self._logical_repr
 
