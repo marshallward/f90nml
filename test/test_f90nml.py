@@ -393,7 +393,7 @@ class Test(unittest.TestCase):
         finally:
             os.remove(tmp_fname)
 
-    def get_cli_output(self, args):
+    def get_cli_output(self, args, get_stderr=False):
         argv_in, stdout_in, stderr_in = sys.argv, sys.stdout, sys.stderr
 
         sys.argv = args
@@ -415,8 +415,10 @@ class Test(unittest.TestCase):
 
         sys.argv, sys.stdout, sys.stderr = argv_in, stdout_in, stderr_in
 
-        # TODO: check stderr
-        return stdout
+        if get_stderr:
+            return stderr
+        else:
+            return stdout
 
     # Tests
     def test_empty_file(self):
@@ -907,7 +909,7 @@ class Test(unittest.TestCase):
 
     def test_cli_bad_format(self):
         cmd = ['f90nml', '-f', 'blah', 'types.nml']
-        source_str = self.get_cli_output(cmd)
+        source_str = self.get_cli_output(cmd, get_stderr=True)
         # TODO: Automate the format list
         target_str = ("f90nml: error: format must be one of the following: "
                       "('json', 'yaml', 'nml')\n")
@@ -966,7 +968,7 @@ class Test(unittest.TestCase):
         f90nml.cli.has_yaml = False
 
         cmd = ['f90nml', 'types.yaml']
-        source_str = self.get_cli_output(cmd)
+        source_str = self.get_cli_output(cmd, get_stderr=True)
 
         target_str = 'f90nml: error: YAML module could not be found.\n'
         self.assertEqual(source_str, target_str)

@@ -76,7 +76,7 @@ def parse():
     valid_formats = ('json', 'yaml', 'nml')
     if args.format and args.format not in valid_formats:
         print('f90nml: error: format must be one of the following: {0}'
-              ''.format(valid_formats))
+              ''.format(valid_formats), file=sys.stderr)
         sys.exit(-1)
 
     # Get output format
@@ -97,12 +97,14 @@ def parse():
 
     # Confirm that YAML module is available
     if (input_fmt == 'yaml' or output_fmt == 'yaml') and not has_yaml:
-        print('f90nml: error: YAML module could not be found.')
+        print('f90nml: error: YAML module could not be found.',
+              file=sys.stderr)
         sys.exit(-1)
 
     # Do not patch non-namelist output
     if output_fmt != 'nml' and args.patch:
-        print('f90nml: error: Only namelist output can be patched.')
+        print('f90nml: error: Only namelist output can be patched.',
+              file=sys.stderr)
         sys.exit(-1)
 
     # Read the input file
