@@ -454,14 +454,15 @@ class Test(unittest.TestCase):
         self.assert_write(test_nml, 'multidim_target.nml')
 
     def test_rowmaj_multidim(self):
-        test_nml = f90nml.read('multidim.nml', row_major=True)
+        parser = f90nml.Parser()
+        parser.row_major = True
+        test_nml = parser.read('multidim.nml')
         self.assertEqual(self.md_rowmaj_nml, test_nml)
 
-    def test_flag_syntax(self):
-        self.assertRaises(ValueError, f90nml.read, 'index_empty.nml',
-                          row_major='abc')
-        self.assertRaises(ValueError, f90nml.read, 'index_empty.nml',
-                          strict_logical='abc')
+    def test_parser_prop_invalid(self):
+        parser = f90nml.Parser()
+        self.assertRaises(ValueError, setattr, parser, 'row_major', 'abc')
+        self.assertRaises(ValueError, setattr, parser, 'strict_logical', 'abc')
 
     def test_float(self):
         test_nml = f90nml.read('float.nml')
@@ -725,7 +726,9 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, test_nml, 'floatformat', 123)
 
     def test_logical_repr(self):
-        test_nml = f90nml.read('logical.nml', strict_logical=False)
+        parser = f90nml.Parser()
+        parser.strict_logical = False
+        test_nml = parser.read('logical.nml')
         test_nml.true_repr = 'T'
         test_nml.false_repr = 'F'
 

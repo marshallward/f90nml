@@ -9,7 +9,7 @@ from f90nml.namelist import Namelist
 __version__ = '0.23'
 
 
-def read(nml_path, row_major=None, strict_logical=None):
+def read(nml_path):
     """Parse a Fortran namelist file and return its contents.
 
     File object usage:
@@ -47,8 +47,6 @@ def read(nml_path, row_major=None, strict_logical=None):
     ``f`` is interpreted as ``False``.
     """
     parser = Parser()
-    parser.row_major = row_major
-    parser.strict_logical = strict_logical
 
     return parser.read(nml_path)
 
@@ -84,8 +82,7 @@ def write(nml, nml_path, force=False, sort=False):
     nml_in.write(nml_path, force=force, sort=sort)
 
 
-def patch(nml_path, nml_patch, out_path=None, row_major=None,
-          strict_logical=None):
+def patch(nml_path, nml_patch, out_path=None):
     """Create a new namelist based on an input namelist and reference dict.
 
     >>> f90nml.patch('data.nml', nml_patch, 'patched_data.nml')
@@ -101,7 +98,5 @@ def patch(nml_path, nml_patch, out_path=None, row_major=None,
     settings of the ``Namelist`` object.
     """
     parser = Parser()
-    parser.row_major = row_major
-    parser.strict_logical = strict_logical
 
     return parser.read(nml_path, nml_patch, out_path)
