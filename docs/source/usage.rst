@@ -20,6 +20,3 @@ Classes
 .. autoclass:: f90nml.namelist.Namelist
    :members: colwidth, end_comma, false_repr, floatformat, indent,
              logical_repr, patch, todict, true_repr, uppercase
-
-.. autoclass:: f90nml.findex.FIndex
-   :members:
