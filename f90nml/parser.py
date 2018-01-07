@@ -20,7 +20,6 @@ class Parser(object):
 
     def __init__(self):
         """Create the parser object."""
-
         # Token management
         self.tokens = None
         self.token = None
@@ -41,13 +40,21 @@ class Parser(object):
 
     @property
     def row_major(self):
-        """Return true if multidimensional arrays are in row-major format."""
+        """Read multidimensional arrays in row-major format.
+
+        Multidimensional array data contiguity is preserved by default, so that
+        column-major Fortran data is represented as row-major Python list of
+        lists.
+
+        The ``row_major`` flag will reorder the data to preserve the index
+        rules between Fortran to Python, but the data will be converted to
+        row-major form (with respect to Fortran).
+        """
         return self._row_major
 
     @row_major.setter
     def row_major(self, value):
         """Validate and set row-major format for multidimensional arrays."""
-
         if value is not None:
             if not isinstance(value, bool):
                 raise ValueError(
@@ -57,13 +64,24 @@ class Parser(object):
 
     @property
     def strict_logical(self):
-        """Return true for strict logical value parsing."""
+        """Use strict parsing rules for logical data.
+
+        The ``strict_logical`` flag will limit the parsing of non-delimited
+        logical strings as logical values.  The default value is ``True``.
+
+        When ``strict_logical`` is enabled, only ``.true.``, ``.t.``, ``true``,
+        and ``t`` are interpreted as ``True``, and only ``.false.``, ``.f.``,
+        ``false``, and ``.false.`` are interpreted as false.
+
+        When ``strict_logical`` is disabled, any value starting with ``.t`` or
+        ``t`` are interpreted as ``True``, while any string starting with
+        ``.f`` or ``f`` is interpreted as ``False``.
+        """
         return self._strict_logical
 
     @strict_logical.setter
     def strict_logical(self, value):
         """Validate and set the strict logical flag."""
-
         if value is not None:
             if not isinstance(value, bool):
                 raise ValueError(
@@ -76,8 +94,8 @@ class Parser(object):
 
         >>> from f90nml.parser import Parser
         >>> parser = Parser()
-        >>> data_nml = parser.read('data.nml')"""
-
+        >>> data_nml = parser.read('data.nml')
+        """
         # For switching based on files versus paths
         nml_is_path = not hasattr(nml_fname, 'read')
         patch_is_path = not hasattr(patch_fname, 'read')
@@ -118,7 +136,6 @@ class Parser(object):
 
     def readstream(self, nml_file, nml_patch):
         """Parse an input stream containing a Fortran namelist."""
-
         tokenizer = Tokenizer()
         f90lex = []
         for line in nml_file:
@@ -239,7 +256,6 @@ class Parser(object):
 
     def parse_variable(self, parent, patch_nml=None):
         """Parse a variable and return its name and values."""
-
         if not patch_nml:
             patch_nml = Namelist()
 
@@ -445,7 +461,6 @@ class Parser(object):
 
     def parse_indices(self):
         """Parse a sequence of Fortran vector indices as a list of tuples."""
-
         v_name = self.prior_token
         v_indices = []
 
@@ -456,7 +471,6 @@ class Parser(object):
 
     def parse_index(self, v_name):
         """Parse Fortran vector indices into a tuple of Python indices."""
-
         i_start = i_end = i_stride = None
 
         # Start index
@@ -547,7 +561,6 @@ class Parser(object):
 
     def update_tokens(self, write_token=True, override=None, patch_skip=False):
         """Update tokens to the next available values."""
-
         next_token = next(self.tokens)
 
         patch_value = ''
@@ -589,7 +602,6 @@ class Parser(object):
 
     def append_value(self, v_values, next_value, v_idx=None, n_vals=1):
         """Update a list of parsed values with a new value."""
-
         for _ in range(n_vals):
             if v_idx:
                 v_i = next(v_idx)
@@ -633,6 +645,7 @@ class Parser(object):
 # Support functions
 
 def pad_array(v, idx):
+    """Expand lists in multidimensional arrays to pad unset values."""
     i_v, i_s = idx[0]
 
     if len(idx) > 1:
@@ -648,7 +661,6 @@ def pad_array(v, idx):
 
 def merge_values(src, new):
     """Merge two lists or dicts into a single element."""
-
     if isinstance(src, dict) and isinstance(new, dict):
         return merge_dicts(src, new)
     else:
@@ -662,7 +674,6 @@ def merge_values(src, new):
 
 def merge_lists(src, new):
     """Update a value list with a list of new or updated values."""
-
     l_min, l_max = (src, new) if len(src) < len(new) else (new, src)
 
     l_min.extend(None for i in range(len(l_min), len(l_max)))
@@ -682,7 +693,6 @@ def merge_lists(src, new):
 
 def merge_dicts(src, patch):
     """Merge contents of dict `patch` into `src`."""
-
     for key in patch:
         if key in src:
             if isinstance(src[key], dict) and isinstance(patch[key], dict):

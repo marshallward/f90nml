@@ -26,25 +26,6 @@ def read(nml_path):
 
     >>> parser = f90nml.Parser()
     >>> nml = parser.read(nml_file)
-
-    Multidimensional array data contiguity is preserved by default, so that
-    column-major Fortran data is represented as row-major Python list of
-    lists.
-
-    The ``row_major`` flag will reorder the data to preserve the index rules
-    between Fortran to Python, but the data will be converted to row-major form
-    (with respect to Fortran).
-
-    The ``strict_logical`` flag will limit the parsing of non-delimited logical
-    strings as logical values.  The default value is ``True``.
-
-    When ``strict_logical`` is enabled, only ``.true.``, ``.t.``, ``true``, and
-    ``t`` are interpreted as ``True``, and only ``.false.``, ``.f.``,
-    ``false``, and ``.false.`` are interpreted as false.
-
-    When ``strict_logical`` is disabled, any value starting with ``.t`` or
-    ``t`` are interpreted as ``True``, while any string starting with ``.f`` or
-    ``f`` is interpreted as ``False``.
     """
     parser = Parser()
 
