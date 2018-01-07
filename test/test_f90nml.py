@@ -950,6 +950,19 @@ class Test(unittest.TestCase):
         cmd = ['f90nml', 'vector.json']
         source_str = self.get_cli_output(cmd)
 
+    def test_cli_json_patch_fail(self):
+        error_str = 'f90nml: error: Only namelist files can be patched.\n'
+
+        # JSON input patch
+        cmd = ['f90nml', '-p', '-v', 'steps=432', 'types.json']
+        source_str = self.get_cli_output(cmd, get_stderr=True)
+        self.assertEqual(source_str, error_str)
+
+        # JSON output patch
+        cmd = ['f90nml', '-p', '-v', 'steps=432', 'config.yaml', 'tmp.json']
+        source_str = self.get_cli_output(cmd, get_stderr=True)
+        self.assertEqual(source_str, error_str)
+
     if has_yaml:
         def test_cli_yaml_write(self):
             cmd = ['f90nml', 'types.nml', 'tmp.yaml']

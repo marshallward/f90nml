@@ -102,8 +102,8 @@ def parse():
         sys.exit(-1)
 
     # Do not patch non-namelist output
-    if output_fmt != 'nml' and args.patch:
-        print('f90nml: error: Only namelist output can be patched.',
+    if any(fmt != 'nml' for fmt in (input_fmt, output_fmt)) and args.patch:
+        print('f90nml: error: Only namelist files can be patched.',
               file=sys.stderr)
         sys.exit(-1)
 
