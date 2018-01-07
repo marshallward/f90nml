@@ -127,7 +127,7 @@ def parse():
             # Use the first available group
             grp = list(input_data.keys())[0]
             print('f90nml: warning: Assuming variables are in group \'{0}\'.'
-                  ''.format(grp))
+                  ''.format(grp), file=sys.stderr)
         else:
             grp = args.group
 

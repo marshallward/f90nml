@@ -394,10 +394,11 @@ class Test(unittest.TestCase):
             os.remove(tmp_fname)
 
     def get_cli_output(self, args):
-        argv_in, stdout_in = sys.argv, sys.stdout
+        argv_in, stdout_in, stderr_in = sys.argv, sys.stdout, sys.stderr
 
         sys.argv = args
         sys.stdout = StringIO()
+        sys.stderr = StringIO()
 
         try:
             f90nml.cli.parse()
@@ -406,10 +407,15 @@ class Test(unittest.TestCase):
 
         sys.stdout.seek(0)
         stdout = sys.stdout.read()
-
         sys.stdout.close()
-        sys.argv, sys.stdout = argv_in, stdout_in
 
+        sys.stderr.seek(0)
+        stderr = sys.stderr.read()
+        sys.stderr.close()
+
+        sys.argv, sys.stdout, sys.stderr = argv_in, stdout_in, stderr_in
+
+        # TODO: check stderr
         return stdout
 
     # Tests
@@ -866,11 +872,12 @@ class Test(unittest.TestCase):
                'types.nml']
         source_str = self.get_cli_output(cmd)
 
-        # Prepend assumed group warning
-        target_str = ("f90nml: warning: Assuming variables are in group "
-                      "'types_nml'.\n")
+        # TODO: Check stderr
+        error_str = ("f90nml: warning: Assuming variables are in group "
+                     "'types_nml'.\n")
+
         with open('types_cli_set.nml') as target:
-            target_str += target.read()
+            target_str = target.read()
             self.assertEqual(source_str, target_str)
 
     def test_cli_replace_write(self):
