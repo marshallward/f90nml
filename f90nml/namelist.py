@@ -73,20 +73,33 @@ class Namelist(OrderedDict):
         self._newline = False
 
     def __contains__(self, key):
+        """Case-insensitive interface to OrderedDict."""
         return super(Namelist, self).__contains__(key.lower())
 
     def __delitem__(self, key):
+        """Case-insensitive interface to OrderedDict."""
         return super(Namelist, self).__delitem__(key.lower())
 
     def __getitem__(self, key):
+        """Case-insensitive interface to OrderedDict."""
         return super(Namelist, self).__getitem__(key.lower())
 
     def __setitem__(self, key, value):
+        """Case-insensitive interface to OrderedDict.
+
+        Python dict inputs to the Namelist, such as derived types, are also
+        converted into Namelists.
+        """
         if isinstance(value, dict) and not isinstance(value, Namelist):
             value = Namelist(value)
         super(Namelist, self).__setitem__(key.lower(), value)
 
     def __str__(self):
+        """Print the Fortran representation of the namelist.
+
+        Currently this can only be applied to the full contents of the namelist
+        file.  Indiviual namelist groups or values may not render correctly.
+        """
         output = StringIO()
         if all(isinstance(v, Namelist) for v in self.values()):
             self.writestream(output)
@@ -102,7 +115,7 @@ class Namelist(OrderedDict):
     # Column width
     @property
     def colwidth(self):
-        """Maximum number of characters per line of the namelist file.
+        """Set the maximum number of characters per line of the namelist file.
 
         Tokens longer than ``colwidth`` are allowed to extend past this limit
         (Default: 72).
@@ -122,7 +135,7 @@ class Namelist(OrderedDict):
 
     @property
     def indent(self):
-        r"""Whitespace indentation count.
+        r"""Set the whitespace indentation of namelist entries.
 
         This can be set to an integer, denoting the number of spaces, or to an
         explicit whitespace character, such as a tab (``\t``)  (Default: 4).
@@ -131,9 +144,7 @@ class Namelist(OrderedDict):
 
     @indent.setter
     def indent(self, value):
-        """Validate and set the indent width, either as an explicit whitespace
-        string or by the number of whitespace characters.
-        """
+        """Validate and set the indent width."""
         # Explicit indent setting
         if isinstance(value, str):
             if value.isspace():
@@ -199,7 +210,11 @@ class Namelist(OrderedDict):
     # NOTE: This presumes that bools and ints are identical as dict keys
     @property
     def logical_repr(self):
-        """String representation of logical values ``False`` and ``True``.
+        """Set the string representation of logical values.
+
+        There are multiple valid representations of True and False values in
+        Fortran.  This property sets the preferred representation in the
+        namelist output.
 
         The properties ``true_repr`` and ``false_repr`` are also provided as
         interfaces to the ``logical_repr`` tuple
@@ -210,7 +225,6 @@ class Namelist(OrderedDict):
     @logical_repr.setter
     def logical_repr(self, value):
         """Set the namelist representations of logical values."""
-
         if not any(isinstance(value, t) for t in (list, tuple)):
             raise TypeError("Logical representation must be a tuple with "
                             "a valid true and false value.")
@@ -260,7 +274,6 @@ class Namelist(OrderedDict):
 
     def write(self, nml_path, force=False, sort=False):
         """Write Namelist to a Fortran 90 namelist file."""
-
         nml_is_file = hasattr(nml_path, 'read')
         if not force and not nml_is_file and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
@@ -276,7 +289,8 @@ class Namelist(OrderedDict):
         """Update the namelist from another partial or full namelist.
 
         This is different from `Namelist.update` as it does not replace
-        namelist sections, instead it performs an update on the section."""
+        namelist sections, instead it performs an update on the section.
+        """
         for sec in nml_patch:
             if sec not in self:
                 self[sec] = Namelist()
@@ -284,7 +298,6 @@ class Namelist(OrderedDict):
 
     def writestream(self, nml_file, sort=False):
         """Output Namelist to a streamable file object."""
-
         # Reset newline flag
         self._newline = False
 
@@ -303,7 +316,6 @@ class Namelist(OrderedDict):
 
     def write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False):
         """Write namelist group to target file."""
-
         if self._newline:
             print(file=nml_file)
         self._newline = True
@@ -328,7 +340,6 @@ class Namelist(OrderedDict):
 
     def var_strings(self, v_name, v_values, v_idx=None, v_start=None):
         """Convert namelist variable to list of fixed-width strings."""
-
         if self.uppercase:
             v_name = v_name.upper()
 
@@ -531,7 +542,6 @@ class Namelist(OrderedDict):
 
     def f90repr(self, value):
         """Convert primitive Python types to equivalent Fortran strings."""
-
         if isinstance(value, bool):
             return self.f90bool(value)
         elif isinstance(value, numbers.Integral):
@@ -567,7 +577,6 @@ class Namelist(OrderedDict):
 
     def f90str(self, value):
         """Return a Fortran 90 representation of a string."""
-
         # Replace Python quote escape sequence with Fortran
         result = repr(str(value)).replace("\\'", "''").replace('\\"', '""')
 
