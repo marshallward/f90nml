@@ -29,8 +29,8 @@ class Parser(object):
         self.pfile = None
 
         # Configuration
-        self.default_start_index = 1        # TODO: use a property
-        self.global_start_index = None      # TODO: Property, vector index
+        self._default_start_index = 1
+        self._global_start_index = None
         self._comment_tokens = '!'
         self._dense_arrays = False
         self._row_major = False
@@ -38,7 +38,7 @@ class Parser(object):
 
     @property
     def comment_tokens(self):
-        """Tokens used to designate comments in a namelist file.
+        """List of tokens used to designate comments in a namelist file.
 
         Some Fortran programs will introduce alternative comment tokens (e.g.
         ``#``) for internal preprocessing.
@@ -64,6 +64,49 @@ class Parser(object):
         self._comment_tokens = value
 
     @property
+    def default_start_index(self):
+        """Assumed starting index for a vector (Default: 1).
+
+        Since Fortran allows users to set an arbitrary start index, it is not
+        always possible to assign an index to values when no index range has
+        been provided.
+
+        For example, in the namelist ``idx.nml`` shown below, the index of the
+        values in the second assignment are ambiguous and depend on the
+        implicit starting index.
+
+        .. code-block:: fortran
+
+           &idx_nml
+               v(3:5) = 3, 4, 5
+               v = 1, 2
+           /
+
+        the indices of the second entry in ``v`` are ambiguous.  The result for
+        different values of ``default_start_index`` are shown below.
+
+        >>> from f90nml import Parser
+        >>> parser = Parser()
+        >>> parser.default_start_index = 1
+        >>> nml = parser.read('idx.nml')
+        >>> nml['idx_nml']['v']
+        [1, 2, 3, 4, 5]
+
+        >>> parser.default_start_index = 0
+        >>> nml = parser.read('idx.nml')
+        >>> nml['idx_nml']['v']
+        [1, 2, None, 3, 4, 5]
+        """
+        return self._default_start_index
+
+    @default_start_index.setter
+    def default_start_index(self, value):
+        """Validate and set the default start index."""
+        if not isinstance(value, int):
+            raise TypeError('default_start_index attribute must be of int type.')
+        self._default_start_index = value
+
+    @property
     def dense_arrays(self):
         """Expand multidimensional arrays and fill unassigned values."""
         return self._dense_arrays
@@ -74,6 +117,50 @@ class Parser(object):
         if not isinstance(value, bool):
             raise TypeError('dense_arrays attribute must be a logical type.')
         self._dense_arrays = value
+
+    @property
+    def global_start_index(self):
+        """Define an explicit start index for all vectors.
+
+        When set to ``None``, vectors are assumed to start at the lowest
+        specified index.  If no index appears in the namelist, then
+        ``default_start_index`` is used.
+
+        When ``global_start_index`` is set, then all vectors will be created
+        using this starting index.
+
+        For the namelist file ``idx.nml`` shown below,
+
+        .. code-block:: fortran
+
+           &idx_nml
+              v(3:5) = 3, 4, 5
+           /
+
+        the following Python code behaves as shown below.
+
+        >>> from f90nml import Parser
+        >>> parser = Parser()
+        >>> nml = parser.read('idx.nml')
+        >>> nml['idx_nml']['v']
+        [3, 4, 5]
+
+        >>> parser.global_start_index = 1
+        >>> nml = parser.read('idx.nml')
+        >>> nml['idx_nml']['v']
+        [None, None, 3, 4, 5]
+
+        Currently, this property expects a scalar, and applies this value to
+        all dimensions.
+        """
+        return self._global_start_index
+
+    @global_start_index.setter
+    def global_start_index(self, value):
+        """Set the global start index."""
+        if not isinstance(value, int) and value is not None:
+            raise TypeError('global_start_index attribute must be of int type.')
+        self._global_start_index = value
 
     @property
     def row_major(self):

@@ -461,10 +461,14 @@ class Test(unittest.TestCase):
         test_nml = parser.read('multidim.nml')
         self.assertEqual(self.md_rowmaj_nml, test_nml)
 
-    def test_parser_prop_invalid(self):
+    def test_parser_property_invalid(self):
         parser = f90nml.Parser()
         self.assertRaises(TypeError, setattr, parser, 'comment_tokens', 123)
+        self.assertRaises(TypeError, setattr, parser, 'default_start_index',
+                          'abc')
         self.assertRaises(TypeError, setattr, parser, 'dense_arrays', 'abc')
+        self.assertRaises(TypeError, setattr, parser, 'global_start_index',
+                          'abc')
         self.assertRaises(ValueError, setattr, parser, 'row_major', 'abc')
         self.assertRaises(ValueError, setattr, parser, 'strict_logical', 'abc')
 
