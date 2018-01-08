@@ -29,29 +29,30 @@ class Parser(object):
         self.pfile = None
 
         # Configuration
-        self._row_major = False
-        self._strict_logical = True
         self.default_start_index = 1        # TODO: use a property
         self.global_start_index = None      # TODO: Property, vector index
         self._comment_tokens = '!'
         self._dense_arrays = False
+        self._row_major = False
+        self._strict_logical = True
 
     @property
     def comment_tokens(self):
         """Tokens used to designate comments in a namelist file.
 
-        Some Fortran programs will introduce alternative comment tokens (e.g. ``#``)
-        for internal preprocessing.
+        Some Fortran programs will introduce alternative comment tokens (e.g.
+        ``#``) for internal preprocessing.
 
-        If you need to support these tokens, create a ``Parser`` object and set the
-        comment token as follows:
+        If you need to support these tokens, create a ``Parser`` object and set
+        the comment token as follows:
 
         >>> parser = f90nml.Parser()
         >>> parser.comment_tokens += '#'
         >>> nml = Parser.read('sample.nml')
 
-        Be aware that this is non-standard Fortran and could mangle any strings using
-        the ``#`` characters.  Characters inside string delimiters should be protected.
+        Be aware that this is non-standard Fortran and could mangle any strings
+        using the ``#`` characters.  Characters inside string delimiters should
+        be protected.
         """
         return self._comment_tokens
 

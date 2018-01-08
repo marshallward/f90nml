@@ -463,6 +463,8 @@ class Test(unittest.TestCase):
 
     def test_parser_prop_invalid(self):
         parser = f90nml.Parser()
+        self.assertRaises(TypeError, setattr, parser, 'comment_tokens', 123)
+        self.assertRaises(TypeError, setattr, parser, 'dense_arrays', 'abc')
         self.assertRaises(ValueError, setattr, parser, 'row_major', 'abc')
         self.assertRaises(ValueError, setattr, parser, 'strict_logical', 'abc')
 
