@@ -101,8 +101,7 @@ class Parser(object):
 
     @property
     def strict_logical(self):
-        """Use strict parsing rules for logical data, as described in the
-        Fortran specification.
+        """Use strict parsing rules for logical data value parsing.
 
         The ``strict_logical`` flag will limit the parsing of non-delimited
         logical strings as logical values.  The default value is ``True``.
@@ -113,7 +112,9 @@ class Parser(object):
 
         When ``strict_logical`` is disabled, any value starting with ``.t`` or
         ``t`` are interpreted as ``True``, while any string starting with
-        ``.f`` or ``f`` is interpreted as ``False``.
+        ``.f`` or ``f`` is interpreted as ``False``.  This is the rule
+        specified in the Fortran specification.  However, it can interfere with
+        namelists which contain strings which do not use delimiters.
         """
         return self._strict_logical
 
