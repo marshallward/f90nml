@@ -1,4 +1,4 @@
-"""The f90nml namelist parser and tokenizer.
+"""The f90nml namelist parser.
 
 The ``Parser`` object converts the contents of a Fortran namelist into a
 hierarchy of Python dicts containing equivalent intrinsic Python data types.
@@ -103,7 +103,8 @@ class Parser(object):
     def default_start_index(self, value):
         """Validate and set the default start index."""
         if not isinstance(value, int):
-            raise TypeError('default_start_index attribute must be of int type.')
+            raise TypeError('default_start_index attribute must be of int '
+                            'type.')
         self._default_start_index = value
 
     @property
@@ -159,7 +160,8 @@ class Parser(object):
     def global_start_index(self, value):
         """Set the global start index."""
         if not isinstance(value, int) and value is not None:
-            raise TypeError('global_start_index attribute must be of int type.')
+            raise TypeError('global_start_index attribute must be of int '
+                            'type.')
         self._global_start_index = value
 
     @property
