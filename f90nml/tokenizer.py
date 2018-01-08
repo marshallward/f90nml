@@ -1,8 +1,14 @@
+"""Fortran namelist tokenizer.
+
+:copyright: Copyright 2017 Marshall Ward, see AUTHORS for details.
+:license: Apache License, Version 2.0, see LICENSE for details.
+"""
 import string
 import itertools
 
 
 class Tokenizer(object):
+    """Fortran namelist tokenizer."""
 
     # I don't use these two
     special_chars = ' =+-*/\\()[]{},.:;!"%&~<>?\'`|$#@'     # Table 3.1
@@ -12,6 +18,7 @@ class Tokenizer(object):
     punctuation = '=+-*/\\()[]{},:;%&~<>?`|$#@'    # Unhandled Table 3.1 tokens
 
     def __init__(self):
+        """Initialise the tokenizer."""
         self.characters = None
         self.prior_char = None
         self.char = None
@@ -24,7 +31,6 @@ class Tokenizer(object):
 
     def parse(self, line):
         """Tokenize a line of Fortran source."""
-
         tokens = []
 
         self.idx = -1   # Bogus value to ensure idx = 0 after first iteration
@@ -88,6 +94,7 @@ class Tokenizer(object):
         return tokens
 
     def parse_name(self, line):
+        """Tokenize a Fortran name, such as a variable or subroutine."""
         end = self.idx
         for char in line[self.idx:]:
             if not char.isalnum() and char not in '\'"_':
@@ -105,6 +112,7 @@ class Tokenizer(object):
         return word
 
     def parse_string(self):
+        """Tokenize a Fortran string."""
         word = ''
 
         if self.prior_delim:
@@ -135,6 +143,7 @@ class Tokenizer(object):
         return word
 
     def parse_numeric(self):
+        """Tokenize a Fortran numerical value."""
         word = ''
         frac = False
 
@@ -164,5 +173,6 @@ class Tokenizer(object):
         return word
 
     def update_chars(self):
+        """Update the current charters in the tokenizer."""
         self.prior_char, self.char = self.char, next(self.characters)
         self.idx += 1

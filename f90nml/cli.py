@@ -6,7 +6,6 @@
 from __future__ import print_function
 
 import argparse
-import io
 import json
 import os
 import sys
@@ -36,6 +35,7 @@ except ImportError:
 
 
 def parse():
+    """Parse the command line input arguments."""
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--version', action='version',
