@@ -131,7 +131,7 @@ It is also available on Arch Linux via the AUR::
    $ cd python-f90nml
    $ makepkg -sri
 
-``f90nml`` is not yet available on other Linux distributions.
+``f90nml`` is currently not available on other Linux distributions.
 
 The latest version of ``f90nml`` can be installed from source::
 
