@@ -125,6 +125,15 @@ class Test(unittest.TestCase):
             }
         }
 
+        self.dense_array_nml = {
+            'dense_array_nml': {
+                'x': [[1, None, None],
+                      [None, None, None],
+                      [None, None, 2]
+                ]
+            }
+        }
+
         self.default_one_index_nml = {
             'default_index_nml': {
                 'v': [1, 2, 3, 4, 5]
@@ -460,6 +469,12 @@ class Test(unittest.TestCase):
         parser.row_major = True
         test_nml = parser.read('multidim.nml')
         self.assertEqual(self.md_rowmaj_nml, test_nml)
+
+    def test_dense_arrays(self):
+        parser = f90nml.Parser()
+        parser.dense_arrays = True
+        test_nml = parser.read('dense_array.nml')
+        self.assertEqual(self.dense_array_nml, test_nml)
 
     def test_parser_property_invalid(self):
         parser = f90nml.Parser()
