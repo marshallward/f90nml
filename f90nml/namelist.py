@@ -57,9 +57,9 @@ class Namelist(OrderedDict):
             self.start_index = self['_start_index']
             self.pop('_start_index')
         if args and isinstance(args[0], Namelist):
-            self.start_index = args[0].start_index
+            self._start_index = args[0].start_index
         else:
-            self.start_index = {}
+            self._start_index = {}
 
         # Formatting properties
         self._colwidth = 72
@@ -285,6 +285,47 @@ class Namelist(OrderedDict):
                 self._logical_repr[0] = value
         else:
             raise TypeError('Logical false representation must be a string.')
+
+    # Uppercase
+    @property
+    def start_index(self):
+        """Set the starting index for each vector in the namelist.
+
+        ``start_index`` is stored as a dict which contains the starting index
+        for each vector saved in the namelist.  For the namelist ``vec.nml``
+        shown below,
+
+        .. code-block:: fortran
+
+           &vec_nml
+               a = 1, 2, 3
+               b(0:2) = 0, 1, 2
+               c(3:5) = 3, 4, 5
+               d(:,:) = 1, 2, 3, 4
+           /
+
+        the ``start_index`` contents are
+
+        .. code:: python
+
+           >>> import f90nml
+           >>> nml = f90nml.read('vec.nml')
+           >>> nml['vec_nml'].start_index
+           {'d': [None, None], 'b': [0], 'c': [3]}
+
+        The starting index of ``a`` is absent from ``start_index``, since its
+        values cannot be assigned to any index without referring to the
+        corresponding Fortran source.
+        """
+        return self._start_index
+
+    @start_index.setter
+    def start_index(self, value):
+        """Validate and set the vector start index."""
+        # TODO: Validate contents?  (May want to set before adding the data.)
+        if not isinstance(value, dict):
+            raise TypeError('start_index attribute must be a dict.')
+        self._start_index = value
 
     # File output
 

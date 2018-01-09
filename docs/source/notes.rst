@@ -86,7 +86,7 @@ index, as in the examples below.
    integer, dimension :: v(1:4)  ! Read as v = (5, 5, -, -)
    integer, dimension :: v(0:3)  ! Read as v = (-, 5, 5, -)
 
-Without explcit knowledge of the starting index, it is not possible to
+Without explicit knowledge of the starting index, it is not possible to
 unambiguously represent the vector in Python.
 
 In most cases, ``f90nml`` will internally assume a 1-based indexing, and will
@@ -94,104 +94,9 @@ only output the values explicitly listed in the namelist file.  If no index is
 provided, then ``f90nml`` will not add indices to the record.
 
 However, ``f90nml`` can still provide some level of control over the starting
-index of a vector.  The starting index can be explicitly set using the
-properties defined below.  For a sample ``Parser`` object (``parser``), the
-following property is available:
-
-``parser.default_start_index`` (default: 1)
-
-   The default starting index for any new vectors.  This primarily affects
-   vectors whose values are set both with and without explicit indices.
-
-   For the namelist ``idx.nml`` shown below,
-
-   .. code:: fortran
-
-      &idx_nml
-          v(3:5) = 3, 4, 5
-          v = 1, 2
-      /
-
-   the indices of the second entry in ``v`` are ambiguous.  The result for
-   different values of ``default_start_index`` are shown below.
-
-   .. code:: python
-
-      >>> from f90nml import Parser
-      >>> parser = Parser()
-      >>> parser.default_start_index = 1  # Default
-      >>> nml = parser.read('idx.nml')
-      >>> nml['idx_nml']['v']
-      [1, 2, 3, 4, 5]
-
-      >>> parser.default_start_index = 0
-      >>> nml = parser.read('idx.nml')
-      >>> nml['idx_nml']['v']
-      [1, 2, None, 3, 4, 5]
-
-``parser.global_start_index`` (default: ``None``)
-
-   Global override for starting index.  When unset, vectors are assumed to
-   start at the lowest specified index.  If no index appears in the namelist,
-   then ``default_start_index`` is used.
-
-   When ``global_start_index`` is set, then all vectors will be created using
-   this starting index.
-
-   For the namelist file ``idx.nml`` shown below,
-
-   .. code:: fortran
-
-      &idx_nml
-         v(3:5) = 3, 4, 5
-      /
-
-   then the following Python code behaves as shown below.
-
-   .. code:: python
-
-      >>> from f90nml import Parser
-      >>> parser = Parser()
-      >>> nml = parser.read('idx.nml')
-      >>> nml['idx_nml']['v']
-      [3, 4, 5]
-
-      >>> parser.global_start_index = 1
-      >>> nml = parser.read('idx.nml')
-      >>> nml['idx_nml']['v']
-      [None, None, 3, 4, 5]
-
-   Currently, this property expects a scalar, and applies this value to all
-   dimensions.
-
-The starting indices are tracked within the namelist.  For a ``Namelist``
-instance (``nml``), the property is specified below.
-
-``nml.start_index``
-   A ``dict`` containing the starting index for each vector saved in the
-   namelist.  For the namelist ``vec.nml`` shown below,
-
-   .. code:: fortran
-
-      &vec_nml
-          a = 1, 2, 3
-          b(0:2) = 0, 1, 2
-          c(3:5) = 3, 4, 5
-          d(:,:) = 1, 2, 3, 4
-      /
-
-   the ``start_index`` contents are
-
-   .. code:: python
-
-      >>> import f90nml
-      >>> nml = f90nml.read('vec.nml')
-      >>> nml['vec_nml'].start_index
-      {'d': [None, None], 'b': [0], 'c': [3]}
-
-   The starting index of ``a`` is absent from ``start_index``, since its values
-   cannot be assigned to any index without referring to the corresponding
-   Fortran source.
+index of a vector.  The starting index can be explicitly set using various
+properties defined in the ``Parser`` and ``Namelist`` objects.  For more
+information, see the class API.
 
 
 Output formatting
@@ -223,24 +128,3 @@ properties of the ``Namelist`` object.  The properties for a sample namelist
    String representation of logical values ``False`` and ``True``.  The
    properties ``true_repr`` and ``false_repr`` are also provided as interfaces
    to the ``logical_repr`` tuple.
-
-
-Comment tokens
---------------
-
-Some Fortran programs will introduce alternative comment tokens (e.g. ``#``)
-for internal preprocessing.
-
-If you need to support these tokens, create a ``Parser`` object and set the
-comment token as follows:
-
-.. code:: python
-
-   parser = f90nml.Parser()
-   parser.comment_tokens += '#'
-   nml = Parser.read('sample.nml')
-
-Be aware that this is non-standard Fortran and could mangle any strings using
-the ``#`` characters.  Characters inside string delimiters should be protected.
-
-
