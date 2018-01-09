@@ -53,6 +53,10 @@ def write(nml, nml_path, force=False, sort=False):
     this, use the ``force`` flag.
 
     >>> nml.write('data.nml', force=True)
+
+    To alphabetically sort the ``Namelist`` keys, use the ``sort`` flag.
+
+    >>> nml.write('data.nml', sort=True)
     """
     # Promote dicts to Namelists
     if not isinstance(nml, Namelist) and isinstance(nml, dict):

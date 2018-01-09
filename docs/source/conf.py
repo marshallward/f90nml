@@ -31,6 +31,9 @@ release = f90nml.__version__
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%B %d, %Y'
 
+# Member order
+autodoc_member_order = 'groupwise'
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = []

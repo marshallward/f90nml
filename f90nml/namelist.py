@@ -289,7 +289,11 @@ class Namelist(OrderedDict):
     # File output
 
     def write(self, nml_path, force=False, sort=False):
-        """Write Namelist to a Fortran 90 namelist file."""
+        """Write Namelist to a Fortran 90 namelist file.
+
+        >>> nml = f90nml.read('input.nml')
+        >>> nml.write('out.nml')
+        """
         nml_is_file = hasattr(nml_path, 'read')
         if not force and not nml_is_file and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))

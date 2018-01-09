@@ -85,8 +85,7 @@ class Parser(object):
         the indices of the second entry in ``v`` are ambiguous.  The result for
         different values of ``default_start_index`` are shown below.
 
-        >>> from f90nml import Parser
-        >>> parser = Parser()
+        >>> parser = f90nml.Parser()
         >>> parser.default_start_index = 1
         >>> nml = parser.read('idx.nml')
         >>> nml['idx_nml']['v']
@@ -147,8 +146,7 @@ class Parser(object):
 
         the following Python code behaves as shown below.
 
-        >>> from f90nml import Parser
-        >>> parser = Parser()
+        >>> parser = f90nml.Parser()
         >>> nml = parser.read('idx.nml')
         >>> nml['idx_nml']['v']
         [3, 4, 5]
@@ -197,14 +195,14 @@ class Parser(object):
 
     @property
     def strict_logical(self):
-        """Use strict parsing rules for logical data value parsing.
+        """Use strict rules for parsing logical data value parsing.
 
         The ``strict_logical`` flag will limit the parsing of non-delimited
         logical strings as logical values.  The default value is ``True``.
 
         When ``strict_logical`` is enabled, only ``.true.``, ``.t.``, ``true``,
         and ``t`` are interpreted as ``True``, and only ``.false.``, ``.f.``,
-        ``false``, and ``.false.`` are interpreted as false.
+        ``false``, and ``f`` are interpreted as false.
 
         When ``strict_logical`` is disabled, any value starting with ``.t`` or
         ``t`` is interpreted as ``True``, while any string starting with ``.f``
@@ -227,8 +225,7 @@ class Parser(object):
     def read(self, nml_fname, nml_patch_in=None, patch_fname=None):
         """Parse a Fortran namelist file and store the contents.
 
-        >>> from f90nml.parser import Parser
-        >>> parser = Parser()
+        >>> parser = f90nml.Parser()
         >>> data_nml = parser.read('data.nml')
         """
         # For switching based on files versus paths

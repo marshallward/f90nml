@@ -56,14 +56,15 @@ which would would point ``nml`` to the following ``dict``:
 
 .. code:: python
 
-   nml = {'config_nml':
-            {'input': 'wind.nc',
-             'steps': 864,
-             'layout': [8, 16],
-             'visc': 0.0001,
-             'use_biharmonic': False
-            }
-         }
+   nml = {
+       'config_nml': {
+           'input': 'wind.nc',
+           'steps': 864,
+           'layout': [8, 16],
+           'visc': 0.0001,
+           'use_biharmonic': False
+       }
+   }
 
 File objects can also be used as inputs:
 
