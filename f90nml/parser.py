@@ -32,7 +32,7 @@ class Parser(object):
         self._default_start_index = 1
         self._global_start_index = None
         self._comment_tokens = '!'
-        self._dense_arrays = False
+        self._sparse_arrays = False
         self._row_major = False
         self._strict_logical = True
 
@@ -60,7 +60,7 @@ class Parser(object):
     def comment_tokens(self, value):
         """Validate and set the comment token string."""
         if not isinstance(value, str):
-            raise TypeError('dense_arrays attribute must be a string.')
+            raise TypeError('comment_tokens attribute must be a string.')
         self._comment_tokens = value
 
     @property
@@ -108,16 +108,16 @@ class Parser(object):
         self._default_start_index = value
 
     @property
-    def dense_arrays(self):
+    def sparse_arrays(self):
         """Expand multidimensional arrays and fill unassigned values."""
-        return self._dense_arrays
+        return self._sparse_arrays
 
-    @dense_arrays.setter
-    def dense_arrays(self, value):
+    @sparse_arrays.setter
+    def sparse_arrays(self, value):
         """Validate and set the dense arrays flag."""
         if not isinstance(value, bool):
-            raise TypeError('dense_arrays attribute must be a logical type.')
-        self._dense_arrays = value
+            raise TypeError('sparse_arrays attribute must be a logical type.')
+        self._sparse_arrays = value
 
     @property
     def global_start_index(self):
@@ -741,13 +741,13 @@ class Parser(object):
                     v_s = v_s[::-1]
 
                 # Multidimensional arrays
-                if self.dense_arrays:
+                if not self.sparse_arrays:
                     pad_array(v_values, list(zip(v_i, v_s)))
 
                 # We iterate inside the v_values and inspect successively
                 # deeper lists within the list tree.  If the requested index is
                 # missing, we re-size that particular entry.
-                # (NOTE: This is unnecessary when dense_arrays is enabled.)
+                # (NOTE: This is unnecessary when sparse_arrays is disabled.)
 
                 v_subval = v_values
                 for (i_v, i_s) in zip(v_i[:-1], v_s[:-1]):

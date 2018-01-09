@@ -106,7 +106,7 @@ class Test(unittest.TestCase):
                 'v2d_explicit': [[1, 2], [3, 4]],
                 'v2d_outer': [[1], [2], [3], [4]],
                 'v2d_inner': [[1, 2, 3, 4]],
-                'v2d_sparse': [[1, 2], [], [5, 6]]
+                'v2d_sparse': [[1, 2], [None, None], [5, 6]]
             }
         }
 
@@ -126,10 +126,20 @@ class Test(unittest.TestCase):
         }
 
         self.dense_array_nml = {
-            'dense_array_nml': {
+            'sparse_array_nml': {
                 'x': [
                     [1, None, None],
                     [None, None, None],
+                    [None, None, 2],
+                ]
+            }
+        }
+
+        self.sparse_array_nml = {
+            'sparse_array_nml': {
+                'x': [
+                    [1],
+                    [],
                     [None, None, 2],
                 ]
             }
@@ -473,16 +483,21 @@ class Test(unittest.TestCase):
 
     def test_dense_arrays(self):
         parser = f90nml.Parser()
-        parser.dense_arrays = True
-        test_nml = parser.read('dense_array.nml')
+        test_nml = parser.read('sparse_array.nml')
         self.assertEqual(self.dense_array_nml, test_nml)
+
+    def test_sparse_arrays(self):
+        parser = f90nml.Parser()
+        parser.sparse_arrays = True
+        test_nml = parser.read('sparse_array.nml')
+        self.assertEqual(self.sparse_array_nml, test_nml)
 
     def test_parser_property_invalid(self):
         parser = f90nml.Parser()
         self.assertRaises(TypeError, setattr, parser, 'comment_tokens', 123)
         self.assertRaises(TypeError, setattr, parser, 'default_start_index',
                           'abc')
-        self.assertRaises(TypeError, setattr, parser, 'dense_arrays', 'abc')
+        self.assertRaises(TypeError, setattr, parser, 'sparse_arrays', 'abc')
         self.assertRaises(TypeError, setattr, parser, 'global_start_index',
                           'abc')
         self.assertRaises(ValueError, setattr, parser, 'row_major', 'abc')
