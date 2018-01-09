@@ -54,13 +54,15 @@ would be saved as the following ``Namelist``:
 
 .. code:: python
 
-   nml = {'dtype_nml':
-            {'a':
-               {'b':
-                  {'c': 1}
-               }
+   nml = {
+      'dtype_nml': {
+         'a': {
+            'b': {
+               'c': 1
             }
          }
+      }
+   }
 
 
 Indexing

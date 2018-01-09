@@ -9,9 +9,9 @@ except ImportError:
     from io import StringIO         # Python 3.x
 
 try:
-    from collections import OrderedDict # Python 3.x
+    from collections import OrderedDict     # Python 3.x
 except ImportError:
-    from ordereddict import OrderedDict # Python 2.x
+    from ordereddict import OrderedDict     # Python 2.x
 
 try:
     import numpy
@@ -127,9 +127,10 @@ class Test(unittest.TestCase):
 
         self.dense_array_nml = {
             'dense_array_nml': {
-                'x': [[1, None, None],
-                      [None, None, None],
-                      [None, None, 2]
+                'x': [
+                    [1, None, None],
+                    [None, None, None],
+                    [None, None, 2],
                 ]
             }
         }
@@ -155,24 +156,24 @@ class Test(unittest.TestCase):
         }
 
         self.float_nml = {
-                'float_nml': {
-                    'v_float': 1.,
-                    'v_decimal_start': .1,
-                    'v_decimal_end': 1.,
-                    'v_negative': -1.,
-                    'v_single': 1.,
-                    'v_double': 1.,
-                    'v_single_upper': 1.,
-                    'v_double_upper': 1.,
-                    'v_positive_index': 10.,
-                    'v_negative_index': 0.1,
-                    'v_no_exp_pos': 1.,
-                    'v_no_exp_neg': 1.,
-                    'v_no_exp_pos_dot': 1.,
-                    'v_no_exp_neg_dot': 1.,
-                    'v_neg_no_exp_pos': -1.,
-                    'v_neg_no_exp_neg': -1.,
-                }
+            'float_nml': {
+                'v_float': 1.,
+                'v_decimal_start': .1,
+                'v_decimal_end': 1.,
+                'v_negative': -1.,
+                'v_single': 1.,
+                'v_double': 1.,
+                'v_single_upper': 1.,
+                'v_double_upper': 1.,
+                'v_positive_index': 10.,
+                'v_negative_index': 0.1,
+                'v_no_exp_pos': 1.,
+                'v_no_exp_neg': 1.,
+                'v_no_exp_pos_dot': 1.,
+                'v_no_exp_neg_dot': 1.,
+                'v_neg_no_exp_pos': -1.,
+                'v_neg_no_exp_neg': -1.,
+            }
         }
 
         self.string_nml = {
