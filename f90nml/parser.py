@@ -109,12 +109,19 @@ class Parser(object):
 
     @property
     def sparse_arrays(self):
-        """Expand multidimensional arrays and fill unassigned values."""
+        """Store unset rows of multidimensional arrays as empty lists.
+
+        Enabling this flag will replace rows of unset values with empty lists,
+        and will also not pad any existing rows when other rows are expanded.
+
+        This is not a true sparse representation, but rather is slightly more
+        sparse than the default dense array representation.
+        """
         return self._sparse_arrays
 
     @sparse_arrays.setter
     def sparse_arrays(self, value):
-        """Validate and set the dense arrays flag."""
+        """Validate and enable spare arrays."""
         if not isinstance(value, bool):
             raise TypeError('sparse_arrays attribute must be a logical type.')
         self._sparse_arrays = value
@@ -200,10 +207,10 @@ class Parser(object):
         ``false``, and ``.false.`` are interpreted as false.
 
         When ``strict_logical`` is disabled, any value starting with ``.t`` or
-        ``t`` are interpreted as ``True``, while any string starting with
-        ``.f`` or ``f`` is interpreted as ``False``.  This is the rule
-        specified in the Fortran specification.  However, it can interfere with
-        namelists which contain strings which do not use delimiters.
+        ``t`` is interpreted as ``True``, while any string starting with ``.f``
+        or ``f`` is interpreted as ``False``, as described in the Fortran
+        specification.  However, it can interfere with namelists which contain
+        strings which do not use delimiters.
         """
         return self._strict_logical
 

@@ -14,8 +14,8 @@ Classes
 -------
 
 .. autoclass:: f90nml.parser.Parser
-   :members: comment_tokens, default_start_index, dense_arrays,
-             global_start_index, row_major, strict_logical
+   :members: comment_tokens, default_start_index, global_start_index,
+             row_major, sparse_arrays, strict_logical
 
 .. autoclass:: f90nml.namelist.Namelist
    :members: colwidth, end_comma, false_repr, floatformat, indent,
