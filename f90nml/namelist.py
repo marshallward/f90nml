@@ -185,12 +185,12 @@ class Namelist(OrderedDict):
     # Uppercase
     @property
     def uppercase(self):
-        """Return True if names are displayed in upper case."""
+        """Print group and variable names in uppercase."""
         return self._uppercase
 
     @uppercase.setter
     def uppercase(self, value):
-        """Validate and set the upper case flag."""
+        """Validate and set the uppercase flag."""
         if not isinstance(value, bool):
             raise TypeError('uppercase attribute must be a logical type.')
         self._uppercase = value
@@ -198,7 +198,11 @@ class Namelist(OrderedDict):
     # Float format
     @property
     def floatformat(self):
-        """Return the current floating point format code."""
+        """Set the namelist floating point format.
+
+        The property sets the format string for floating point numbers,
+        following the format expected by the Python ``format()`` function.
+        """
         return self._floatformat
 
     @floatformat.setter
