@@ -1,4 +1,4 @@
-&dense_array_nml
+&sparse_array_nml
  	x(1,1) = 1
  	x(3,3) = 2
 /

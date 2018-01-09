@@ -57,9 +57,9 @@ class Namelist(OrderedDict):
             self.start_index = self['_start_index']
             self.pop('_start_index')
         if args and isinstance(args[0], Namelist):
-            self.start_index = args[0].start_index
+            self._start_index = args[0].start_index
         else:
-            self.start_index = {}
+            self._start_index = {}
 
         # Formatting properties
         self._colwidth = 72
@@ -166,7 +166,13 @@ class Namelist(OrderedDict):
 
     @property
     def end_comma(self):
-        """Return True if entries are terminated with commas."""
+        """Append commas to the end of namelist variable entries.
+
+        Fortran will generally disregard any commas separating variable
+        assignments, and the default behaviour is to omit these commas from the
+        output.  Enabling this flag will append commas at the end of the line
+        for each variable assignment.
+        """
         return self._end_comma
 
     @end_comma.setter
@@ -179,12 +185,12 @@ class Namelist(OrderedDict):
     # Uppercase
     @property
     def uppercase(self):
-        """Return True if names are displayed in upper case."""
+        """Print group and variable names in uppercase."""
         return self._uppercase
 
     @uppercase.setter
     def uppercase(self, value):
-        """Validate and set the upper case flag."""
+        """Validate and set the uppercase flag."""
         if not isinstance(value, bool):
             raise TypeError('uppercase attribute must be a logical type.')
         self._uppercase = value
@@ -192,7 +198,11 @@ class Namelist(OrderedDict):
     # Float format
     @property
     def floatformat(self):
-        """Return the current floating point format code."""
+        """Set the namelist floating point format.
+
+        The property sets the format string for floating point numbers,
+        following the format expected by the Python ``format()`` function.
+        """
         return self._floatformat
 
     @floatformat.setter
@@ -224,7 +234,7 @@ class Namelist(OrderedDict):
 
     @logical_repr.setter
     def logical_repr(self, value):
-        """Set the namelist representations of logical values."""
+        """Set the string representation of logical values."""
         if not any(isinstance(value, t) for t in (list, tuple)):
             raise TypeError("Logical representation must be a tuple with "
                             "a valid true and false value.")
@@ -236,7 +246,10 @@ class Namelist(OrderedDict):
 
     @property
     def true_repr(self):
-        """Return the namelist representation of logical true."""
+        """Set the string representation of logical true values.
+
+        This is equivalent to the second element of ``logical_repr``.
+        """
         return self._logical_repr[1]
 
     @true_repr.setter
@@ -254,7 +267,10 @@ class Namelist(OrderedDict):
 
     @property
     def false_repr(self):
-        """Return the namelist representation of logical false."""
+        """Set the string representation of logical false values.
+
+        This is equivalent to the first element of ``logical_repr``.
+        """
         return self._logical_repr[0]
 
     @false_repr.setter
@@ -270,10 +286,55 @@ class Namelist(OrderedDict):
         else:
             raise TypeError('Logical false representation must be a string.')
 
+    # Uppercase
+    @property
+    def start_index(self):
+        """Set the starting index for each vector in the namelist.
+
+        ``start_index`` is stored as a dict which contains the starting index
+        for each vector saved in the namelist.  For the namelist ``vec.nml``
+        shown below,
+
+        .. code-block:: fortran
+
+           &vec_nml
+               a = 1, 2, 3
+               b(0:2) = 0, 1, 2
+               c(3:5) = 3, 4, 5
+               d(:,:) = 1, 2, 3, 4
+           /
+
+        the ``start_index`` contents are
+
+        .. code:: python
+
+           >>> import f90nml
+           >>> nml = f90nml.read('vec.nml')
+           >>> nml['vec_nml'].start_index
+           {'d': [None, None], 'b': [0], 'c': [3]}
+
+        The starting index of ``a`` is absent from ``start_index``, since its
+        values cannot be assigned to any index without referring to the
+        corresponding Fortran source.
+        """
+        return self._start_index
+
+    @start_index.setter
+    def start_index(self, value):
+        """Validate and set the vector start index."""
+        # TODO: Validate contents?  (May want to set before adding the data.)
+        if not isinstance(value, dict):
+            raise TypeError('start_index attribute must be a dict.')
+        self._start_index = value
+
     # File output
 
     def write(self, nml_path, force=False, sort=False):
-        """Write Namelist to a Fortran 90 namelist file."""
+        """Write Namelist to a Fortran 90 namelist file.
+
+        >>> nml = f90nml.read('input.nml')
+        >>> nml.write('out.nml')
+        """
         nml_is_file = hasattr(nml_path, 'read')
         if not force and not nml_is_file and os.path.isfile(nml_path):
             raise IOError('File {0} already exists.'.format(nml_path))
@@ -491,10 +552,18 @@ class Namelist(OrderedDict):
         return var_strs
 
     def todict(self, decomplex=False):
-        """Return a dict equivalent to the namelist."""
-        # NOTE: Since namelists cannot start with `_`, we use these keys to
-        # include metadata.
+        """Return a dict equivalent to the namelist.
 
+        Since Fortran variables and names cannot start with the ``_``
+        character, any keys starting with this token denote metadata, such as
+        starting index.
+
+        The ``decomplex`` flag is used to convert complex data into an
+        equivalent 2-tuple, with metadata stored to flag the variable as
+        complex.  This is primarily used to facilitate the storage of the
+        namelist into an equivalent format which does not support complex
+        numbers, such as JSON or YAML.
+        """
         # TODO: Preserve ordering
         nmldict = OrderedDict(self)
 

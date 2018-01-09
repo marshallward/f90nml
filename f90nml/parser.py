@@ -32,7 +32,7 @@ class Parser(object):
         self._default_start_index = 1
         self._global_start_index = None
         self._comment_tokens = '!'
-        self._dense_arrays = False
+        self._sparse_arrays = False
         self._row_major = False
         self._strict_logical = True
 
@@ -60,7 +60,7 @@ class Parser(object):
     def comment_tokens(self, value):
         """Validate and set the comment token string."""
         if not isinstance(value, str):
-            raise TypeError('dense_arrays attribute must be a string.')
+            raise TypeError('comment_tokens attribute must be a string.')
         self._comment_tokens = value
 
     @property
@@ -85,8 +85,7 @@ class Parser(object):
         the indices of the second entry in ``v`` are ambiguous.  The result for
         different values of ``default_start_index`` are shown below.
 
-        >>> from f90nml import Parser
-        >>> parser = Parser()
+        >>> parser = f90nml.Parser()
         >>> parser.default_start_index = 1
         >>> nml = parser.read('idx.nml')
         >>> nml['idx_nml']['v']
@@ -108,16 +107,23 @@ class Parser(object):
         self._default_start_index = value
 
     @property
-    def dense_arrays(self):
-        """Expand multidimensional arrays and fill unassigned values."""
-        return self._dense_arrays
+    def sparse_arrays(self):
+        """Store unset rows of multidimensional arrays as empty lists.
 
-    @dense_arrays.setter
-    def dense_arrays(self, value):
-        """Validate and set the dense arrays flag."""
+        Enabling this flag will replace rows of unset values with empty lists,
+        and will also not pad any existing rows when other rows are expanded.
+
+        This is not a true sparse representation, but rather is slightly more
+        sparse than the default dense array representation.
+        """
+        return self._sparse_arrays
+
+    @sparse_arrays.setter
+    def sparse_arrays(self, value):
+        """Validate and enable spare arrays."""
         if not isinstance(value, bool):
-            raise TypeError('dense_arrays attribute must be a logical type.')
-        self._dense_arrays = value
+            raise TypeError('sparse_arrays attribute must be a logical type.')
+        self._sparse_arrays = value
 
     @property
     def global_start_index(self):
@@ -140,8 +146,7 @@ class Parser(object):
 
         the following Python code behaves as shown below.
 
-        >>> from f90nml import Parser
-        >>> parser = Parser()
+        >>> parser = f90nml.Parser()
         >>> nml = parser.read('idx.nml')
         >>> nml['idx_nml']['v']
         [3, 4, 5]
@@ -190,20 +195,20 @@ class Parser(object):
 
     @property
     def strict_logical(self):
-        """Use strict parsing rules for logical data value parsing.
+        """Use strict rules for parsing logical data value parsing.
 
         The ``strict_logical`` flag will limit the parsing of non-delimited
         logical strings as logical values.  The default value is ``True``.
 
         When ``strict_logical`` is enabled, only ``.true.``, ``.t.``, ``true``,
         and ``t`` are interpreted as ``True``, and only ``.false.``, ``.f.``,
-        ``false``, and ``.false.`` are interpreted as false.
+        ``false``, and ``f`` are interpreted as false.
 
         When ``strict_logical`` is disabled, any value starting with ``.t`` or
-        ``t`` are interpreted as ``True``, while any string starting with
-        ``.f`` or ``f`` is interpreted as ``False``.  This is the rule
-        specified in the Fortran specification.  However, it can interfere with
-        namelists which contain strings which do not use delimiters.
+        ``t`` is interpreted as ``True``, while any string starting with ``.f``
+        or ``f`` is interpreted as ``False``, as described in the Fortran
+        specification.  However, it can interfere with namelists which contain
+        strings which do not use delimiters.
         """
         return self._strict_logical
 
@@ -220,8 +225,7 @@ class Parser(object):
     def read(self, nml_fname, nml_patch_in=None, patch_fname=None):
         """Parse a Fortran namelist file and store the contents.
 
-        >>> from f90nml.parser import Parser
-        >>> parser = Parser()
+        >>> parser = f90nml.Parser()
         >>> data_nml = parser.read('data.nml')
         """
         # For switching based on files versus paths
@@ -741,13 +745,13 @@ class Parser(object):
                     v_s = v_s[::-1]
 
                 # Multidimensional arrays
-                if self.dense_arrays:
+                if not self.sparse_arrays:
                     pad_array(v_values, list(zip(v_i, v_s)))
 
                 # We iterate inside the v_values and inspect successively
                 # deeper lists within the list tree.  If the requested index is
                 # missing, we re-size that particular entry.
-                # (NOTE: This is unnecessary when dense_arrays is enabled.)
+                # (NOTE: This is unnecessary when sparse_arrays is disabled.)
 
                 v_subval = v_values
                 for (i_v, i_s) in zip(v_i[:-1], v_s[:-1]):

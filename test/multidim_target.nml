@@ -19,5 +19,6 @@
     v2d_outer(1, 4) = 4
     v2d_inner(:, 1) = 1, 2, 3, 4
     v2d_sparse(:, 1) = 1, 2
+    v2d_sparse(:, 2) = , ,
     v2d_sparse(:, 3) = 5, 6
 /
