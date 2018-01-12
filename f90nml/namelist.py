@@ -43,6 +43,10 @@ class Namelist(OrderedDict):
             if isinstance(val, dict):
                 self[key] = Namelist(val)
 
+            elif is_nullable_list(val, dict):
+                for i, nml in enumerate(val):
+                    self[key][i] = Namelist(nml)
+
         # Update any metadata
         if '_complex' in self:
             for key in self['_complex']:
@@ -407,10 +411,7 @@ class Namelist(OrderedDict):
         var_strs = []
 
         # Parse a multidimensional array
-        if (isinstance(v_values, list) and
-                any(isinstance(v, list) for v in v_values) and
-                all((isinstance(v, list) or v is None) for v in v_values)):
-
+        if is_nullable_list(v_values, list):
             if not v_idx:
                 v_idx = []
 
@@ -438,7 +439,7 @@ class Namelist(OrderedDict):
                 var_strs.extend(v_strs)
 
         # Parse derived type contents
-        elif isinstance(v_values, dict):
+        elif isinstance(v_values, Namelist):
             for f_name, f_vals in v_values.items():
                 v_title = '%'.join([v_name, f_name])
 
@@ -448,14 +449,12 @@ class Namelist(OrderedDict):
                 var_strs.extend(v_strs)
 
         # Parse an array of derived types
-        elif (isinstance(v_values, list) and
-              any(isinstance(v, dict) for v in v_values) and
-              all((isinstance(v, dict) or v is None) for v in v_values)):
-
+        elif is_nullable_list(v_values, Namelist):
             if not v_idx:
                 v_idx = []
 
-            i_s = v_start[::-1][len(v_idx)]
+            i_s = v_start[::-1][len(v_idx)] if v_start else 1
+
             for idx, val in enumerate(v_values, start=i_s):
 
                 # Skip any empty elements in a list of derived types
@@ -653,3 +652,10 @@ class Namelist(OrderedDict):
         result = result.replace('\\\\', '\\')
 
         return result
+
+
+def is_nullable_list(val, vtype):
+    """Return True if list contains either values of type `vtype` or None."""
+    return (isinstance(val, list) and
+            any(isinstance(v, vtype) for v in val) and
+            all((isinstance(v, vtype) or v is None) for v in val))
