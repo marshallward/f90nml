@@ -315,11 +315,11 @@ class Namelist(OrderedDict):
            >>> import f90nml
            >>> nml = f90nml.read('vec.nml')
            >>> nml['vec_nml'].start_index
-           {'d': [None, None], 'b': [0], 'c': [3]}
+           {'b': [0], 'c': [3], 'd': [None, None]}
 
         The starting index of ``a`` is absent from ``start_index``, since its
-        values cannot be assigned to any index without referring to the
-        corresponding Fortran source.
+        starting index is unknown and its values cannot be assigned without
+        referring to the corresponding Fortran source.
         """
         return self._start_index
 
@@ -415,7 +415,7 @@ class Namelist(OrderedDict):
             if not v_idx:
                 v_idx = []
 
-            i_s = v_start[::-1][len(v_idx)]
+            i_s = v_start[::-1][len(v_idx)] if v_start else None
 
             # FIXME: We incorrectly assume 1-based indexing if it is
             # unspecified.  This is necessary because our output method always
@@ -489,13 +489,8 @@ class Namelist(OrderedDict):
                             v_idx_repr += '{0}'.format(i_s)
                         else:
                             v_idx_repr += '{0}:{1}'.format(i_s, i_e)
-
-                # NOTE: The block below is never called!
-                # We don't write the empty index if none was provided.
-                # But maybe someday we might want to add this option.
-
-                # else:
-                #     v_idx_repr += ':'
+                else:
+                    v_idx_repr += ':'
 
                 if v_idx:
                     v_idx_repr += ', '

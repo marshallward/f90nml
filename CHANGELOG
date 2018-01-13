@@ -2,6 +2,10 @@ Upcoming:
     - strict_logical and row_major arguments were removed from the top-level
       API functions.  These should now controlled by Parser objects.
     - Manpage installation by setup.py for CLI (if Sphinx is available)
+    - Bugfix: Namelist() now works with arrays of dtypes as nested dicts.
+      (Thanks to GitHub users @gitporst and @sound-fx for reporting.)
+    - Bugfix: Namelist() now works with multidimensional arrays as list of
+      lists.  (Thanks to GitHub user @sound-fx for reporting.)
 
 v0.23:
     - CLI: Thorough support for JSON, YAML, updating, and patching

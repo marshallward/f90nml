@@ -435,6 +435,7 @@ class Test(unittest.TestCase):
 
         sys.argv, sys.stdout, sys.stderr = argv_in, stdout_in, stderr_in
 
+        # TODO: Some way to check both would be more useful...
         if get_stderr:
             return stderr
         else:
@@ -495,11 +496,11 @@ class Test(unittest.TestCase):
     def test_parser_property_invalid(self):
         parser = f90nml.Parser()
         self.assertRaises(TypeError, setattr, parser, 'comment_tokens', 123)
-        self.assertRaises(TypeError, setattr, parser, 'default_start_index',
-                          'abc')
+        self.assertRaises(TypeError, setattr, parser,
+                          'default_start_index', 'abc')
         self.assertRaises(TypeError, setattr, parser, 'sparse_arrays', 'abc')
-        self.assertRaises(TypeError, setattr, parser, 'global_start_index',
-                          'abc')
+        self.assertRaises(TypeError, setattr, parser,
+                          'global_start_index', 'abc')
         self.assertRaises(ValueError, setattr, parser, 'row_major', 'abc')
         self.assertRaises(ValueError, setattr, parser, 'strict_logical', 'abc')
 
@@ -872,6 +873,22 @@ class Test(unittest.TestCase):
         target_str = repr(nml['types_nml'])
 
         self.assertEqual(source_str, target_str)
+
+    def test_gen_dtype(self):
+        d = {'dtype_nml': {'a': [{'b': 1, 'c': 2}, {'b': 3, 'c': 4}]}}
+        nml = f90nml.Namelist(d)
+        out = StringIO()
+        print(nml, file=out)
+        # TODO: Check output
+        out.close()
+
+    def test_gen_multidim(self):
+        d = {'md_nml': {'x': [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}}
+        nml = f90nml.Namelist(d)
+        out = StringIO()
+        print(nml, file=out)
+        # TODO: Check output
+        out.close()
 
     if has_numpy:
         def test_numpy_write(self):
