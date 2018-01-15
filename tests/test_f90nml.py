@@ -25,6 +25,7 @@ try:
 except ImportError:
     has_yaml = False
 
+# Include parent path in case we are running within the tests directory
 sys.path.insert(1, '../')
 import f90nml
 import f90nml.cli
@@ -36,6 +37,10 @@ from f90nml.findex import FIndex
 class Test(unittest.TestCase):
 
     def setUp(self):
+        # Move to test directory if running from setup.py
+        if os.path.basename(os.getcwd()) != 'tests':
+            os.chdir('tests')
+
         # Construct the reference namelist values
 
         self.empty_file = {}

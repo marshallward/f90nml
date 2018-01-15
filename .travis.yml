@@ -14,7 +14,7 @@ install:
         pip install ordereddict; fi
     - pip install .
 before_script:
-    - cd test
+    - cd tests
     - pip install -r requirements_test.txt
 script:
     - coverage run --source f90nml test_f90nml.py

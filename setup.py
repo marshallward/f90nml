@@ -9,8 +9,11 @@ import os
 import sys
 try:
     from setuptools import setup
+    has_setuptools = True
 except ImportError:
     from distutils.core import setup
+    from distutils.core import Command
+    has_setuptools = False
 
 try:
     from sphinx.setup_command import BuildDoc
@@ -22,6 +25,7 @@ try:
 except ImportError:
     has_sphinx = False
 
+import tests.test_f90nml
 
 # Project details
 project_name = 'f90nml'
@@ -86,6 +90,26 @@ if has_sphinx:
     if os.path.isdir(os.path.join(sys.prefix, man_root, 'man')):
         data_files.append((os.path.join(man_root, 'man', 'man1'),
                             ['build/sphinx/man/{0}.1'.format(project_name)]))
+
+
+# Test suite
+if not has_setuptools:
+    class ProjectTest(Command):
+        user_options = []
+
+        def initialize_options(self):
+            pass
+
+        def finalize_options(self):
+            pass
+
+        def run(self):
+            unittest = tests.test_f90nml.unittest
+            testcase = tests.test_f90nml.Test
+            suite = unittest.TestLoader().loadTestsFromTestCase(testcase)
+            unittest.TextTestRunner(verbosity=2).run(suite)
+
+    cmd_class['test'] = ProjectTest
 
 
 # README
