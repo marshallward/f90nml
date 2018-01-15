@@ -691,6 +691,10 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.read, 'index_bad_stride.nml')
         self.assertRaises(ValueError, f90nml.read, 'index_zero_stride.nml')
 
+    def test_bad_start_index(self):
+        nml = Namelist()
+        self.assertRaises(TypeError, setattr, nml, 'start_index', 'abc')
+
     def test_f90repr(self):
         nml = Namelist()
         self.assertEqual(nml.f90repr(1), '1')

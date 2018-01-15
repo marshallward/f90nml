@@ -14,10 +14,11 @@ install:
         pip install ordereddict; fi
     - pip install .
 before_script:
-    - cd tests
-    - pip install -r requirements_test.txt
+    #- cd tests
+    - pip install -r tests/requirements_test.txt
 script:
-    - coverage run --source f90nml test_f90nml.py
+    #- coverage run --source f90nml test_f90nml.py
+    - coverage run --source f90n setup.py test
 after_success:
     - coverage report -m
     - coveralls

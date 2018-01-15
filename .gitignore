@@ -6,3 +6,4 @@
 MANIFEST
 /docs/build
 .coverage
+/htmlcov
