@@ -97,34 +97,3 @@ However, ``f90nml`` can still provide some level of control over the starting
 index of a vector.  The starting index can be explicitly set using various
 properties defined in the ``Parser`` and ``Namelist`` objects.  For more
 information, see the class API.
-
-
-Output formatting
------------------
-
-The output format of ``f90nml.write`` can be altered by modifying the
-properties of the ``Namelist`` object.  The properties for a sample namelist
-``nml`` are shown below.
-
-``nml.colwidth`` (Default: 72)
-   Maximum number of characters per line of the namelist file.  Tokens longer
-   than ``colwidth`` are allowed to extend past this limit.
-
-``nml.indent`` (Default: 4)
-   Whitespace indentation.  This can be set to an integer, denoting the number
-   of spaces, or to an explicit whitespace character, such as a tab (``\t``).
-
-``nml.end_comma`` (Default: ``False``)
-   Append a comma (``,``) to the end of each namelist entry.
-
-``nml.uppercase`` (Default: ``False``)
-   Display namelist and variable names in uppercase.
-
-``nml.floatformat`` (Default: ``None``)
-   Specify the floating point output format, as expected by Python's ``format``
-   function.
-
-``nml.logical_repr`` (Default: ``.false., .true.``)
-   String representation of logical values ``False`` and ``True``.  The
-   properties ``true_repr`` and ``false_repr`` are also provided as interfaces
-   to the ``logical_repr`` tuple.
