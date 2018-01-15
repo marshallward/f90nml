@@ -11,8 +11,6 @@ build: off
 
 # before_test:
 test_script:
-    #- cd tests
-    #- C:\Python%PYTHON_VERSION%\python.exe test_f90nml.py
     - C:\Python%PYTHON_VERSION%\python.exe setup.py test
 
 # after_test:
