@@ -29,32 +29,17 @@ class Namelist(OrderedDict):
 
     def __init__(self, *args, **kwds):
         """Create the Namelist object."""
+        try:
+            self.default_start_index = kwds.pop('default_start_index')
+        except KeyError:
+            self.default_start_index = None
+
         s_args = list(args)
 
         # If using (unordered) dict, then resort the keys for reproducibility
         if (args and not isinstance(args[0], OrderedDict) and
                 isinstance(args[0], dict)):
             s_args[0] = sorted(args[0].items())
-
-        super(Namelist, self).__init__(*s_args, **kwds)
-
-        # Convert any internal dicts to Namelists
-        for key, val in self.items():
-            if isinstance(val, dict):
-                self[key] = Namelist(val)
-
-            elif is_nullable_list(val, dict):
-                for i, nml in enumerate(val):
-                    self[key][i] = Namelist(nml)
-
-        # Update any metadata
-        if '_complex' in self:
-            for key in self['_complex']:
-                if all(isinstance(v, list) for v in self[key]):
-                    self[key] = [complex(*v) for v in self[key]]
-                else:
-                    self[key] = complex(*self[key])
-            self.pop('_complex')
 
         # Vector starting index tracking
         if '_start_index' in self:
@@ -76,6 +61,17 @@ class Namelist(OrderedDict):
         # Namelist group spacing flag
         self._newline = False
 
+        super(Namelist, self).__init__(*s_args, **kwds)
+
+        # Update any metadata
+        if '_complex' in self:
+            for key in self['_complex']:
+                if all(isinstance(v, list) for v in self[key]):
+                    self[key] = [complex(*v) for v in self[key]]
+                else:
+                    self[key] = complex(*self[key])
+            self.pop('_complex')
+
     def __contains__(self, key):
         """Case-insensitive interface to OrderedDict."""
         return super(Namelist, self).__contains__(key.lower())
@@ -95,8 +91,22 @@ class Namelist(OrderedDict):
         converted into Namelists.
         """
         if isinstance(value, dict) and not isinstance(value, Namelist):
-            value = Namelist(value)
+            value = Namelist(value,
+                             default_start_index=self.default_start_index)
+
+        elif is_nullable_list(value, dict):
+            for i, v in enumerate(value):
+                if v is not None:
+                    value[i] = Namelist(v, default_start_index=self.default_start_index)
+                else:
+                    value[i] = None
+
         super(Namelist, self).__setitem__(key.lower(), value)
+
+        if (self.default_start_index is not None and
+                isinstance(value, list) and key not in self.start_index):
+            idx = self.default_start_index
+            self.start_index[key] = [idx for _ in range(len(value))]
 
     def __str__(self):
         """Print the Fortran representation of the namelist.
