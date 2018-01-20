@@ -97,7 +97,8 @@ class Namelist(OrderedDict):
         elif is_nullable_list(value, dict):
             for i, v in enumerate(value):
                 if v is not None:
-                    value[i] = Namelist(v, default_start_index=self.default_start_index)
+                    value[i] = Namelist(
+                            v, default_start_index=self.default_start_index)
                 else:
                     value[i] = None
 
