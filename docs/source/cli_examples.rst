@@ -86,7 +86,6 @@ To patch the existing file and preserve comments::
 
 ::
 
-   f90nml: warning: Assuming variables are in group 'config_nml'.
    &config_nml
    input = 'wind.nc'
    steps = 432
