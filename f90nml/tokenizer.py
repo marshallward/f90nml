@@ -174,5 +174,6 @@ class Tokenizer(object):
 
     def update_chars(self):
         """Update the current charters in the tokenizer."""
-        self.prior_char, self.char = self.char, next(self.characters)
+        # NOTE: We spoof non-Unix files by returning '\n' on StopIteration
+        self.prior_char, self.char = self.char, next(self.characters, '\n')
         self.idx += 1
