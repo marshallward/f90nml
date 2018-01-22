@@ -9,11 +9,10 @@ import os
 import sys
 try:
     from setuptools import setup
-    has_setuptools = True
+    from setuptools import Command
 except ImportError:
     from distutils.core import setup
     from distutils.core import Command
-    has_setuptools = False
 
 try:
     from sphinx.setup_command import BuildDoc
@@ -93,23 +92,22 @@ if has_sphinx:
 
 
 # Test suite
-if not has_setuptools:
-    class ProjectTest(Command):
-        user_options = []
+class ProjectTest(Command):
+    user_options = []
 
-        def initialize_options(self):
-            pass
+    def initialize_options(self):
+        pass
 
-        def finalize_options(self):
-            pass
+    def finalize_options(self):
+        pass
 
-        def run(self):
-            unittest = tests.test_f90nml.unittest
-            testcase = tests.test_f90nml.Test
-            suite = unittest.TestLoader().loadTestsFromTestCase(testcase)
-            unittest.TextTestRunner(verbosity=2).run(suite)
+    def run(self):
+        unittest = tests.test_f90nml.unittest
+        testcase = tests.test_f90nml.Test
+        suite = unittest.TestLoader().loadTestsFromTestCase(testcase)
+        unittest.TextTestRunner(verbosity=2).run(suite)
 
-    cmd_class['test'] = ProjectTest
+cmd_class['test'] = ProjectTest
 
 
 # README
