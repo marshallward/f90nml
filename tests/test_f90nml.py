@@ -498,6 +498,13 @@ class Test(unittest.TestCase):
         test_nml = parser.read('sparse_array.nml')
         self.assertEqual(self.sparse_array_nml, test_nml)
 
+    def test_vector_too_long(self):
+        sys_stderr = sys.stderr
+        sys.stderr = StringIO()
+        test_nml = f90nml.read('values_exceed_index.nml')
+        # TODO: Check values
+        sys.stderr = sys_stderr
+
     def test_parser_property_invalid(self):
         parser = f90nml.Parser()
         self.assertRaises(TypeError, setattr, parser, 'comment_tokens', 123)
@@ -819,6 +826,7 @@ class Test(unittest.TestCase):
 
     def test_eof_no_cr(self):
         test_nml = f90nml.read('no_eol_in_eof.nml')
+        # TODO: Test values
 
     def test_namelist_patch(self):
         nml = f90nml.Namelist({
