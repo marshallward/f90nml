@@ -6,8 +6,11 @@ hierarchy of Python dicts containing equivalent intrinsic Python data types.
 :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
 :license: Apache License, Version 2.0, see LICENSE for details.
 """
+from __future__ import print_function
+
 import copy
 from string import whitespace
+import sys
 
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import Namelist
@@ -736,7 +739,19 @@ class Parser(object):
         """Update a list of parsed values with a new value."""
         for _ in range(n_vals):
             if v_idx:
-                v_i = next(v_idx)
+                try:
+                    v_i = next(v_idx)
+                except StopIteration:
+                    # Repeating commas are null-statements and can be ignored
+                    # Otherwise, we warn the user that this is a bad namelist
+                    if next_value is not None:
+                        print('f90nml: warning: Value {0} is not assigned to '
+                              'any variable and has been removed.'
+                              ''.format(next_value), file=sys.stderr)
+
+                    # There are more values than indices, so we stop here
+                    break
+
                 v_s = [self.default_start_index if idx is None else idx
                        for idx in v_idx.first]
 

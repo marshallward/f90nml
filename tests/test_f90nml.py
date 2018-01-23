@@ -817,6 +817,9 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('winfmt.nml')
         self.assertEqual(self.winfmt_nml, test_nml)
 
+    def test_eof_no_cr(self):
+        test_nml = f90nml.read('no_eol_in_eof.nml')
+
     def test_namelist_patch(self):
         nml = f90nml.Namelist({
             'a_nml': {
