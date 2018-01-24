@@ -10,6 +10,7 @@ from __future__ import print_function
 
 import numbers
 import os
+import platform
 try:
     from StringIO import StringIO   # Python 2.x
 except ImportError:
@@ -57,6 +58,15 @@ class Namelist(OrderedDict):
         else:
             self._start_index = {}
 
+        # Store the complex tuples as intrinsics
+        if '_complex' in self:
+            for key in self['_complex']:
+                if all(isinstance(v, list) for v in self[key]):
+                    self[key] = [complex(*v) for v in self[key]]
+                else:
+                    self[key] = complex(*self[key])
+            self.pop('_complex')
+
         # Formatting properties
         self._colwidth = 72
         self._indent = 4 * ' '
@@ -70,14 +80,12 @@ class Namelist(OrderedDict):
 
         super(Namelist, self).__init__(*s_args, **kwds)
 
-        # Update any metadata
-        if '_complex' in self:
-            for key in self['_complex']:
-                if all(isinstance(v, list) for v in self[key]):
-                    self[key] = [complex(*v) for v in self[key]]
-                else:
-                    self[key] = complex(*self[key])
-            self.pop('_complex')
+        # PyPy 2 is dumb and does not use __setitem__() inside __init__()
+        # This loop will explicitly re-apply any internal dicts to Namelists.
+        if (platform.python_implementation() == 'PyPy' and
+                platform.python_version_tuple()[0] == '2'):
+            for key, value in self.items():
+                self[key] = value
 
     def __contains__(self, key):
         """Case-insensitive interface to OrderedDict."""
