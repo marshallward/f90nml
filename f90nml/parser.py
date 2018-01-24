@@ -259,7 +259,7 @@ class Parser(object):
         try:
             nml_file = open(nml_fname, 'r') if nml_is_path else nml_fname
             try:
-                return self.readstream(nml_file, nml_patch)
+                return self._readstream(nml_file, nml_patch)
 
             # Close the files we opened on any exceptions within readstream
             finally:
@@ -269,7 +269,7 @@ class Parser(object):
             if self.pfile and patch_is_path:
                 self.pfile.close()
 
-    def readstream(self, nml_file, nml_patch):
+    def _readstream(self, nml_file, nml_patch):
         """Parse an input stream containing a Fortran namelist."""
         tokenizer = Tokenizer()
         f90lex = []
@@ -304,7 +304,7 @@ class Parser(object):
 
         # Attempt to get first token; abort on empty file
         try:
-            self.update_tokens(write_token=False)
+            self._update_tokens(write_token=False)
         except StopIteration:
             return nmls
 
@@ -313,17 +313,17 @@ class Parser(object):
             try:
                 # Check for classic group terminator
                 if self.token == 'end':
-                    self.update_tokens()
+                    self._update_tokens()
 
                 # Ignore tokens outside of namelist groups
                 while self.token not in ('&', '$'):
-                    self.update_tokens()
+                    self._update_tokens()
 
             except StopIteration:
                 break
 
             # Create the next namelist
-            self.update_tokens()
+            self._update_tokens()
             g_name = self.token
 
             g_vars = Namelist()
@@ -336,13 +336,15 @@ class Parser(object):
             while g_name:
 
                 if self.token not in ('=', '%', '('):
-                    self.update_tokens()
+                    self._update_tokens()
 
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
 
-                    v_name, v_values = self.parse_variable(g_vars,
-                                                           patch_nml=grp_patch)
+                    v_name, v_values = self._parse_variable(
+                        g_vars,
+                        patch_nml=grp_patch
+                    )
 
                     if v_name in g_vars:
                         v_prior_values = g_vars[v_name]
@@ -383,13 +385,13 @@ class Parser(object):
                     g_name, g_vars = None, None
 
             try:
-                self.update_tokens()
+                self._update_tokens()
             except StopIteration:
                 break
 
         return nmls
 
-    def parse_variable(self, parent, patch_nml=None):
+    def _parse_variable(self, parent, patch_nml=None):
         """Parse a variable and return its name and values."""
         if not patch_nml:
             patch_nml = Namelist()
@@ -405,7 +407,7 @@ class Parser(object):
 
         if self.token == '(':
 
-            v_idx_bounds = self.parse_indices()
+            v_idx_bounds = self._parse_indices()
             v_idx = FIndex(v_idx_bounds, self.global_start_index)
 
             # Update starting index against namelist record
@@ -436,7 +438,7 @@ class Parser(object):
 
             parent.start_index[v_name.lower()] = v_idx.first
 
-            self.update_tokens()
+            self._update_tokens()
 
             # Derived type parent check
             # NOTE: This assumes single-dimension derived type vectors
@@ -492,15 +494,17 @@ class Parser(object):
                 v_parent = Namelist()
                 parent[v_name] = v_parent
 
-            self.update_tokens()
-            self.update_tokens()
+            self._update_tokens()
+            self._update_tokens()
 
-            v_att, v_att_vals = self.parse_variable(v_parent,
-                                                    patch_nml=v_patch_nml)
+            v_att, v_att_vals = self._parse_variable(
+                v_parent,
+                patch_nml=v_patch_nml
+            )
 
             next_value = Namelist()
             next_value[v_att] = v_att_vals
-            self.append_value(v_values, next_value, v_idx)
+            self._append_value(v_values, next_value, v_idx)
 
         else:
             # Construct the variable array
@@ -508,7 +512,7 @@ class Parser(object):
             assert self.token == '='
             n_vals = None
 
-            self.update_tokens()
+            self._update_tokens()
 
             # Check if value is in the namelist patch
             # TODO: Edit `Namelist` to support case-insensitive `pop` calls
@@ -527,9 +531,9 @@ class Parser(object):
 
                 # Check for repeated values
                 if self.token == '*':
-                    n_vals = self.parse_value()
+                    n_vals = self._parse_value()
                     assert isinstance(n_vals, int)
-                    self.update_tokens()
+                    self._update_tokens()
                 elif not n_vals:
                     n_vals = 1
 
@@ -538,24 +542,24 @@ class Parser(object):
                     if (self.token in (',', '/', '&', '$') and
                             not (self.prior_token == ',' and
                                  self.token in ('/', '&', '$'))):
-                        self.append_value(v_values, None, v_idx, n_vals)
+                        self._append_value(v_values, None, v_idx, n_vals)
 
                 elif self.prior_token == '*':
 
                     if self.token not in ('/', '&', '$'):
-                        self.update_tokens()
+                        self._update_tokens()
 
                     if (self.token == '=' or (self.token in ('/', '&', '$') and
                                               self.prior_token == '*')):
                         next_value = None
                     else:
-                        next_value = self.parse_value()
+                        next_value = self._parse_value()
 
-                    self.append_value(v_values, next_value, v_idx, n_vals)
+                    self._append_value(v_values, next_value, v_idx, n_vals)
 
                 else:
-                    next_value = self.parse_value()
-                    self.append_value(v_values, next_value, v_idx, n_vals)
+                    next_value = self._parse_value()
+                    self._append_value(v_values, next_value, v_idx, n_vals)
 
                 # Reset default repeat factor for subsequent values
                 n_vals = 1
@@ -570,21 +574,21 @@ class Parser(object):
                             p_val = patch_values[p_idx]
                             p_repr = patch_nml.f90repr(patch_values[p_idx])
                             p_idx += 1
-                            self.update_tokens(override=p_repr)
+                            self._update_tokens(override=p_repr)
                             if isinstance(p_val, complex):
                                 # Skip over the complex content
                                 # NOTE: Assumes input and patch are complex
-                                self.update_tokens(write_token=False)
-                                self.update_tokens(write_token=False)
-                                self.update_tokens(write_token=False)
-                                self.update_tokens(write_token=False)
+                                self._update_tokens(write_token=False)
+                                self._update_tokens(write_token=False)
+                                self._update_tokens(write_token=False)
+                                self._update_tokens(write_token=False)
 
                         else:
                             # Skip any values beyond the patch size
                             skip = (p_idx >= len(patch_values))
-                            self.update_tokens(patch_skip=skip)
+                            self._update_tokens(patch_skip=skip)
                     else:
-                        self.update_tokens()
+                        self._update_tokens()
 
         if patch_values:
             v_values = patch_values
@@ -594,25 +598,25 @@ class Parser(object):
 
         return v_name, v_values
 
-    def parse_indices(self):
+    def _parse_indices(self):
         """Parse a sequence of Fortran vector indices as a list of tuples."""
         v_name = self.prior_token
         v_indices = []
 
         while self.token in (',', '('):
-            v_indices.append(self.parse_index(v_name))
+            v_indices.append(self._parse_index(v_name))
 
         return v_indices
 
-    def parse_index(self, v_name):
+    def _parse_index(self, v_name):
         """Parse Fortran vector indices into a tuple of Python indices."""
         i_start = i_end = i_stride = None
 
         # Start index
-        self.update_tokens()
+        self._update_tokens()
         try:
             i_start = int(self.token)
-            self.update_tokens()
+            self._update_tokens()
         except ValueError:
             if self.token in (',', ')'):
                 raise ValueError('{0} index cannot be empty.'.format(v_name))
@@ -621,10 +625,10 @@ class Parser(object):
 
         # End index
         if self.token == ':':
-            self.update_tokens()
+            self._update_tokens()
             try:
                 i_end = 1 + int(self.token)
-                self.update_tokens()
+                self._update_tokens()
             except ValueError:
                 if self.token == ':':
                     raise ValueError('{0} end index cannot be implicit '
@@ -638,7 +642,7 @@ class Parser(object):
 
         # Stride index
         if self.token == ':':
-            self.update_tokens()
+            self._update_tokens()
             try:
                 i_stride = int(self.token)
             except ValueError:
@@ -652,7 +656,7 @@ class Parser(object):
                 raise ValueError('{0} stride index cannot be zero.'
                                  ''.format(v_name))
 
-            self.update_tokens()
+            self._update_tokens()
 
         if self.token not in (',', ')'):
             raise ValueError('{0} index did not terminate '
@@ -661,7 +665,7 @@ class Parser(object):
         idx_triplet = (i_start, i_end, i_stride)
         return idx_triplet
 
-    def parse_value(self, write_token=True, override=None):
+    def _parse_value(self, write_token=True, override=None):
         """Convert string repr of Fortran type to equivalent Python type."""
         v_str = self.prior_token
 
@@ -669,16 +673,16 @@ class Parser(object):
         if v_str == '(':
             v_re = self.token
 
-            self.update_tokens(write_token)
+            self._update_tokens(write_token)
             assert self.token == ','
 
-            self.update_tokens(write_token)
+            self._update_tokens(write_token)
             v_im = self.token
 
-            self.update_tokens(write_token)
+            self._update_tokens(write_token)
             assert self.token == ')'
 
-            self.update_tokens(write_token, override)
+            self._update_tokens(write_token, override)
             v_str = '({0}, {1})'.format(v_re, v_im)
 
         recast_funcs = [int, pyfloat, pycomplex, pybool, pystr]
@@ -694,7 +698,8 @@ class Parser(object):
             except ValueError:
                 continue
 
-    def update_tokens(self, write_token=True, override=None, patch_skip=False):
+    def _update_tokens(self, write_token=True, override=None,
+                       patch_skip=False):
         """Update tokens to the next available values."""
         next_token = next(self.tokens)
 
@@ -735,7 +740,7 @@ class Parser(object):
         # Update tokens, ignoring padding
         self.token, self.prior_token = next_token, self.token
 
-    def append_value(self, v_values, next_value, v_idx=None, n_vals=1):
+    def _append_value(self, v_values, next_value, v_idx=None, n_vals=1):
         """Update a list of parsed values with a new value."""
         for _ in range(n_vals):
             if v_idx:
