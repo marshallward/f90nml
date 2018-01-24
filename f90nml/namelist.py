@@ -25,8 +25,15 @@ except NameError:
 
 
 class Namelist(OrderedDict):
-    """Representation of Fortran namelist in a Python environment."""
+    """Representation of Fortran namelist in a Python environment.
 
+    Namelists can be initialised as empty or with a pre-defined `dict` of
+    `items`.  If an explicit default start index is required for `items`, then
+    it can be initialised with the `default_start_index` input argument.
+
+    In addition to the standard methods supported by `dict`, several additional
+    methods and properties are provided for working with Fortran namelists.
+    """
     def __init__(self, *args, **kwds):
         """Create the Namelist object."""
         s_args = list(args)
@@ -38,9 +45,9 @@ class Namelist(OrderedDict):
 
         # Assign the default start index
         try:
-            self.default_start_index = kwds.pop('default_start_index')
+            self._default_start_index = kwds.pop('default_start_index')
         except KeyError:
-            self.default_start_index = None
+            self._default_start_index = None
 
         # Vector starting index tracking
         if '_start_index' in self:
@@ -129,13 +136,12 @@ class Namelist(OrderedDict):
 
     # Format configuration
 
-    # Column width
     @property
     def colwidth(self):
         """Set the maximum number of characters per line of the namelist file.
 
-        Tokens longer than ``colwidth`` are allowed to extend past this limit
-        (Default: 72).
+        Tokens longer than ``colwidth`` are allowed to extend past this limit.
+        (Default: 72)
         """
         return self._colwidth
 
@@ -155,7 +161,8 @@ class Namelist(OrderedDict):
         r"""Set the whitespace indentation of namelist entries.
 
         This can be set to an integer, denoting the number of spaces, or to an
-        explicit whitespace character, such as a tab (``\t``)  (Default: 4).
+        explicit whitespace character, such as a tab (``\t``).
+        (Default: 4)
         """
         return self._indent
 
@@ -199,7 +206,6 @@ class Namelist(OrderedDict):
             raise TypeError('end_comma attribute must be a logical type.')
         self._end_comma = value
 
-    # Uppercase
     @property
     def uppercase(self):
         """Print group and variable names in uppercase."""
@@ -212,7 +218,6 @@ class Namelist(OrderedDict):
             raise TypeError('uppercase attribute must be a logical type.')
         self._uppercase = value
 
-    # Float format
     @property
     def floatformat(self):
         """Set the namelist floating point format.
@@ -233,7 +238,6 @@ class Namelist(OrderedDict):
         else:
             raise TypeError('Floating point format code must be a string.')
 
-    # Logical representation
     # NOTE: This presumes that bools and ints are identical as dict keys
     @property
     def logical_repr(self):
@@ -244,8 +248,8 @@ class Namelist(OrderedDict):
         namelist output.
 
         The properties ``true_repr`` and ``false_repr`` are also provided as
-        interfaces to the ``logical_repr`` tuple
-        (Default: ``.false., .true.``).
+        interfaces to the ``logical_repr`` tuple.
+        (Default: ``.false., .true.``)
         """
         return self._logical_repr
 
@@ -303,7 +307,6 @@ class Namelist(OrderedDict):
         else:
             raise TypeError('Logical false representation must be a string.')
 
-    # Uppercase
     @property
     def start_index(self):
         """Set the starting index for each vector in the namelist.
@@ -344,7 +347,25 @@ class Namelist(OrderedDict):
             raise TypeError('start_index attribute must be a dict.')
         self._start_index = value
 
-    # File output
+    @property
+    def default_start_index(self):
+        """Set the default start index for vectors with no explicit index.
+
+        When the `default_start_index` is set, all vectors without an explicit
+        start index are assumed to begin with `default_start_index`.  This
+        index is shown when printing the namelist output.
+        (Default: None)
+
+        If set to `None`, then no start index is assumed and is left as
+        implicit for any vectors undefined in `start_index`.
+        """
+        return self._start_index
+
+    @default_start_index.setter
+    def default_start_index(self, value):
+        if not isinstance(self, int):
+            raise TypeError('default_start_index must be an integer.')
+        self._default_start_index = value
 
     def write(self, nml_path, force=False, sort=False):
         """Write Namelist to a Fortran 90 namelist file.
@@ -366,8 +387,8 @@ class Namelist(OrderedDict):
     def patch(self, nml_patch):
         """Update the namelist from another partial or full namelist.
 
-        This is different from `Namelist.update` as it does not replace
-        namelist sections, instead it performs an update on the section.
+        This is different from the intrinsic `update()` method, which replaces
+        a namelist section.  Rather, it updates the values within a section.
         """
         for sec in nml_patch:
             if sec not in self:
