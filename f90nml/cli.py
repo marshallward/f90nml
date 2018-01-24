@@ -161,13 +161,13 @@ def parse():
         if not args.patch:
             if output_fmt in ('json', 'yaml'):
                 if output_fmt == 'json':
-                    input_data = input_data.todict(decomplex=True)
+                    input_data = input_data.todict(complex_tuple=True)
                     json.dump(input_data, output_file,
                               indent=4, separators=(',', ': '))
                     output_file.write('\n')
 
                 elif output_fmt == 'yaml':
-                    input_data = input_data.todict(decomplex=True)
+                    input_data = input_data.todict(complex_tuple=True)
                     yaml.dump(input_data, output_file,
                               default_flow_style=False)
             else:

@@ -97,8 +97,8 @@ class Namelist(OrderedDict):
         elif is_nullable_list(value, dict):
             for i, v in enumerate(value):
                 if v is not None:
-                    value[i] = Namelist(
-                            v, default_start_index=self.default_start_index)
+                    value[i] = Namelist(v,
+                            default_start_index=self.default_start_index)
                 else:
                     value[i] = None
 
@@ -556,14 +556,14 @@ class Namelist(OrderedDict):
 
         return var_strs
 
-    def todict(self, decomplex=False):
+    def todict(self, complex_tuple=False):
         """Return a dict equivalent to the namelist.
 
         Since Fortran variables and names cannot start with the ``_``
         character, any keys starting with this token denote metadata, such as
         starting index.
 
-        The ``decomplex`` flag is used to convert complex data into an
+        The ``complex_tuple`` flag is used to convert complex data into an
         equivalent 2-tuple, with metadata stored to flag the variable as
         complex.  This is primarily used to facilitate the storage of the
         namelist into an equivalent format which does not support complex
@@ -576,9 +576,9 @@ class Namelist(OrderedDict):
         # TODO: Move repeated stuff to new functions
         for key, value in self.items():
             if isinstance(value, Namelist):
-                nmldict[key] = value.todict(decomplex)
+                nmldict[key] = value.todict(complex_tuple)
 
-            elif isinstance(value, complex) and decomplex:
+            elif isinstance(value, complex) and complex_tuple:
                 nmldict[key] = [value.real, value.imag]
                 try:
                     nmldict['_complex'].append(key)
@@ -589,9 +589,9 @@ class Namelist(OrderedDict):
                 complex_list = False
                 for idx, entry in enumerate(value):
                     if isinstance(entry, Namelist):
-                        nmldict[key][idx] = entry.todict(decomplex)
+                        nmldict[key][idx] = entry.todict(complex_tuple)
 
-                    elif isinstance(entry, complex) and decomplex:
+                    elif isinstance(entry, complex) and complex_tuple:
                         nmldict[key][idx] = [entry.real, entry.imag]
                         complex_list = True
 
