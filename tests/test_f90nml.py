@@ -704,15 +704,15 @@ class Test(unittest.TestCase):
 
     def test_f90repr(self):
         nml = Namelist()
-        self.assertEqual(nml.f90repr(1), '1')
-        self.assertEqual(nml.f90repr(1.), '1.0')
-        self.assertEqual(nml.f90repr(1+2j), '(1.0, 2.0)')
-        self.assertEqual(nml.f90repr(True), '.true.')
-        self.assertEqual(nml.f90repr(False), '.false.')
-        self.assertEqual(nml.f90repr('abc'), "'abc'")
+        self.assertEqual(nml._f90repr(1), '1')
+        self.assertEqual(nml._f90repr(1.), '1.0')
+        self.assertEqual(nml._f90repr(1+2j), '(1.0, 2.0)')
+        self.assertEqual(nml._f90repr(True), '.true.')
+        self.assertEqual(nml._f90repr(False), '.false.')
+        self.assertEqual(nml._f90repr('abc'), "'abc'")
 
         for ptype in ({}, [], set()):
-            self.assertRaises(ValueError, nml.f90repr, ptype)
+            self.assertRaises(ValueError, nml._f90repr, ptype)
 
     def test_pybool(self):
         for fstr_true in ('true', '.true.', 't', '.t.'):

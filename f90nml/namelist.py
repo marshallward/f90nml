@@ -359,7 +359,7 @@ class Namelist(OrderedDict):
         If set to `None`, then no start index is assumed and is left as
         implicit for any vectors undefined in `start_index`.
         """
-        return self._start_index
+        return self._default_start_index
 
     @default_start_index.setter
     def default_start_index(self, value):

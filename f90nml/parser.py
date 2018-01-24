@@ -362,7 +362,7 @@ class Parser(object):
                     # Append any remaining patched variables
                     for v_name, v_val in grp_patch.items():
                         g_vars[v_name] = v_val
-                        v_strs = nmls.var_strings(v_name, v_val)
+                        v_strs = nmls._var_strings(v_name, v_val)
                         for v_str in v_strs:
                             self.pfile.write('    {0}\n'.format(v_str))
 
@@ -572,7 +572,7 @@ class Parser(object):
                         if (p_idx < len(patch_values) and
                                 len(patch_values) > 0 and self.token != ','):
                             p_val = patch_values[p_idx]
-                            p_repr = patch_nml.f90repr(patch_values[p_idx])
+                            p_repr = patch_nml._f90repr(patch_values[p_idx])
                             p_idx += 1
                             self._update_tokens(override=p_repr)
                             if isinstance(p_val, complex):
