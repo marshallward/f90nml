@@ -105,7 +105,8 @@ class ProjectTest(Command):
         unittest = tests.test_f90nml.unittest
         testcase = tests.test_f90nml.Test
         suite = unittest.TestLoader().loadTestsFromTestCase(testcase)
-        unittest.TextTestRunner(verbosity=2).run(suite)
+        result = unittest.TextTestRunner(verbosity=2).run(suite)
+        sys.exit(not result.wasSuccessful())
 
 cmd_class['test'] = ProjectTest
 
