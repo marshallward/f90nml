@@ -119,7 +119,7 @@ class Namelist(OrderedDict):
         """
         output = StringIO()
         if all(isinstance(v, Namelist) for v in self.values()):
-            self.writestream(output)
+            self._writestream(output)
         else:
             print(repr(self), file=output)
 
@@ -358,7 +358,7 @@ class Namelist(OrderedDict):
 
         nml_file = nml_path if nml_is_file else open(nml_path, 'w')
         try:
-            self.writestream(nml_file, sort)
+            self._writestream(nml_file, sort)
         finally:
             if not nml_is_file:
                 nml_file.close()
@@ -374,7 +374,7 @@ class Namelist(OrderedDict):
                 self[sec] = Namelist()
             self[sec].update(nml_patch[sec])
 
-    def writestream(self, nml_file, sort=False):
+    def _writestream(self, nml_file, sort=False):
         """Output Namelist to a streamable file object."""
         # Reset newline flag
         self._newline = False
@@ -388,11 +388,11 @@ class Namelist(OrderedDict):
             # Check for repeated namelist records (saved as lists)
             if isinstance(grp_vars, list):
                 for g_vars in grp_vars:
-                    self.write_nmlgrp(grp_name, g_vars, nml_file, sort)
+                    self._write_nmlgrp(grp_name, g_vars, nml_file, sort)
             else:
-                self.write_nmlgrp(grp_name, grp_vars, nml_file, sort)
+                self._write_nmlgrp(grp_name, grp_vars, nml_file, sort)
 
-    def write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False):
+    def _write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False):
         """Write namelist group to target file."""
         if self._newline:
             print(file=nml_file)
@@ -410,13 +410,13 @@ class Namelist(OrderedDict):
 
             v_start = grp_vars.start_index.get(v_name, None)
 
-            for v_str in self.var_strings(v_name, v_val, v_start=v_start):
+            for v_str in self._var_strings(v_name, v_val, v_start=v_start):
                 nml_line = self.indent + '{0}'.format(v_str)
                 print(nml_line, file=nml_file)
 
         print('/', file=nml_file)
 
-    def var_strings(self, v_name, v_values, v_idx=None, v_start=None):
+    def _var_strings(self, v_name, v_values, v_idx=None, v_start=None):
         """Convert namelist variable to list of fixed-width strings."""
         if self.uppercase:
             v_name = v_name.upper()
@@ -447,8 +447,8 @@ class Namelist(OrderedDict):
 
             for idx, val in enumerate(v_values, start=i_s):
                 v_idx_new = v_idx + [idx]
-                v_strs = self.var_strings(v_name, val, v_idx=v_idx_new,
-                                          v_start=v_start)
+                v_strs = self._var_strings(v_name, val, v_idx=v_idx_new,
+                                           v_start=v_start)
                 var_strs.extend(v_strs)
 
         # Parse derived type contents
@@ -458,7 +458,8 @@ class Namelist(OrderedDict):
 
                 v_start_new = v_values.start_index.get(f_name, None)
 
-                v_strs = self.var_strings(v_title, f_vals, v_start=v_start_new)
+                v_strs = self._var_strings(v_title, f_vals,
+                                           v_start=v_start_new)
                 var_strs.extend(v_strs)
 
         # Parse an array of derived types
@@ -476,7 +477,7 @@ class Namelist(OrderedDict):
 
                 v_title = v_name + '({0})'.format(idx)
 
-                v_strs = self.var_strings(v_title, val)
+                v_strs = self._var_strings(v_title, val)
                 var_strs.extend(v_strs)
 
         else:
@@ -531,7 +532,7 @@ class Namelist(OrderedDict):
                 v_width = colwidth - len(self.indent + v_header)
 
                 if len(val_line) < v_width:
-                    val_line += self.f90repr(v_val) + ', '
+                    val_line += self._f90repr(v_val) + ', '
 
                 if len(val_line) >= v_width:
                     val_strs.append(val_line.rstrip())
@@ -616,42 +617,42 @@ class Namelist(OrderedDict):
 
         return nmldict
 
-    def f90repr(self, value):
+    def _f90repr(self, value):
         """Convert primitive Python types to equivalent Fortran strings."""
         if isinstance(value, bool):
-            return self.f90bool(value)
+            return self._f90bool(value)
         elif isinstance(value, numbers.Integral):
-            return self.f90int(value)
+            return self._f90int(value)
         elif isinstance(value, numbers.Real):
-            return self.f90float(value)
+            return self._f90float(value)
         elif isinstance(value, numbers.Complex):
-            return self.f90complex(value)
+            return self._f90complex(value)
         elif isinstance(value, basestring):
-            return self.f90str(value)
+            return self._f90str(value)
         elif value is None:
             return ''
         else:
             raise ValueError('Type {0} of {1} cannot be converted to a Fortran'
                              ' type.'.format(type(value), value))
 
-    def f90bool(self, value):
+    def _f90bool(self, value):
         """Return a Fortran 90 representation of a logical value."""
         return self.logical_repr[value]
 
-    def f90int(self, value):
+    def _f90int(self, value):
         """Return a Fortran 90 representation of an integer."""
         return str(value)
 
-    def f90float(self, value):
+    def _f90float(self, value):
         """Return a Fortran 90 representation of a floating point number."""
         return '{0:{fmt}}'.format(value, fmt=self.floatformat)
 
-    def f90complex(self, value):
+    def _f90complex(self, value):
         """Return a Fortran 90 representation of a complex number."""
         return '({0:{fmt}}, {1:{fmt}})'.format(value.real, value.imag,
                                                fmt=self.floatformat)
 
-    def f90str(self, value):
+    def _f90str(self, value):
         """Return a Fortran 90 representation of a string."""
         # Replace Python quote escape sequence with Fortran
         result = repr(str(value)).replace("\\'", "''").replace('\\"', '""')

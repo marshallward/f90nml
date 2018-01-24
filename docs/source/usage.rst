@@ -25,6 +25,4 @@ Classes
    :members:
 
 .. autoclass:: f90nml.namelist.Namelist(default_start_index=None, [items])
-   :members: colwidth, end_comma, false_repr, floatformat, indent,
-             logical_repr, start_index, true_repr, uppercase, write, patch,
-             todict
+   :members:

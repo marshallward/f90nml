@@ -2,6 +2,11 @@ div.highlight {
     font-variant-ligatures: none;
 }
 
+code {
+    font-variant-ligatures: none;
+}
+
+
 td.option-group {
     width: 25%;
 }
