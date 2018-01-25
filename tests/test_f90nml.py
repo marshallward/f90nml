@@ -701,6 +701,8 @@ class Test(unittest.TestCase):
     def test_bad_start_index(self):
         nml = Namelist()
         self.assertRaises(TypeError, setattr, nml, 'start_index', 'abc')
+        self.assertRaises(TypeError, setattr, nml, 'default_start_index',
+                          'abc')
 
     def test_f90repr(self):
         nml = Namelist()

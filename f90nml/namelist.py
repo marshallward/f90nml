@@ -35,6 +35,7 @@ class Namelist(OrderedDict):
     In addition to the standard methods supported by `dict`, several additional
     methods and properties are provided for working with Fortran namelists.
     """
+
     def __init__(self, *args, **kwds):
         """Create the Namelist object."""
         s_args = list(args)
@@ -50,15 +51,18 @@ class Namelist(OrderedDict):
         except KeyError:
             self._default_start_index = None
 
-        # Vector starting index tracking
-        if '_start_index' in self:
-            self.start_index = self.pop('_start_index')
-        elif args and isinstance(args[0], Namelist):
-            self._start_index = args[0].start_index
-        else:
-            self._start_index = {}
+        self._start_index = {}
+        for arg in s_args:
+            if '_start_index' in arg:
+                self._start_index = arg.pop('_start_index')
+            elif isinstance(arg, Namelist):
+                self._start_index = arg.start_index
 
-        # Store the complex tuples as intrinsics
+        super(Namelist, self).__init__(*s_args, **kwds)
+
+        # Update the complex tuples as intrinsics
+        # TODO: We are effectively setting these twice.  Instead, fetch these
+        # from s_args rather than relying on Namelist to handle the content.
         if '_complex' in self:
             for key in self['_complex']:
                 if all(isinstance(v, list) for v in self[key]):
@@ -78,10 +82,8 @@ class Namelist(OrderedDict):
         # Namelist group spacing flag
         self._newline = False
 
-        super(Namelist, self).__init__(*s_args, **kwds)
-
         # PyPy 2 is dumb and does not use __setitem__() inside __init__()
-        # This loop will explicitly re-apply any internal dicts to Namelists.
+        # This loop will explicitly convert any internal dicts to Namelists.
         if (platform.python_implementation() == 'PyPy' and
                 platform.python_version_tuple()[0] == '2'):
             for key, value in self.items():
@@ -371,7 +373,7 @@ class Namelist(OrderedDict):
 
     @default_start_index.setter
     def default_start_index(self, value):
-        if not isinstance(self, int):
+        if not isinstance(value, int):
             raise TypeError('default_start_index must be an integer.')
         self._default_start_index = value
 
