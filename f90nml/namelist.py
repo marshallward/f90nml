@@ -507,16 +507,20 @@ class Namelist(OrderedDict):
                 var_strs.extend(v_strs)
 
         else:
+            use_default_start_index = False
             if not isinstance(v_values, list):
                 v_values = [v_values]
+                use_default_start_index = False
+            else:
+                use_default_start_index = self.default_start_index is not None
 
             # Print the index range
 
             # TODO: Include a check for len(v_values) to determine if vector
-            if v_idx or v_start or self.default_start_index is not None:
+            if v_idx or v_start or use_default_start_index:
                 v_idx_repr = '('
 
-                if v_start or self.default_start_index is not None:
+                if v_start or use_default_start_index:
                     if v_start:
                         i_s = v_start[0]
                     else:
