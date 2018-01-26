@@ -671,7 +671,7 @@ class Test(unittest.TestCase):
         finally:
             os.remove('tmp.nml')
 
-    def test_default_index(self):
+    def test_parser_default_index(self):
         parser = f90nml.Parser()
 
         parser.default_start_index = 1
@@ -687,6 +687,11 @@ class Test(unittest.TestCase):
         parser.global_start_index = 1
         test_nml = parser.read('global_index.nml')
         self.assertEqual(self.global_index_nml, test_nml)
+
+    def test_namelist_default_index(self):
+        d = {'x_nml': {'x': [1, 2, 3]}}
+        test_nml = f90nml.Namelist(d, default_start_index=1)
+        # TODO: Check value
 
     def test_index_syntax(self):
         self.assertRaises(ValueError, f90nml.read, 'index_empty.nml')

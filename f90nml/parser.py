@@ -85,7 +85,7 @@ class Parser(object):
                v = 1, 2
            /
 
-        the indices of the second entry in ``v`` are ambiguous.  The result for
+        The indices of the second entry in ``v`` are ambiguous.  The result for
         different values of ``default_start_index`` are shown below.
 
         >>> parser = f90nml.Parser()

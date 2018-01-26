@@ -123,11 +123,6 @@ class Namelist(OrderedDict):
 
         super(Namelist, self).__setitem__(key.lower(), value)
 
-        if (self.default_start_index is not None and
-                isinstance(value, list) and key not in self.start_index):
-            idx = self.default_start_index
-            self.start_index[key] = [idx for _ in range(len(value))]
-
     def __str__(self):
         """Print the Fortran representation of the namelist.
 
@@ -518,11 +513,14 @@ class Namelist(OrderedDict):
             # Print the index range
 
             # TODO: Include a check for len(v_values) to determine if vector
-            if v_idx or v_start:
+            if v_idx or v_start or self.default_start_index is not None:
                 v_idx_repr = '('
 
-                if v_start:
-                    i_s = v_start[0]
+                if v_start or self.default_start_index is not None:
+                    if v_start:
+                        i_s = v_start[0]
+                    else:
+                        i_s = self.default_start_index
 
                     if i_s is None:
                         v_idx_repr += ':'
