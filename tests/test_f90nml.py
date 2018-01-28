@@ -476,6 +476,12 @@ class Test(unittest.TestCase):
         self.assertEqual(self.vector_nml, test_nml)
         self.assert_write(test_nml, 'vector_target.nml')
 
+    def test_vector_default_index(self):
+        test_nml = f90nml.read('vector.nml')
+        test_nml.default_start_index = 2
+        self.assertEqual(self.vector_nml, test_nml)
+        self.assert_write(test_nml, 'vector_default_idx.nml')
+
     def test_multidim(self):
         test_nml = f90nml.read('multidim.nml')
         self.assertEqual(self.multidim_nml, test_nml)
