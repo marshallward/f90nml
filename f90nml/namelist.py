@@ -51,14 +51,9 @@ class Namelist(OrderedDict):
         except KeyError:
             self._default_start_index = None
 
-        self._start_index = {}
-        for arg in s_args:
-            if '_start_index' in arg:
-                self._start_index = arg.pop('_start_index')
-            elif isinstance(arg, Namelist):
-                self._start_index = arg.start_index
-
         super(Namelist, self).__init__(*s_args, **kwds)
+
+        self.start_index = self.pop('_start_index', {})
 
         # Update the complex tuples as intrinsics
         # TODO: We are effectively setting these twice.  Instead, fetch these
@@ -639,14 +634,7 @@ class Namelist(OrderedDict):
 
         # Append the start index if present
         if self.start_index:
-            start_index = {}
-            for key, value in self.start_index.items():
-                # NOTE: This only supports default values of 1
-                if all(v != 1 for v in value):
-                    start_index[key] = value
-
-            if start_index:
-                nmldict['_start_index'] = start_index
+            nmldict['_start_index'] = self.start_index
 
         return nmldict
 
