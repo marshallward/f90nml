@@ -787,12 +787,12 @@ class Test(unittest.TestCase):
 
         self.assertRaises(TypeError, setattr, test_nml, 'uppercase', 'xyz')
 
-    def test_floatformat(self):
+    def test_float_format(self):
         test_nml = f90nml.read('float.nml')
-        test_nml.floatformat = '.3f'
+        test_nml.float_format = '.3f'
         self.assert_write(test_nml, 'float_format.nml')
 
-        self.assertRaises(TypeError, setattr, test_nml, 'floatformat', 123)
+        self.assertRaises(TypeError, setattr, test_nml, 'float_format', 123)
 
     def test_logical_repr(self):
         parser = f90nml.Parser()
