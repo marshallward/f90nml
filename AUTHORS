@@ -24,3 +24,9 @@ James Penn
 
 Andrew Kiss
     - Sorted namelist field output
+
+Greg Bullock
+    - Special character support
+
+Robert Gieseke
+    - Multiline string test
