@@ -29,6 +29,11 @@ A namelist file is parsed and converted into an ``Namelist`` object, which
 behaves like a standard Python ``dict``.  Values are converted from Fortran
 data types to equivalent primitive Python types.
 
+The command line tool ``f90nml`` can be used to modify individual values inside
+of a shell environment.  It can also be used to convert the data between
+namelists and other configuration formats.  JSON and YAML formats are currently
+supported.
+
 
 Quick usage guide
 =================
@@ -116,7 +121,7 @@ A command line tool is provided to manipulate namelist files within the shell:
       use_biharmonic = .false.
    /
 
-For more information, see the `CLI` documentation.
+See the documentation for details.
 
 
 Installation
