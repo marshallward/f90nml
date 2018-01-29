@@ -589,7 +589,7 @@ class Test(unittest.TestCase):
 
     def test_long_varname(self):
         test_nml = f90nml.read('types.nml')
-        test_nml.colwidth = 10
+        test_nml.column_width = 10
         self.assert_write(test_nml, 'types.nml')
 
     def test_ext_token(self):
@@ -765,13 +765,13 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, setattr, test_nml, 'indent', 'xyz')
         self.assertRaises(TypeError, setattr, test_nml, 'indent', [1, 2, 3])
 
-    def test_colwidth(self):
+    def test_column_width(self):
         test_nml = f90nml.read('multiline.nml')
-        test_nml.colwidth = 40
+        test_nml.column_width = 40
         self.assert_write(test_nml, 'multiline_colwidth.nml')
 
-        self.assertRaises(ValueError, setattr, test_nml, 'colwidth', -1)
-        self.assertRaises(TypeError, setattr, test_nml, 'colwidth', 'xyz')
+        self.assertRaises(ValueError, setattr, test_nml, 'column_width', -1)
+        self.assertRaises(TypeError, setattr, test_nml, 'column_width', 'xyz')
 
     def test_end_comma(self):
         test_nml = f90nml.read('types.nml')

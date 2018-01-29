@@ -67,11 +67,11 @@ class Namelist(OrderedDict):
             self.pop('_complex')
 
         # Formatting properties
-        self._colwidth = 72
+        self._column_width = 72
         self._indent = 4 * ' '
         self._end_comma = False
         self._uppercase = False
-        self._floatformat = ''
+        self._float_format = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
 
         # Namelist group spacing flag
@@ -137,20 +137,20 @@ class Namelist(OrderedDict):
     # Format configuration
 
     @property
-    def colwidth(self):
+    def column_width(self):
         """Set the maximum number of characters per line of the namelist file.
 
-        Tokens longer than ``colwidth`` are allowed to extend past this limit.
-        (Default: 72)
+        Tokens longer than ``column_width`` are allowed to extend past this
+        limit.  (Default: 72)
         """
-        return self._colwidth
+        return self._column_width
 
-    @colwidth.setter
-    def colwidth(self, width):
+    @column_width.setter
+    def column_width(self, width):
         """Validate and set the column width."""
         if isinstance(width, int):
             if width >= 0:
-                self._colwidth = width
+                self._column_width = width
             else:
                 raise ValueError('Column width must be nonnegative.')
         else:
@@ -219,22 +219,22 @@ class Namelist(OrderedDict):
         self._uppercase = value
 
     @property
-    def floatformat(self):
+    def float_format(self):
         """Set the namelist floating point format.
 
         The property sets the format string for floating point numbers,
         following the format expected by the Python ``format()`` function.
         """
-        return self._floatformat
+        return self._float_format
 
-    @floatformat.setter
-    def floatformat(self, value):
+    @float_format.setter
+    def float_format(self, value):
         """Validate and set the upper case flag."""
         if isinstance(value, str):
             # Duck-test the format string; raise ValueError on fail
             '{0:{1}}'.format(1.23, value)
 
-            self._floatformat = value
+            self._float_format = value
         else:
             raise TypeError('Floating point format code must be a string.')
 
@@ -552,12 +552,12 @@ class Namelist(OrderedDict):
 
                 v_header = v_name + v_idx_repr + ' = '
                 # Increase column width if the header exceeds this value
-                if len(self.indent + v_header) >= self.colwidth:
-                    colwidth = len(self.indent + v_header) + 1
+                if len(self.indent + v_header) >= self.column_width:
+                    column_width = len(self.indent + v_header) + 1
                 else:
-                    colwidth = self.colwidth
+                    column_width = self.column_width
 
-                v_width = colwidth - len(self.indent + v_header)
+                v_width = column_width - len(self.indent + v_header)
 
                 if len(val_line) < v_width:
                     val_line += self._f90repr(v_val) + ', '
@@ -666,12 +666,12 @@ class Namelist(OrderedDict):
 
     def _f90float(self, value):
         """Return a Fortran 90 representation of a floating point number."""
-        return '{0:{fmt}}'.format(value, fmt=self.floatformat)
+        return '{0:{fmt}}'.format(value, fmt=self.float_format)
 
     def _f90complex(self, value):
         """Return a Fortran 90 representation of a complex number."""
         return '({0:{fmt}}, {1:{fmt}})'.format(value.real, value.imag,
-                                               fmt=self.floatformat)
+                                               fmt=self.float_format)
 
     def _f90str(self, value):
         """Return a Fortran 90 representation of a string."""

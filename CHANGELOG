@@ -1,11 +1,26 @@
 Upcoming:
+    - Multidimensional arrays are now padded with null values on default.
+      Values are now square-like and should safely convert to NumPy arrays.
+      Thanks to Caoxiang Zhu for suggesting this change.
     - strict_logical and row_major arguments were removed from the top-level
-      API functions.  These should now controlled by Parser objects.
+      API functions.  They are now controlled by Parser objects.
+    - Parser floatformat changed to float_format
+    - Parser colwidth changed to column_width
+    - default_start_index added to Namelist for explicit start index.
+      `default_start_index` can also be set via the constructor, in order to
+      initialise dicts as Namelists.  Thanks to GitHub user @gitporst for
+      suggesting this feature.
+    - Many Namelist and Parser attributes converted to type-safe properties
+    - Most internal Namelist and Parser functions tagged as private
+    - Test suite now invoked by `setup.py test`.
+    - `decomplex` flag of `todict` renamed to `complex_tuple`
+    - Appveyor (Windows) test support
+    - Extensive documentation update and sphinx integration
     - Manpage installation by setup.py for CLI (if Sphinx is available)
     - Bugfix: Namelist() now works with arrays of dtypes as nested dicts.
-      (Thanks to GitHub users @gitporst and @sound-fx for reporting.)
+      Thanks to GitHub users @gitporst and @sound-fx for reporting.
     - Bugfix: Namelist() now works with multidimensional arrays as list of
-      lists.  (Thanks to GitHub user @sound-fx for reporting.)
+      lists.  Thanks to GitHub user @sound-fx for reporting.
 
 v0.23:
     - CLI: Thorough support for JSON, YAML, updating, and patching
