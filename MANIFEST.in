@@ -1,4 +1,4 @@
-recursive-include tests *.nml *.txt
+recursive-include tests *.nml *.txt *.py
 recursive-include docs/source *
 include docs/Makefile
 include AUTHORS

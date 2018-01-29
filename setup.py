@@ -83,13 +83,6 @@ if has_sphinx:
     else:
         man_root = ''
 
-    # NOTE: It's not a great idea to be moving files to explicit paths, so we
-    # are very conservative here and only include the manpage if the manpath
-    # already exists
-    if os.path.isdir(os.path.join(sys.prefix, man_root, 'man')):
-        data_files.append((os.path.join(man_root, 'man', 'man1'),
-                            ['build/sphinx/man/{0}.1'.format(project_name)]))
-
 
 # Test suite
 class ProjectTest(Command):
