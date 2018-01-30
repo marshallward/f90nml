@@ -6,7 +6,7 @@
 from f90nml.parser import Parser
 from f90nml.namelist import Namelist
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 
 def read(nml_path):
