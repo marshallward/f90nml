@@ -481,7 +481,11 @@ class Parser(object):
             if parent:
                 vpar = parent.get(v_name.lower())
                 if vpar and isinstance(vpar, list):
-                    assert dt_idx is not None
+                    # If new element is not a list, then assume it's the first
+                    # element of the list.
+                    if dt_idx is None:
+                        dt_idx = self.default_start_index
+
                     try:
                         v_parent = vpar[dt_idx]
                     except IndexError:
