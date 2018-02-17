@@ -1,4 +1,19 @@
 Upcoming:
+    - Bugfix: Derived type list updates without an index now correctly apply
+      the update to the first element in the list.  Thanks to GitHub user
+      @LSchueler for reporting.
+
+1.0.2:
+    - Automated manpage build has been removed from setup.py due to potential
+      conflicts with Sphinx.  Manpage support is now expected to be handled
+      within individual distributions.  Thanks to Adrien Morrison for
+      reporting.
+
+1.0.1:
+    - Manifest update to include tests, which are now a required component of
+      the setup.py script.  Thanks to Andrew Kiss for reporting.
+
+1.0:
     - Multidimensional arrays are now padded with null values on default.
       Values are now square-like and should safely convert to NumPy arrays.
       Thanks to Caoxiang Zhu for suggesting this change.
