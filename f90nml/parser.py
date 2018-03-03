@@ -9,12 +9,12 @@ hierarchy of Python dicts containing equivalent intrinsic Python data types.
 from __future__ import print_function
 
 import copy
-from string import whitespace
 import sys
+from string import whitespace
 
+from f90nml.findex import FIndex
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import Namelist
-from f90nml.findex import FIndex
 from f90nml.tokenizer import Tokenizer
 
 

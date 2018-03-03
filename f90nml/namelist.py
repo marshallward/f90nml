@@ -11,18 +11,19 @@ from __future__ import print_function
 import numbers
 import os
 import platform
+
 try:
-    from StringIO import StringIO   # Python 2.x
+    from StringIO import StringIO  # Python 2.x
 except ImportError:
-    from io import StringIO         # Python 3.x
+    from io import StringIO  # Python 3.x
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
 try:
-    basestring          # Python 2.x
+    basestring  # Python 2.x
 except NameError:
-    basestring = str    # Python 3.x
+    basestring = str  # Python 3.x
 
 
 class Namelist(OrderedDict):
