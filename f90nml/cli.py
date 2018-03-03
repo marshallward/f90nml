@@ -9,21 +9,18 @@ import argparse
 import json
 import os
 import sys
-
 try:
-    from StringIO import StringIO  # Python 2.x
+    from StringIO import StringIO   # Python 2.x
 except ImportError:
-    from io import StringIO  # Python 3.x
+    from io import StringIO         # Python 3.x
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
 
 import f90nml
-
 try:
     import yaml
-
     has_yaml = True
 
     # Preserve ordering in YAML output

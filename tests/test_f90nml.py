@@ -5,25 +5,23 @@ import sys
 import unittest
 
 try:
-    from StringIO import StringIO  # Python 2.x
+    from StringIO import StringIO   # Python 2.x
 except ImportError:
-    from io import StringIO  # Python 3.x
+    from io import StringIO         # Python 3.x
 
 try:
-    from collections import OrderedDict  # Python 3.x
+    from collections import OrderedDict     # Python 3.x
 except ImportError:
-    from ordereddict import OrderedDict  # Python 2.x
+    from ordereddict import OrderedDict     # Python 2.x
 
 try:
     import numpy
-
     has_numpy = True
 except ImportError:
     has_numpy = False
 
 try:
     import yaml
-
     has_yaml = True
 except ImportError:
     has_yaml = False
@@ -70,7 +68,7 @@ class Test(unittest.TestCase):
             'types_nml': {
                 'v_integer': 1,
                 'v_float': 1.0,
-                'v_complex': 1 + 2j,
+                'v_complex': 1+2j,
                 'v_logical': True,
                 'v_string': 'Hello',
             }
@@ -97,7 +95,7 @@ class Test(unittest.TestCase):
                 'v_single': [1],
                 'v_implicit_merge': [1, 2],
                 'v_explicit_merge': [1, 2],
-                'v_complex': [1 + 2j, 3 + 4j, 5 + 6j],
+                'v_complex': [1+2j, 3+4j, 5+6j],
             }
         }
 
@@ -241,7 +239,7 @@ class Test(unittest.TestCase):
             'dtype_field_idx_nml': {
                 'f': {
                     'x': [1, 2, 3]}
-            },
+                },
             'dtype_vec_nml': {
                 'a': {
                     'b': [
@@ -253,7 +251,7 @@ class Test(unittest.TestCase):
             },
             'dtype_sparse_vec_nml': {
                 'a': {
-                    'b': [{'c': 2}]  # NOTE: start_index is 2
+                    'b': [{'c': 2}]     # NOTE: start_index is 2
                 }
             },
             'dtype_single_value_vec_nml': {
@@ -381,10 +379,10 @@ class Test(unittest.TestCase):
         if has_numpy:
             self.numpy_nml = {
                 'numpy_nml': OrderedDict((
-                    ('np_integer', numpy.int64(1)),
-                    ('np_float', numpy.float64(1.0)),
-                    ('np_complex', numpy.complex128(1 + 2j)),
-                )
+                        ('np_integer', numpy.int64(1)),
+                        ('np_float', numpy.float64(1.0)),
+                        ('np_complex', numpy.complex128(1+2j)),
+                    )
                 )
             }
 
@@ -722,7 +720,7 @@ class Test(unittest.TestCase):
         nml = Namelist()
         self.assertEqual(nml._f90repr(1), '1')
         self.assertEqual(nml._f90repr(1.), '1.0')
-        self.assertEqual(nml._f90repr(1 + 2j), '(1.0, 2.0)')
+        self.assertEqual(nml._f90repr(1+2j), '(1.0, 2.0)')
         self.assertEqual(nml._f90repr(True), '.true.')
         self.assertEqual(nml._f90repr(False), '.false.')
         self.assertEqual(nml._f90repr('abc'), "'abc'")
@@ -752,7 +750,7 @@ class Test(unittest.TestCase):
     def test_close_patch_on_error(self):
         patch = {'tmp_nml': {'tmp_val': 0}}
         self.assertRaises(ValueError, f90nml.patch, 'index_empty.nml', patch,
-                          'tmp.nml')
+                                                    'tmp.nml')
         os.remove('tmp.nml')
 
     def test_indent(self):

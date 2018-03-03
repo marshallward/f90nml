@@ -11,11 +11,11 @@ class Tokenizer(object):
     """Fortran namelist tokenizer."""
 
     # I don't use these two
-    special_chars = ' =+-*/\\()[]{},.:;!"%&~<>?\'`|$#@'  # Table 3.1
-    lexical_tokens = '=+-*/()[],.:;%&<>'  # Meaningful?
+    special_chars = ' =+-*/\\()[]{},.:;!"%&~<>?\'`|$#@'     # Table 3.1
+    lexical_tokens = '=+-*/()[],.:;%&<>'                    # Meaningful?
 
     # I only use this one
-    punctuation = '=+-*/\\()[]{},:;%&~<>?`|$#@'  # Unhandled Table 3.1 tokens
+    punctuation = '=+-*/\\()[]{},:;%&~<>?`|$#@'    # Unhandled Table 3.1 tokens
 
     def __init__(self):
         """Initialise the tokenizer."""
@@ -33,7 +33,7 @@ class Tokenizer(object):
         """Tokenize a line of Fortran source."""
         tokens = []
 
-        self.idx = -1  # Bogus value to ensure idx = 0 after first iteration
+        self.idx = -1   # Bogus value to ensure idx = 0 after first iteration
         self.characters = iter(line)
         self.update_chars()
 

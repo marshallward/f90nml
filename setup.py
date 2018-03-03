@@ -46,22 +46,23 @@ class ProjectTest(Command):
 with open(project_readme_fname) as f:
     project_readme = f.read()
 
+
 # Project setup
 setup(
-    name=project_name,
-    version=project_version,
-    description='Fortran 90 namelist parser',
-    long_description=project_readme,
-    author='Marshall Ward',
-    author_email='f90nml@marshallward.org',
-    url='http://github.com/marshallward/f90nml',
+    name = project_name,
+    version = project_version,
+    description = 'Fortran 90 namelist parser',
+    long_description = project_readme,
+    author = 'Marshall Ward',
+    author_email = 'f90nml@marshallward.org',
+    url = 'http://github.com/marshallward/f90nml',
 
-    packages=['f90nml'],
+    packages = ['f90nml'],
     scripts=project_scripts,
 
-    cmdclass={'test': ProjectTest},
+    cmdclass = {'test': ProjectTest},
 
-    classifiers=[
+    classifiers = [
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
