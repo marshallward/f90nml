@@ -519,8 +519,8 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, parser, 'sparse_arrays', 'abc')
         self.assertRaises(TypeError, setattr, parser,
                           'global_start_index', 'abc')
-        self.assertRaises(ValueError, setattr, parser, 'row_major', 'abc')
-        self.assertRaises(ValueError, setattr, parser, 'strict_logical', 'abc')
+        self.assertRaises(TypeError, setattr, parser, 'row_major', 'abc')
+        self.assertRaises(TypeError, setattr, parser, 'strict_logical', 'abc')
 
     def test_float(self):
         test_nml = f90nml.read('float.nml')
@@ -639,8 +639,8 @@ class Test(unittest.TestCase):
         finally:
             os.remove('tmp.nml')
 
-    def test_patch_valueerror(self):
-        self.assertRaises(ValueError, f90nml.patch, 'types.nml', 'xyz',
+    def test_patch_typeerror(self):
+        self.assertRaises(TypeError, f90nml.patch, 'types.nml', 'xyz',
                           'tmp.nml')
 
     def test_repatch(self):
