@@ -3,8 +3,8 @@
 :copyright: Copyright 2014 Marshall Ward, see AUTHORS for details.
 :license: Apache License, Version 2.0, see LICENSE for details.
 """
-from f90nml.parser import Parser
 from f90nml.namelist import Namelist
+from f90nml.parser import Parser
 
 __version__ = '1.0.2'
 

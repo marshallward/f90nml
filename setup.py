@@ -7,6 +7,7 @@ Additional configuration settings are in ``setup.cfg``.
 """
 import os
 import sys
+
 try:
     from setuptools import setup
     from setuptools import Command

@@ -7,3 +7,5 @@ MANIFEST
 /docs/build
 .coverage
 /htmlcov
+.idea/
+.pytest_cache/

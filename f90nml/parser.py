@@ -9,12 +9,12 @@ hierarchy of Python dicts containing equivalent intrinsic Python data types.
 from __future__ import print_function
 
 import copy
-from string import whitespace
 import sys
+from string import whitespace
 
+from f90nml.findex import FIndex
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import Namelist
-from f90nml.findex import FIndex
 from f90nml.tokenizer import Tokenizer
 
 
@@ -191,7 +191,7 @@ class Parser(object):
         """Validate and set row-major format for multidimensional arrays."""
         if value is not None:
             if not isinstance(value, bool):
-                raise ValueError(
+                raise TypeError(
                     'f90nml: error: row_major must be a logical value.')
             else:
                 self._row_major = value
@@ -220,7 +220,7 @@ class Parser(object):
         """Validate and set the strict logical flag."""
         if value is not None:
             if not isinstance(value, bool):
-                raise ValueError(
+                raise TypeError(
                     'f90nml: error: strict_logical must be a logical value.')
             else:
                 self._strict_logical = value
@@ -238,7 +238,7 @@ class Parser(object):
         # Convert patch data to a Namelist object
         if nml_patch_in:
             if not isinstance(nml_patch_in, dict):
-                raise ValueError('Input patch must be a dict or a Namelist.')
+                raise TypeError('Input patch must be a dict or a Namelist.')
 
             nml_patch = copy.deepcopy(Namelist(nml_patch_in))
 
