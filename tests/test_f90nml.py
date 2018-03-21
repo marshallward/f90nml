@@ -722,6 +722,13 @@ class Test(unittest.TestCase):
         self.assertEqual(nml['a']['b'], nml.tuple_index(('a','b')))
         self.assertEqual(nml['a']['b'], nml.tuple_index(['a','b']))
 
+    def test_flat_iterator(self):
+        d = {'a':{'b':1.}}
+        nml = Namelist(d)
+        key,value = next(nml.flat_iterator())
+        self.assertEqual(key, ('a','b'))
+        self.assertEqual(value, 1.)
+        
     def test_f90repr(self):
         nml = Namelist()
         self.assertEqual(nml._f90repr(1), '1')

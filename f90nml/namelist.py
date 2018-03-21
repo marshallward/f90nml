@@ -395,6 +395,13 @@ class Namelist(OrderedDict):
                 self[sec] = Namelist()
             self[sec].update(nml_patch[sec])
 
+    def flat_iterator(self):
+        """Iterator that returns the adress of an element as a 2-tuple, 
+        along with the element """
+        for key, value in self.items():
+            for inner_key, inner_value in value.items():
+                yield (key,inner_key), inner_value
+            
     def tuple_index(self,tup):
         """Access element in the namelist using a tuple."""
         return self[tup[0]][tup[1]]
