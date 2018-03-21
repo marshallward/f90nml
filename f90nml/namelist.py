@@ -395,6 +395,10 @@ class Namelist(OrderedDict):
                 self[sec] = Namelist()
             self[sec].update(nml_patch[sec])
 
+    def tuple_index(self,tup):
+        """Access element in the namelist using a tuple."""
+        return self[tup[0]][tup[1]]
+
     def _writestream(self, nml_file, sort=False):
         """Output Namelist to a streamable file object."""
         # Reset newline flag

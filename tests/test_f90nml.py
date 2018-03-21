@@ -716,6 +716,12 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, nml, 'default_start_index',
                           'abc')
 
+    def test_tuple_index(self):
+        d = {'a':{'b':1.}}
+        nml = Namelist(d)
+        self.assertEqual(nml['a']['b'], nml.tuple_index(('a','b')))
+        self.assertEqual(nml['a']['b'], nml.tuple_index(['a','b']))
+
     def test_f90repr(self):
         nml = Namelist()
         self.assertEqual(nml._f90repr(1), '1')
