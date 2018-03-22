@@ -719,8 +719,11 @@ class Test(unittest.TestCase):
     def test_tuple_index(self):
         d = {'a':{'b':1.}}
         nml = Namelist(d)
-        self.assertEqual(nml['a']['b'], nml.tuple_index(('a','b')))
-        self.assertEqual(nml['a']['b'], nml.tuple_index(['a','b']))
+        self.assertEqual(nml.tuple_index(('a','b')), nml['a']['b'])
+        self.assertEqual(nml.tuple_index(['a','b']), nml['a']['b'])
+        self.assertEqual(nml.tuple_index(['a','c']), None)
+        self.assertEqual(nml.tuple_index(['d','b']), None)
+        self.assertEqual(nml.tuple_index(['d','c']), None)
 
     def test_flat_iterator(self):
         d = {'a':{'b':1.}}

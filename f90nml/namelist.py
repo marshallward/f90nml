@@ -404,7 +404,7 @@ class Namelist(OrderedDict):
             
     def tuple_index(self,tup):
         """Access element in the namelist using a tuple."""
-        return self[tup[0]][tup[1]]
+        return self.get(tup[0],{}).get(tup[1],None)
 
     def _writestream(self, nml_file, sort=False):
         """Output Namelist to a streamable file object."""
