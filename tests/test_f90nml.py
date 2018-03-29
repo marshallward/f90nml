@@ -716,19 +716,17 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, nml, 'default_start_index',
                           'abc')
 
-    def test_tuple_index(self):
+    def test_iter_in_getitem(self):
         d = {'a':{'b':1.}}
         nml = Namelist(d)
-        self.assertEqual(nml.tuple_index(('a','b')), nml['a']['b'])
-        self.assertEqual(nml.tuple_index(['a','b']), nml['a']['b'])
-        self.assertEqual(nml.tuple_index(['a','c']), None)
-        self.assertEqual(nml.tuple_index(['d','b']), None)
-        self.assertEqual(nml.tuple_index(['d','c']), None)
-
-    def test_flat_iterator(self):
+        self.assertEqual(nml[('a','b')], 1.)
+        self.assertEqual(nml[['a','b']], 1.)
+        self.assertEqual(nml['a']['b'], 1.)
+        
+    def test_groups(self):
         d = {'a':{'b':1.}}
         nml = Namelist(d)
-        key,value = next(nml.flat_iterator())
+        key,value = next(nml.groups())
         self.assertEqual(key, ('a','b'))
         self.assertEqual(value, 1.)
         
