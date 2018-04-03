@@ -94,7 +94,11 @@ class Namelist(OrderedDict):
 
     def __getitem__(self, key):
         """Case-insensitive interface to OrderedDict."""
-        return super(Namelist, self).__getitem__(key.lower())
+        if isinstance(key,basestring):
+            return super(Namelist, self).__getitem__(key.lower())
+        else:
+            keyiter = iter(key)
+            return super(Namelist, self).__getitem__(next(keyiter).lower()).__getitem__(next(keyiter).lower())
 
     def __setitem__(self, key, value):
         """Case-insensitive interface to OrderedDict.
@@ -395,6 +399,13 @@ class Namelist(OrderedDict):
                 self[sec] = Namelist()
             self[sec].update(nml_patch[sec])
 
+    def groups(self):
+        """Iterator that returns the adress of an element as a 2-tuple, 
+        along with the element """
+        for key, value in self.items():
+            for inner_key, inner_value in value.items():
+                yield (key,inner_key), inner_value
+            
     def _writestream(self, nml_file, sort=False):
         """Output Namelist to a streamable file object."""
         # Reset newline flag
