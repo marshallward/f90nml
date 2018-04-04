@@ -41,11 +41,20 @@ def parse():
     parser.add_argument('--version', action='version',
                         version='f90nml {0}'.format(f90nml.__version__))
 
-    parser.add_argument('--group', '-g', action='store')
-    parser.add_argument('--variable', '-v', action='append')
-    parser.add_argument('--patch', '-p', action='store_true')
-    parser.add_argument('--format', '-f', action='store')
-    parser.add_argument('--output', '-o', action='store')
+    parser.add_argument('--group', '-g', action='store',
+                        help="specify namelist group to modify. "
+                        "When absent, the first group is used")
+    parser.add_argument('--variable', '-v', action='append',
+                        help="specify the namelist variable to add or modify, "
+                        "followed by the new value. Expressions are of the "
+                        "form `VARIABLE=VALUE`")
+    parser.add_argument('--patch', '-p', action='store_true',
+                        help="modify the existing namelist as a patch")
+    parser.add_argument('--format', '-f', action='store',
+                        help="specify the output format (json, yaml, or nml)")
+    parser.add_argument('--output', '-o', action='store',
+                        help="specify namelist group to modify. "
+                        "When absent, the first group is used")
 
     parser.add_argument('input', nargs='?')
     parser.add_argument('output', nargs='?')
