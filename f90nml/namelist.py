@@ -401,8 +401,13 @@ class Namelist(OrderedDict):
             self[sec].update(nml_patch[sec])
 
     def groups(self):
-        """Iterator that returns the address of an element as a 2-tuple,
-        along with the element."""
+        """Return an iterator that spans values with group and variable names.
+
+        Elements of the iterator consist of a tuple containing two values.  The
+        first is internal tuple containing the current namelist group and its
+        variable name.  The second element of the returned tuple is the value
+        associated with the current group and variable.
+        """
         for key, value in self.items():
             for inner_key, inner_value in value.items():
                 yield (key, inner_key), inner_value
