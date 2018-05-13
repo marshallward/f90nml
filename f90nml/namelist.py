@@ -73,6 +73,7 @@ class Namelist(OrderedDict):
         self._uppercase = False
         self._float_format = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
+        self._index_spacing = True
 
         # Namelist group spacing flag
         self._newline = False
@@ -210,6 +211,18 @@ class Namelist(OrderedDict):
         if not isinstance(value, bool):
             raise TypeError('end_comma attribute must be a logical type.')
         self._end_comma = value
+
+    @property
+    def index_spacing(self):
+        """Apply a space between indexes of multidimensional vectors."""
+        return self._index_spacing
+
+    @index_spacing.setter
+    def index_spacing(self, value):
+        """Validate and set the index_spacing flag."""
+        if not isinstance(value, bool):
+            raise TypeError('index_spacing attribute must be a logical type.')
+        self._index_spacing = value
 
     @property
     def uppercase(self):
@@ -547,8 +560,9 @@ class Namelist(OrderedDict):
                     v_idx_repr += ':'
 
                 if v_idx:
-                    v_idx_repr += ', '
-                    v_idx_repr += ', '.join(str(i) for i in v_idx[::-1])
+                    idx_delim = ', ' if self._index_spacing else ','
+                    v_idx_repr += idx_delim
+                    v_idx_repr += idx_delim.join(str(i) for i in v_idx[::-1])
 
                 v_idx_repr += ')'
 
