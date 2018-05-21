@@ -73,7 +73,7 @@ class Namelist(OrderedDict):
         self._uppercase = False
         self._float_format = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
-        self._index_spacing = True
+        self._index_spacing = False
 
         # Namelist group spacing flag
         self._newline = False
