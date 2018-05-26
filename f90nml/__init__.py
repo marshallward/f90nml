@@ -28,8 +28,23 @@ def read(nml_path):
     >>> nml = parser.read(nml_file)
     """
     parser = Parser()
-
     return parser.read(nml_path)
+
+
+def reads(nml_string):
+    """Parse a Fortran namelist string and return its contents.
+
+    >>> nml_str = '&data_nml x=1 y=2 /'
+    >>> nml = f90nml.reads(nml_str)
+
+    This function is equivalent to the ``reads`` function of the ``Parser``
+    object.
+
+    >>> parser = f90nml.Parser()
+    >>> nml = parser.reads(nml_str)
+    """
+    parser = Parser()
+    return parser.reads(nml_string)
 
 
 def write(nml, nml_path, force=False, sort=False):

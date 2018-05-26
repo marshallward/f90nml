@@ -269,8 +269,18 @@ class Parser(object):
             if self.pfile and patch_is_path:
                 self.pfile.close()
 
-    def _readstream(self, nml_file, nml_patch):
+    def reads(self, nml_string):
+        """Parse a namelist string and return an equivalent Namelist object.
+
+        >>> parser = f90nml.Parser()
+        >>> data_nml = parser.reads('&data_nml x=1 y=2 /')
+        """
+        return self._readstream(iter(nml_string.splitlines()))
+
+    def _readstream(self, nml_file, nml_patch_in=None):
         """Parse an input stream containing a Fortran namelist."""
+        nml_patch = nml_patch_in if nml_patch_in is not None else Namelist()
+
         tokenizer = Tokenizer()
         f90lex = []
         for line in nml_file:
