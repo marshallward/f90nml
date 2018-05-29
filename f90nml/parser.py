@@ -51,7 +51,7 @@ class Parser(object):
 
         >>> parser = f90nml.Parser()
         >>> parser.comment_tokens += '#'
-        >>> nml = Parser.read('sample.nml')
+        >>> nml = parser.read('sample.nml')
 
         Be aware that this is non-standard Fortran and could mangle any strings
         using the ``#`` characters.  Characters inside string delimiters should
