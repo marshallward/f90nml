@@ -78,6 +78,9 @@ class Namelist(OrderedDict):
         # Namelist group spacing flag
         self._newline = False
 
+        # Check for pre-set indentation
+        self.indent = self.pop('_indent', self.indent)
+
         # PyPy 2 is dumb and does not use __setitem__() inside __init__()
         # This loop will explicitly convert any internal dicts to Namelists.
         if (platform.python_implementation() == 'PyPy' and
@@ -177,7 +180,7 @@ class Namelist(OrderedDict):
         """Validate and set the indent width."""
         # Explicit indent setting
         if isinstance(value, str):
-            if value.isspace():
+            if value.isspace() or len(value) == 0:
                 self._indent = value
             else:
                 raise ValueError('String indentation can only contain '
