@@ -9,6 +9,10 @@ install:
 
 build: off
 
+branches:
+    only:
+        - master
+
 # before_test:
 test_script:
     - C:\Python%PYTHON_VERSION%\python.exe setup.py test
