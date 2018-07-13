@@ -11,6 +11,7 @@ from __future__ import print_function
 import copy
 import sys
 from string import whitespace
+import itertools
 
 from f90nml.findex import FIndex
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
@@ -51,7 +52,7 @@ class Parser(object):
 
         >>> parser = f90nml.Parser()
         >>> parser.comment_tokens += '#'
-        >>> nml = Parser.read('sample.nml')
+        >>> nml = parser.read('sample.nml')
 
         Be aware that this is non-standard Fortran and could mangle any strings
         using the ``#`` characters.  Characters inside string delimiters should
@@ -269,8 +270,18 @@ class Parser(object):
             if self.pfile and patch_is_path:
                 self.pfile.close()
 
-    def _readstream(self, nml_file, nml_patch):
+    def reads(self, nml_string):
+        """Parse a namelist string and return an equivalent Namelist object.
+
+        >>> parser = f90nml.Parser()
+        >>> data_nml = parser.reads('&data_nml x=1 y=2 /')
+        """
+        return self._readstream(iter(nml_string.splitlines()))
+
+    def _readstream(self, nml_file, nml_patch_in=None):
         """Parse an input stream containing a Fortran namelist."""
+        nml_patch = nml_patch_in if nml_patch_in is not None else Namelist()
+
         tokenizer = Tokenizer()
         f90lex = []
         for line in nml_file:
@@ -330,7 +341,7 @@ class Parser(object):
             v_name = None
 
             # TODO: Edit `Namelist` to support case-insensitive `get` calls
-            grp_patch = nml_patch.get(g_name.lower(), {})
+            grp_patch = nml_patch.get(g_name.lower(), Namelist())
 
             # Populate the namelist group
             while g_name:
@@ -364,7 +375,9 @@ class Parser(object):
                         g_vars[v_name] = v_val
                         v_strs = nmls._var_strings(v_name, v_val)
                         for v_str in v_strs:
-                            self.pfile.write('    {0}\n'.format(v_str))
+                            self.pfile.write(
+                                '{0}{1}\n'.format(nml_patch.indent, v_str)
+                            )
 
                     # Append the grouplist to the namelist
                     if g_name in nmls:
@@ -572,8 +585,29 @@ class Parser(object):
                 if self.token in ('/', '&', '$', '='):
                     break
                 else:
+                    # Get the remaining length of the unpatched vector?
+
+                    # NOTE: it is probably very inefficient to keep re-creating
+                    # iterators upon every element; this solution reflects the
+                    # absence of mature lookahead in the script.
+                    #
+                    # This is a temporary fix to address errors caused by
+                    # patches of different length from the original value, and
+                    # represents a direction to fully rewrite the parser using
+                    # `tee`.
+
+                    self.tokens, lookahead = itertools.tee(self.tokens)
+                    n_vals_remain = count_values(lookahead)
+
                     if patch_values:
+                        # XXX: The (p_idx - 1) <= n_vals_remain test is dodgy
+                        # and does not really make sense to me, but it appears
+                        # to work.
+
+                        # TODO: Patch indices that are not set in the namelist
+
                         if (p_idx < len(patch_values) and
+                                (p_idx - 1) <= n_vals_remain and
                                 len(patch_values) > 0 and self.token != ','):
                             p_val = patch_values[p_idx]
                             p_repr = patch_nml._f90repr(patch_values[p_idx])
@@ -586,7 +620,6 @@ class Parser(object):
                                 self._update_tokens(write_token=False)
                                 self._update_tokens(write_token=False)
                                 self._update_tokens(write_token=False)
-
                         else:
                             # Skip any values beyond the patch size
                             skip = (p_idx >= len(patch_values))
@@ -871,3 +904,19 @@ def delist(values):
         return values[0]
 
     return values
+
+
+def count_values(tokens):
+    """Identify the number of values ahead of the current token."""
+    ntoks = 0
+    for tok in tokens:
+        if tok in ('=', '/', '$', '&'):
+            if ntoks > 0 and tok == '=':
+                ntoks -= 1
+            break
+        elif tok in whitespace + ',':
+            continue
+        else:
+            ntoks += 1
+
+    return ntoks
