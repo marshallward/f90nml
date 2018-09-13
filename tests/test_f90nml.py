@@ -665,6 +665,13 @@ class Test(unittest.TestCase):
         with open('types.nml') as nml_file:
             self.assertRaises(ValueError, f90nml.patch, nml_file, patch_nml)
 
+    def test_patch_null(self):
+        try:
+            f90nml.patch('types.nml', {}, 'tmp.nml')
+            self.assert_file_equal('types.nml', 'tmp.nml')
+        finally:
+            os.remove('tmp.nml')
+
     def test_no_selfpatch(self):
         patch_nml = f90nml.read('types_patch.nml')
         self.assertRaises(ValueError, f90nml.patch,

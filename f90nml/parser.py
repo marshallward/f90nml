@@ -237,7 +237,7 @@ class Parser(object):
         patch_is_path = not hasattr(patch_fname, 'read')
 
         # Convert patch data to a Namelist object
-        if nml_patch_in:
+        if nml_patch_in is not None:
             if not isinstance(nml_patch_in, dict):
                 raise TypeError('Input patch must be a dict or a Namelist.')
 
