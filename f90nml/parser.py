@@ -269,7 +269,7 @@ class Parser(object):
         finally:
             if self.pfile and patch_is_path:
                 self.pfile.close()
-
+        
     def reads(self, nml_string):
         """Parse a namelist string and return an equivalent Namelist object.
 
@@ -277,7 +277,57 @@ class Parser(object):
         >>> data_nml = parser.reads('&data_nml x=1 y=2 /')
         """
         return self._readstream(iter(nml_string.splitlines()))
+    
+    def write(self, nml_obj, nml_file_out, **kwargs):
+        """Wite a namelist object to a file.
+        
+        >>> parser = f90nml.Parser()
+        >>> parser.write(nml_obj, 'outputfile.nml')
+        """
+        
+        nml_stream = StringIO()
+        nml_obj.write(nml_stream, **kwargs)
+        nml_string = nml_stream.getvalue()
 
+        self._write_nml_file(nml_string, nml_file_out)
+
+    def patch(self, nml_file_in, nml_patch, nml_file_out):
+        pass
+              
+    def _read_nml_file(nml_file_in):
+        """Read a raw nml file or file object, and return a string.
+        """
+        
+        in_is_path = not hasattr(nml_file_in, 'read')
+        try:
+            if  in_is_path:
+                in_fileobj = open(nml_file_in, 'r')
+            else:
+                in_fileobj = nml_file_in
+
+            nml_string = in_fileobj.read()
+        finally:
+            if in_is_path:
+                in_fileobj.close()
+
+        return nml_string
+
+    def _write_nml_file(nml_string, nml_file_out):
+        """Write a raw nml_string to a given file or file object.
+        """
+        
+        is_out_path = not hasattr(nml_file_out, 'read')
+        try:
+            if  in_out_path:
+                out_fileobj = open(nml_file_out, 'w')
+            else:
+                out_fileobj = nml_file_out
+
+            out_fileobj.write(nml_string)
+        finally:
+            if out_is_path:
+                out_fileobj.close()
+    
     def _readstream(self, nml_file, nml_patch_in=None):
         """Parse an input stream containing a Fortran namelist."""
         nml_patch = nml_patch_in if nml_patch_in is not None else Namelist()
