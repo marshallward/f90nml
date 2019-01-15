@@ -38,7 +38,6 @@ class Tokenizer(object):
         self.update_chars()
 
         while self.char != '\n':
-
             # Update namelist group status
             if self.char in ('&', '$'):
                 self.group_token = self.char
@@ -64,7 +63,19 @@ class Tokenizer(object):
             elif self.char.isalpha():
                 word = self.parse_name(line)
 
-            elif self.char.isdigit() or self.char == '-':
+            elif self.char in ('+', '-'):
+                # Lookahead to check for IEEE value
+                self.characters, lookahead = itertools.tee(self.characters)
+                ieee_val = ''.join(itertools.takewhile(str.isalpha, lookahead))
+                if ieee_val.lower() in ('inf', 'infinity', 'nan'):
+                    word = self.char + ieee_val
+                    self.characters = lookahead
+                    self.prior_char = ieee_val[-1]
+                    self.char = next(lookahead, '\n')
+                else:
+                    word = self.parse_numeric()
+
+            elif self.char.isdigit():
                 word = self.parse_numeric()
 
             elif self.char == '.':

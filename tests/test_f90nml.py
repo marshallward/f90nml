@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import math
 import os
 import sys
 import unittest
@@ -376,6 +377,17 @@ class Test(unittest.TestCase):
             }
         }
 
+        self.ieee_nml = {
+            'ieee_nml': {
+                'base_inf': float('inf'),
+                'neg_inf': float('-inf'),
+                'plus_inf': float('inf'),
+                'base_nan': float('nan'),
+                'plus_nan': float('nan'),
+                'neg_nan': float('nan'),
+            }
+        }
+
         if has_numpy:
             self.numpy_nml = {
                 'numpy_nml': OrderedDict((
@@ -541,6 +553,22 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('dtype.nml')
         self.assertEqual(self.dtype_nml, test_nml)
         self.assert_write(test_nml, 'dtype_target.nml')
+
+    def test_ieee(self):
+        test_nml = f90nml.read('ieee.nml')
+
+        # NaN values cannot be tested for equality, so explicitly test values
+        self.assertTrue(set(test_nml) == set(self.ieee_nml))
+        for grp in test_nml:
+            self.assertTrue(set(test_nml[grp]) == set(self.ieee_nml[grp]))
+            for key in test_nml[grp]:
+                ieee_grp, test_grp = self.ieee_nml[grp], test_nml[grp]
+                if key.endswith('_nan'):
+                    self.assertTrue(math.isnan(test_grp[key]))
+                else:
+                    self.assertTrue(ieee_grp[key], test_grp[key])
+
+        self.assert_write(test_nml, 'ieee_target.nml')
 
     def test_dtype_case(self):
         test_nml = f90nml.read('dtype_case.nml')

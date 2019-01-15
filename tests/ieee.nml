@@ -1,0 +1,8 @@
+&ieee_nml
+    base_inf = inf
+    neg_inf = -inf
+    plus_inf = +inf
+    base_nan = nan
+    plus_nan = +nan
+    neg_nan = -nan
+/
