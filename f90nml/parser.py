@@ -8,6 +8,7 @@ hierarchy of Python dicts containing equivalent intrinsic Python data types.
 """
 from __future__ import print_function
 
+import warnings
 import copy
 import sys
 from string import whitespace
@@ -787,9 +788,9 @@ class Parser(object):
                     # Repeating commas are null-statements and can be ignored
                     # Otherwise, we warn the user that this is a bad namelist
                     if next_value is not None:
-                        print('f90nml: warning: Value {0} is not assigned to '
+                        warnings.warn('f90nml: warning: Value {0} is not assigned to '
                               'any variable and has been removed.'
-                              ''.format(next_value), file=sys.stderr)
+                              ''.format(next_value))
 
                     # There are more values than indices, so we stop here
                     break
