@@ -5,6 +5,7 @@
 """
 from __future__ import print_function
 
+import warnings
 import argparse
 import json
 import os
@@ -138,8 +139,7 @@ def parse():
         if not args.group:
             # Use the first available group
             grp = list(input_data.keys())[0]
-            print('f90nml: warning: Assuming variables are in group \'{0}\'.'
-                  ''.format(grp), file=sys.stderr)
+            warnings.warn('f90nml: warning: Assuming variables are in group \'{0}\'.'.format(grp))
         else:
             grp = args.group
 
