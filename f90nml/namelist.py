@@ -8,6 +8,7 @@ a Python environment.
 """
 from __future__ import print_function
 
+import copy
 import numbers
 import os
 import platform
@@ -641,7 +642,8 @@ class Namelist(OrderedDict):
         # TODO: Move repeated stuff to new functions
         for key, value in self.items():
             if isinstance(value, Namelist):
-                nmldict[key] = value.todict(complex_tuple)
+                nml = copy.deepcopy(value)
+                nmldict[key] = nml.todict(complex_tuple)
 
             elif isinstance(value, complex) and complex_tuple:
                 nmldict[key] = [value.real, value.imag]
@@ -654,7 +656,8 @@ class Namelist(OrderedDict):
                 complex_list = False
                 for idx, entry in enumerate(value):
                     if isinstance(entry, Namelist):
-                        nmldict[key][idx] = entry.todict(complex_tuple)
+                        nml = copy.deepcopy(entry)
+                        nmldict[key] = nml.todict(complex_tuple)
 
                     elif isinstance(entry, complex) and complex_tuple:
                         nmldict[key][idx] = [entry.real, entry.imag]
