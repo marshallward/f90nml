@@ -657,7 +657,7 @@ class Namelist(OrderedDict):
                 for idx, entry in enumerate(value):
                     if isinstance(entry, Namelist):
                         nml = copy.deepcopy(entry)
-                        nmldict[key] = nml.todict(complex_tuple)
+                        nmldict[key][idx] = nml.todict(complex_tuple)
 
                     elif isinstance(entry, complex) and complex_tuple:
                         nmldict[key][idx] = [entry.real, entry.imag]
