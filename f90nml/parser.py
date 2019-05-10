@@ -437,11 +437,8 @@ class Parser(object):
                     v_idx.first[idx] = i_first
 
                 # Resize vector based on starting index
-                for i_p, i_v in zip(p_idx, v_idx.first):
-                    if i_p is not None and i_v is not None and i_v < i_p:
-                        pad = [None for _ in range(i_p - i_v)]
-                        parent[v_name] = pad + parent[v_name]
-
+                parent[v_name] = prepad_array(parent[v_name], p_idx,
+                                              v_idx.first)
             else:
                 # If variable already existed without an index, then assume a
                 #   1-based index
@@ -833,6 +830,21 @@ class Parser(object):
 
 
 # Support functions
+def prepad_array(var, v_start_idx, new_start_idx):
+    for i_p, i_v in zip(v_start_idx, new_start_idx):
+        if i_p is not None and i_v is not None and i_v < i_p:
+            pad = [None for _ in range(i_p - i_v)]
+        else:
+            pad = []
+
+        prior_var = var[:]
+        for i, v in enumerate(var):
+            if isinstance(v, list):
+                prior_var[i] = prepad_array(v, v_start_idx[1:], new_start_idx[1:])
+
+        new_var = pad + prior_var
+        return new_var
+
 
 def pad_array(v, idx):
     """Expand lists in multidimensional arrays to pad unset values."""

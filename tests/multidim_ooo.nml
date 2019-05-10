@@ -1,0 +1,4 @@
+&multidim_ooo_nml
+    a(2,2) = 2
+    a(1,1) = 1
+/

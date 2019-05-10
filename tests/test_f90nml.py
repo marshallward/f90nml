@@ -117,6 +117,12 @@ class Test(unittest.TestCase):
             }
         }
 
+        self.multidim_ooo_nml = {
+            'multidim_ooo_nml': {
+                'a': [[1], [None, 2]],
+            }
+        }
+
         self.md_rowmaj_nml = {
             'multidim_nml': {
                 'v2d': [[1, 3], [2, 4]],
@@ -499,6 +505,11 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('multidim.nml')
         self.assertEqual(self.multidim_nml, test_nml)
         self.assert_write(test_nml, 'multidim_target.nml')
+
+    def test_multidim_ooo(self):
+        test_nml = f90nml.read('multidim_ooo.nml')
+        self.assertEqual(self.multidim_ooo_nml, test_nml)
+        self.assert_write(test_nml, 'multidim_ooo_target.nml')
 
     def test_rowmaj_multidim(self):
         parser = f90nml.Parser()
