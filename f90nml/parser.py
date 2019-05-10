@@ -831,19 +831,25 @@ class Parser(object):
 
 # Support functions
 def prepad_array(var, v_start_idx, new_start_idx):
-    for i_p, i_v in zip(v_start_idx, new_start_idx):
-        if i_p is not None and i_v is not None and i_v < i_p:
-            pad = [None for _ in range(i_p - i_v)]
-        else:
-            pad = []
+    # NOTE: May be some way to use `pop` to avoid copying of index arrays...
+    prior_var = var[:]
 
-        prior_var = var[:]
-        for i, v in enumerate(var):
-            if isinstance(v, list):
-                prior_var[i] = prepad_array(v, v_start_idx[1:], new_start_idx[1:])
+    # Read the outer values
+    i_p = v_start_idx[-1]
+    i_v = new_start_idx[-1]
 
-        new_var = pad + prior_var
-        return new_var
+    # Compute the outer index padding
+    if i_p is not None and i_v is not None and i_v < i_p:
+        pad = [None for _ in range(i_p - i_v)]
+    else:
+        pad = []
+
+    # Apply prepad rules to interior arrays
+    for i, v in enumerate(var):
+        if isinstance(v, list):
+            prior_var[i] = prepad_array(v, v_start_idx[:-1], new_start_idx[:-1])
+
+    return pad + prior_var
 
 
 def pad_array(v, idx):

@@ -120,6 +120,7 @@ class Test(unittest.TestCase):
         self.multidim_ooo_nml = {
             'multidim_ooo_nml': {
                 'a': [[1], [None, 2]],
+                'b': [[1], [None, None, 3]],
             }
         }
 
