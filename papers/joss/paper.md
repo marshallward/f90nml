@@ -70,11 +70,11 @@ Additional control flags are also provided to control the start index.
 
 F90nml also provides the following additional features:
 
-  - A command line tool for working in a shell environment
-  - Lossless conversion between `Namelist` and `dict` types
-  - Support for legacy Fortran namelist formats
-  - Conversion between JSON and YAML output
-  - Automated, configurable output formatting
+- A command line tool for working in a shell environment
+- Lossless conversion between `Namelist` and `dict` types
+- Support for legacy Fortran namelist formats
+- Conversion between JSON and YAML output
+- Automated, configurable output formatting
 
 The module is supported by an extensive test suite with a very high level of
 code coverage, ensuring compatibility of existing namelists over future
