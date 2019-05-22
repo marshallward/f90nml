@@ -1,7 +1,24 @@
-Upcoming:
+1.1:
+    - Bugfix: Out-of-order multidimensional support now works correctly.
     - Bugfix: Derived type list updates without an index now correctly apply
       the update to the first element in the list.  Thanks to GitHub user
       @LSchueler for reporting.
+    - Bugfix: `Namelist.todict` now correctly copies the contents of
+      user-defined types as sub-namelists.  Thanks to @kripnerl for reporting.
+    - Improved IEEE NaN and Inf support, thanks to @jensss for reporting.
+    - Strings can now be parsed as namelists using `Parser.reads()`.
+    - Spacing between indices is now disabled on default, and optionally
+      enabled using the `index_spacing` control flag.  This spacing is
+      supported in most compilers, but it also violates the behaviour as
+      defined in the standard.  Thanks to Robert Schweppe for reporting and
+      Themos Tsikas at NAG for the explanation.
+    - Metadata support for indentation...
+    - `Namelist.groups()` provides an iterator for spanning the namelist groups
+      and variable names.  Thanks to Jens Svensmark for contributing this
+      feature.
+    - Improved command line flag help, thanks to Warrick Bell.
+    - Improved various warning logging, thanks to Pascal Hebbeker.
+    - Exception fixes and various style cleanups, thanks to Qi Zhang.
 
 1.0.2:
     - Automated manpage build has been removed from setup.py due to potential
