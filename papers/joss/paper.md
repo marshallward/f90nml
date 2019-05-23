@@ -18,7 +18,7 @@ bibliography: paper.bib
 Summary
 =======
 
-F90nml is a Python module used for importing, manipulating, and writing Fortran
+`f90nml` is a Python module used for importing, manipulating, and writing Fortran
 namelist files [@ISO:2018:1539:1].  The primary use case for this module is to
 use the `Parser` object to read a namelist file and save its contents into a
 `Namelist` data structure, which is a case-insensitive subclass of a `dict`,
@@ -32,7 +32,7 @@ been a part of the language for decades.  Namelists were an early method of
 serializing numerical data into a human-readable format, although this has
 become less practical as data sizes have increased.  In more recent times,
 namelists have been more common used for runtime configuration [@MOM5:2012,
-@WRF:2019,@QUANTUMESPRESSO:2009,@UM:2019].  The need to manage runtime
+@WRF:2019, @QUANTUMESPRESSO:2009, @UM:2019].  The need to manage runtime
 parameters over a large ensemble of runs and to document those parameters, can
 often be reduced in large part to a problem of parsing, modifying, and storing
 the input namelists.
@@ -75,7 +75,7 @@ are saved as nested lists of lists, with the most innermost lists corresponding
 to the first dimensional index.  This reverses the index order in Python, but
 corresponds to the usual ordering in memory.
 
-F90nml also includes a `patch` feature, which allows one to modify the values
+`f90nml` also includes a `patch` feature, which allows one to modify the values
 of an existing namelist while retaining its comments or existing formatting.
 There is some limited ability to add or remove values when patching.
 
@@ -111,7 +111,7 @@ When index is unspecified, then the index is also unspecified within the
 `Namelist`, although ordering remains 0-based within the Python environment.
 Additional control flags are also provided to control the start index.
 
-F90nml also provides the following additional features:
+`f90nml` also provides the following additional features:
 
 -   A command line tool for working in a shell environment
 -   Lossless conversion between `Namelist` and `dict` types
