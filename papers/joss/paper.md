@@ -7,10 +7,12 @@ tags:
 authors:
     - name: Marshall L. Ward
       orcid: 0000-0002-4944-7431
-      affiliations: '1'
+      affiliations: '1, 2'
 affiliations:
     - name: NOAA Geophysical Fluid Dynamics Laboratory, Princeton, NJ, USA
       index: 1
+    - name: Australian National University, Canberra, Australia
+      index: 2
 date: 22 May 2019
 bibliography: paper.bib
 ---
