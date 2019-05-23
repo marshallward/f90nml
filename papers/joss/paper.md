@@ -56,7 +56,7 @@ An example namelist, such as the one shown below:
     use_biharmonic = .false.
 /
 ```
-would be stored as a `Namelist` equivalent to the following `dict`:
+would be stored as a `Namelist` which is equivalent to the following `dict`:
 ```
 nml = {
     'config_nml': {
@@ -69,20 +69,15 @@ nml = {
 }
 ```
 The module supports all intrinsic data types, as well as user-defined types and
-multidimensional arrays.  User-defined types are interpreted as hierarchical
+multidimensional arrays.  User-defined types are interpreted as a hierarchical
 tree of `Namelist`s.  Multidimensional arrays are saved as nested lists of
 lists, with the most innermost lists corresponding to the first dimensional
-index.  This reverses the index order in Python, but corresponds to the usual
-ordering in memory.
-
-`f90nml` also includes a `patch` feature, which allows one to modify the values
-of an existing namelist while retaining its comments or existing whitespace
-formatting.  There is some limited ability to add or remove values during
-patching.
+index in Fortran.  This reverses the index order in Python, but corresponds to
+the usual ordering in memory.
 
 Because a value's data type is assigned by the executable at runtime and is not
 specified in the namelist, the data type of each value must be inferred by the
-module, usually based on the strictest interpretation of the value.  Weak
+`Parser`, usually based on the strictest interpretation of the value.  Weak
 typing rules within namelists, such as the optional use of string delimiters or
 the multiple representations of logical values, can lead to further ambiguity.
 `f90nml` provides various control flags to manage these cases.  A truly
@@ -90,7 +85,7 @@ ambiguous value will typically be intepreted as a literal string, rather than
 raise an error.
 
 Another limitation of the namelist format is the use of a arbitrary start index
-in a Fortran array, which may be used at runtime but not specified in the
+in a Fortran array, which may be assigned at runtime but not specified in the
 namelist.  For this reason, arrays are assumed to begin at the lowest explicit
 index which is defined in the namelist, and is stored as metadata.  For
 example, if we parse the namelist below:
@@ -109,21 +104,26 @@ then it would be saved internally as the following 0-based Python list:
          '_start_index': {'x': 3}
     }
 ```
-If the start index is unspecified, then the index is also unspecified within
-the `Namelist`, although ordering remains 0-based within the Python
-environment.  Additional control flags are also provided to control the start
-index.
+If the start index is unspecified, as in the first example, then the index is
+also unspecified within the `Namelist`, although the list remains 0-based
+within the Python environment.  Additional control flags are also provided to
+control the start index.
 
-`f90nml` also provides the following additional features:
+`f90nml` includes a `patch` feature, which allows one to modify the values of
+an existing namelist while retaining its comments or existing whitespace
+formatting.  There is some limited ability to add or remove values during
+patching.
+
+`f90nml` also includes the following additional features:
 
 -   A command line tool for working in a shell environment
 -   Lossless conversion between `Namelist` and `dict` types
 -   Support for legacy Fortran namelist formats
 -   Conversion between JSON and YAML output
--   Automated, configurable output formatting
--   Handling of repeated groups within a namelist
+-   Configuration of the output formatting rules
+-   Handling of repeated groups within a single namelist
 
-The module is supported by an extensive test suite with a very high level of
+Development is supported by an extensive test suite with a very high level of
 code coverage, ensuring compatibility of existing namelists over future
 releases.
 
@@ -132,8 +132,8 @@ Acknowledgements
 ================
 
 Development of `f90nml` has been ongoing for several years, and was created to
-support research activites at the Australian National University as part of the
-Australian Centre of Excellence in Climate System Science (ARCCSS).
+support research activities of the Australian Centre of Excellence in Climate
+System Science (ARCCSS) at the Australian National University.
 
 This project is sustained by the feedback from its users, and continues to
 benefit from contributions from its userbase, for which the author is immensely
