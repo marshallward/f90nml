@@ -7,7 +7,7 @@ tags:
 authors:
     - name: Marshall L. Ward
       orcid: 0000-0002-4944-7431
-      affiliations: '1, 2'
+      affiliations: "1, 2"
 affiliations:
     - name: NOAA Geophysical Fluid Dynamics Laboratory, Princeton, NJ, USA
       index: 1
