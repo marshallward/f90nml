@@ -19,7 +19,7 @@ Summary
 =======
 
 F90nml is a Python module used for importing, manipulating, and writing Fortran
-namelist files.[@ISO:2018:1539:1]  The primary use case is to read a namelist
+namelist files. [@ISO:2018:1539:1]  The primary use case is to read a namelist
 variable into a `Namelist` data structure, which behaves similarly to the
 intrinsic `dict` type.  The content can be read and modified using standard
 Python methods, and can be saved as a formatted namelist file.
