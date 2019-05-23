@@ -18,32 +18,31 @@ bibliography: paper.bib
 Summary
 =======
 
-`f90nml` is a Python module used for importing, manipulating, and writing Fortran
-namelist files [@ISO:2018:1539:1].  The primary use case for this module is to
-use the `Parser` object to read a namelist file and save its contents into a
+`f90nml` is a Python module used for importing, manipulating, and writing
+Fortran namelist files [@ISO:2018:1539:1].  The primary use case for this
+module is to read a namelist file via the `Parser` and save its contents into a
 `Namelist` data structure, which is a case-insensitive subclass of a `dict`,
 Python's intrinsic associative array.  The `Namelist` object can be read and
 modified as a standard Python `dict`, and its contents can be saved as a
 formatted namelist file.
 
-Fortran remains a dominant programming language in high-performance scientific
-computing [@SPECMPI2007:2010, @ClimateFortranDev:2014] and namelists have
-been a part of the language for decades.  Namelists were an early method of
-serializing numerical data into a human-readable format, although this has
+Fortran continues to be a dominant programming language in high-performance
+scientific computing [@SPECMPI2007:2010, @ClimateFortranDev:2014] and namelists
+have been a part of the language for decades.  Namelists were an early method
+of serializing numerical data into a human-readable format, although this has
 become less practical as data sizes have increased.  In more recent times,
-namelists have been more common used for runtime configuration [@MOM5:2012,
-@WRF:2019, @QUANTUMESPRESSO:2009, @UM:2019].  The need to manage runtime
-parameters over a large ensemble of runs and to document those parameters, can
-often be reduced in large part to a problem of parsing, modifying, and storing
-the input namelists.
+namelists have been more commonly used for runtime configuration [@MOM5:2012,
+@WRF:2019, @QUANTUMESPRESSO:2009, @UM:2019].  Much of the work associated with
+managing and documenting the runtime parameters over a large ensemble of runs
+can in part be reduced to the parsing, modifying, and storing of namelists.
 
-Python has been a dominant programming language in the sciences
+Python has been a dominant programming language in the sciences in recent years
 [@PyAstro:2019], consistent with the overall trend across programming
-[@PythonSO:2017], creating a growing need to build tools in Python which can
-manage any legacy data formats.  Given the importance of Fortran in both
+[@PythonSO:2017], which has created a growing need for tools in Python which
+can manage legacy data formats.  Given the importance of Fortran in both
 historical and modern scientific computing, the ability to accurately read and
 manipulate namelists offers the ability to both archive numerical results from
-the past, and to automate the configuration of future simulations.
+the past and to automate the configuration of future simulations.
 
 An example namelist, such as the one shown below:
 ```
@@ -67,31 +66,32 @@ nml = {
     }
 }
 ```
-
-Basic features include support for all intrinsic data types, as well as
-user-defined types and multidimensional arrays.  User-defined types are
-interpreted as hierarchical tree of `Namelist`s.  Multidimensional arrays
-are saved as nested lists of lists, with the most innermost lists corresponding
-to the first dimensional index.  This reverses the index order in Python, but
-corresponds to the usual ordering in memory.
+The module supports all intrinsic data types, as well as user-defined types and
+multidimensional arrays.  User-defined types are interpreted as hierarchical
+tree of `Namelist`s.  Multidimensional arrays are saved as nested lists of
+lists, with the most innermost lists corresponding to the first dimensional
+index.  This reverses the index order in Python, but corresponds to the usual
+ordering in memory.
 
 `f90nml` also includes a `patch` feature, which allows one to modify the values
-of an existing namelist while retaining its comments or existing formatting.
-There is some limited ability to add or remove values when patching.
+of an existing namelist while retaining its comments or existing whitespace
+formatting.  There is some limited ability to add or remove values during
+patching.
 
-Because data type is set at runtime in the executable and is not specified in
-the namelist, the data type of each value must be inferred, usually based on
-the strictest interpretation of the value.  Weak typing rules within namelists,
-such as the optional use of string delimiters or the rules for interpreting
-logical values, can lead to further ambiguity, including across compilers, and
-various control flags are provided to manage such behavior.  In most cases, an
-ambiguous value will fall back to interpretation as a string.
+Because a value's data type is assigned by the executable at runtime and is not
+specified in the namelist, the data type of each value must be inferred by the
+module, usually based on the strictest interpretation of the value.  Weak
+typing rules within namelists, such as the optional use of string delimiters or
+the multiple representations of logical values, can lead to further ambiguity.
+`f90nml` provides various control flags to manage these cases.  A truly
+ambiguous value will typically be intepreted as a literal string, rather than
+raise an error.
 
 Another limitation of the namelist format is the use of a arbitrary start index
 in a Fortran array, which may be used at runtime but not specified in the
 namelist.  For this reason, arrays are assumed to begin at the lowest explicit
-index which exists in the namelist, which is stored as metadata.  For example,
-if we parse the namelist below:
+index which is defined in the namelist, and is stored as metadata.  For
+example, if we parse the namelist below:
 ```
     &a_nml
        x(3:4) = 1.0, 1.1
@@ -107,9 +107,10 @@ then it would be saved internally as the following 0-based Python list:
          '_start_index': {'x': 3}
     }
 ```
-When index is unspecified, then the index is also unspecified within the
-`Namelist`, although ordering remains 0-based within the Python environment.
-Additional control flags are also provided to control the start index.
+If the start index is unspecified, then the index is also unspecified within
+the `Namelist`, although ordering remains 0-based within the Python
+environment.  Additional control flags are also provided to control the start
+index.
 
 `f90nml` also provides the following additional features:
 
@@ -124,12 +125,18 @@ The module is supported by an extensive test suite with a very high level of
 code coverage, ensuring compatibility of existing namelists over future
 releases.
 
+
 Acknowledgements
 ================
+
+Development of `f90nml` has been ongoing for several years, and was created to
+support research activites at the Australian National University as part of the
+Australian Centre of Excellence in Climate System Science (ARCCSS).
 
 This project is sustained by the feedback from its users, and continues to
 benefit from contributions from its userbase, for which the author is immensely
 grateful.
+
 
 References
 ==========
