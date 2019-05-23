@@ -1,0 +1,23 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    {
+      "@id": "0000-0002-4944-7431",
+      "@type": "Person",
+      "email": "marshall.ward@gmail.com",
+      "name": "Marshall Ward",
+      "affiliation": "NOAA Geophysical Fluid Dynamics Laboratory, Princeton, NJ, United States"
+    }
+  ],
+  "identifier": "https://doi.org/10.5281/zenodo.3222010",
+  "codeRepository": "https://github.com/marshallward/f90nml",
+  "datePublished": "2019-05-23",
+  "dateModified": "2019-05-23",
+  "dateCreated": "2019-05-23",
+  "description": "A Python module and command line tool for working with Fortran namelists ",
+  "keywords": "fortran python namelist parser",
+  "license": "Apache 2.0",
+  "title": "f90nml",
+  "version": "v1.1"
+}
