@@ -26,7 +26,7 @@ Python methods, and can be saved as a formatted namelist file.
 
 Basic features include support for all intrinsic data types, as well as
 user-defined types and multidimensional arrays.  User-defined types are
-interpreted as hierarchical tree of `Namelists`\s.  Multidimensional arrays
+interpreted as hierarchical tree of `Namelist`s.  Multidimensional arrays
 are saved as nested lists of lists, with the most innermost lists corresponding
 to the first dimensional index.  This reverses the index order in Python, but
 corresponds to the usual ordering in memory.
