@@ -7,23 +7,22 @@ tags:
 authors:
     - name: Marshall L. Ward
       orcid: 0000-0002-4944-7431
-      affiliations: '1, 2'
+      affiliations: '1'
 affiliations:
     - name: NOAA Geophysical Fluid Dynamics Laboratory, Princeton, NJ, USA
       index: 1
-    - name: National Computational Infrastructure, Canberra, Australia
-      index: 2
 date: 22 May 2019
+bibliography: paper.bib
 ---
 
 Summary
 =======
 
 F90nml is a Python module used for importing, manipulating, and writing Fortran
-namelist files.  The primary use case is to read a namelist variable into a
-`Namelist` data structure, which behaves similarly to the intrinsic `dict`
-type.  The content can be read and modified using standard Python methods, and
-can be saved as a formatted namelist file.
+namelist files.[@ISO:2018:1539:1]  The primary use case is to read a namelist
+variable into a `Namelist` data structure, which behaves similarly to the
+intrinsic `dict` type.  The content can be read and modified using standard
+Python methods, and can be saved as a formatted namelist file.
 
 Basic features include support for all intrinsic data types, as well as
 user-defined types and multidimensional arrays.  User-defined types are
@@ -64,22 +63,26 @@ then it would be saved internally as the following 0-based Python list:
          '_start_index': {'x': 3}
     }
 
-When index is unspecified, then the index is left unspecified within the
+When index is unspecified, then the index is also unspecified within the
 `Namelist`, although ordering remains 0-based within the Python environment.
 Additional control flags are also provided to control the start index.
 
 F90nml also provides the following additional features:
 
-  - A command line tool for working in a shell environment
-  - Lossless conversion between `Namelist` and `dict` types
-  - Support for legacy Fortran namelist formats
-  - Conversion between JSON and YAML output
-  - Automated, configurable output formatting
+-   A command line tool for working in a shell environment
+-   Lossless conversion between `Namelist` and `dict` types
+-   Support for legacy Fortran namelist formats
+-   Conversion between JSON and YAML output
+-   Automated, configurable output formatting
+-   Handling of repeated groups within a namelist
 
 The module is supported by an extensive test suite with a very high level of
 code coverage, ensuring compatibility of existing namelists over future
 releases.
 
-This project is sustained by the feedback of its users, and continues to
+This project is sustained by the feedback from its users, and continues to
 benefit from contributions from its userbase, for which the author is immensely
 grateful.
+
+References
+==========
