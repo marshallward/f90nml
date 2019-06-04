@@ -139,7 +139,10 @@ def parse():
         if not args.group:
             # Use the first available group
             grp = list(input_data.keys())[0]
-            warnings.warn('f90nml: warning: Assuming variables are in group \'{0}\'.'.format(grp))
+            warnings.warn(
+                'f90nml: warning: Assuming variables are in group \'{g}\'.'
+                ''.format(g=grp)
+            )
         else:
             grp = args.group
 

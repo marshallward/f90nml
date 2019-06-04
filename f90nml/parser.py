@@ -785,9 +785,11 @@ class Parser(object):
                     # Repeating commas are null-statements and can be ignored
                     # Otherwise, we warn the user that this is a bad namelist
                     if next_value is not None:
-                        warnings.warn('f90nml: warning: Value {0} is not assigned to '
-                              'any variable and has been removed.'
-                              ''.format(next_value))
+                        warnings.warn(
+                            'f90nml: warning: Value {v} is not assigned to '
+                            'any variable and has been removed.'
+                            ''.format(v=next_value)
+                        )
 
                     # There are more values than indices, so we stop here
                     break
@@ -847,8 +849,8 @@ def prepad_array(var, v_start_idx, new_start_idx):
     # Apply prepad rules to interior arrays
     for i, v in enumerate(var):
         if isinstance(v, list):
-            prior_var[i] = prepad_array(v, v_start_idx[:-1], new_start_idx[:-1])
-
+            prior_var[i] = prepad_array(v, v_start_idx[:-1],
+                                        new_start_idx[:-1])
     return pad + prior_var
 
 
