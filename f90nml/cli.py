@@ -53,9 +53,6 @@ def parse():
                         help="modify the existing namelist as a patch")
     parser.add_argument('--format', '-f', action='store',
                         help="specify the output format (json, yaml, or nml)")
-    parser.add_argument('--output', '-o', action='store',
-                        help="specify namelist group to modify. "
-                        "When absent, the first group is used")
 
     parser.add_argument('input', nargs='?')
     parser.add_argument('output', nargs='?')

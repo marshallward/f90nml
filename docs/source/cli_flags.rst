@@ -5,9 +5,6 @@
 
 -h, --help                    display this help and exit
 
--o OUTPUT, --output OUTPUT    set the output filename.  When absent, output is send to
-                              standard output
-
 -p, --patch                   modify the existing namelist as a patch
 
 -v EXPR, --variable EXPR      specify the namelist variable to add or modify,
