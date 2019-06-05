@@ -16,7 +16,13 @@ A Python module and command line tool for parsing Fortran namelist files
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1112518.svg
    :target: https://doi.org/10.5281/zenodo.1112518
 
-Documentation: http://f90nml.readthedocs.org/en/latest/
+
+Documentation
+=============
+
+The complete documentation for ``f90nml`` is available from Read The Docs.
+
+   http://f90nml.readthedocs.org/en/latest/
 
 
 About f90nml
