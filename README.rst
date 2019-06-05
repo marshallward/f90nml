@@ -149,3 +149,13 @@ Users without install privileges can append the ``--user`` flag to
 ``setup.py``::
 
    $ python setup.py install --user
+
+
+Contributing to ``f90nml``
+==========================
+
+Users are welcome to submit bug reports, feature requests, and code
+contributions to this project through GitHub.  More information is available in
+the `Contributing`_ guidelines.
+
+.. _Contributing: contributing.html
