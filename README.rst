@@ -149,7 +149,7 @@ The latest version of ``f90nml`` can be installed from source::
 Users without install privileges can append the ``--user`` flag to ``pip`` from
 the top ``f90nml`` directory::
 
-   $ pip install -e . --user
+   $ pip install -e --user .
 
 If pip is not available, then ``setup.py`` can still be used::
 
