@@ -8,6 +8,7 @@ Contents
    usage
    cli
    notes
+   contributing
 
 
 Licensing
