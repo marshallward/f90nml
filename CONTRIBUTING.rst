@@ -2,7 +2,7 @@
 Contributing to ``f90nml``
 ==========================
 
-``f90nml`` development is driven by user feedback, and you contributions help
+``f90nml`` development is driven by user feedback, and your contributions help
 to find bugs, add features, and improve performance.  This is a small guide to
 help those who wish to contribute.
 
