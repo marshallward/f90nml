@@ -158,4 +158,4 @@ Users are welcome to submit bug reports, feature requests, and code
 contributions to this project through GitHub.  More information is available in
 the `Contributing`_ guidelines.
 
-.. _Contributing: contributing.html
+.. _Contributing: http://f90nml.readthedocs.org/en/latest/contributing.html
