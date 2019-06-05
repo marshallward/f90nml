@@ -60,10 +60,14 @@ setup(
     packages = ['f90nml'],
     scripts=project_scripts,
 
+    extras_require = {
+        'yaml': ['PyYAML'],
+    },
+
     cmdclass = {'test': ProjectTest},
 
     classifiers = [
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
@@ -75,6 +79,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Utilities',
     ]
 )

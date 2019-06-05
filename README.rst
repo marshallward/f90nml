@@ -137,18 +137,28 @@ It is also available on Arch Linux via the AUR::
    $ cd python-f90nml
    $ makepkg -sri
 
-``f90nml`` is currently not available on other Linux distributions.
+``f90nml`` is currently not available on other Linux distributions, but
+volunteers are welcome to submit and maintain the packages.
 
 The latest version of ``f90nml`` can be installed from source::
 
    $ git clone https://github.com/marshallward/f90nml.git
    $ cd f90nml
-   $ python setup.py install
+   $ pip install .
 
-Users without install privileges can append the ``--user`` flag to
-``setup.py``::
+Users without install privileges can append the ``--user`` flag to ``pip`` from
+the top ``f90nml`` directory::
+
+   $ pip install -e . --user
+
+If pip is not available, then ``setup.py`` can still be used::
 
    $ python setup.py install --user
+
+When using ``setup.py`` locally, some users have reported that ``--prefix=``
+may need to be appended to the command::
+
+   $ python setup.py install --user --prefix=
 
 
 Contributing to ``f90nml``
