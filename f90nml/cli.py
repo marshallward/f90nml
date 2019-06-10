@@ -180,7 +180,7 @@ def parse():
                 elif output_fmt == 'yaml':
                     input_data = input_data.todict(complex_tuple=True)
                     yaml.dump(input_data, output_file,
-                              default_flow_style=True)
+                              default_flow_style=False)
             else:
                 # Default to namelist output
                 f90nml.write(input_data, output_file)

@@ -1132,7 +1132,9 @@ class Test(unittest.TestCase):
         cmd = ['f90nml', 'types.yaml']
         source_str = self.get_cli_output(cmd, get_stderr=True)
 
-        target_str = 'f90nml: error: YAML module could not be found.\n'
+        target_str = ('f90nml: error: YAML module could not be found.\n'
+            '  To enable YAML support, install PyYAML or use the f90nml[yaml] '
+            'package.\n')
         self.assertEqual(source_str, target_str)
 
         f90nml.cli.has_yaml = orig_has_yaml
