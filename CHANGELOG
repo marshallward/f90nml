@@ -1,3 +1,9 @@
+1.1.1:
+    - YAML: Additional install support (f90nml[yaml]) package and additional
+      documentation for supporting YAML conversion.
+    - Bugfix: Removal of `-o` output flag.  The positional argument is now used
+      exclusively to set the output file in the CLI.
+    - Documentation changes and integration, thanks to the JOSS reviewers.
 1.1:
     - Bugfix: Out-of-order multidimensional support now works correctly.
     - Bugfix: Derived type list updates without an index now correctly apply
