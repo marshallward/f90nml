@@ -137,20 +137,29 @@ Installation
 
    $ pip install f90nml
 
-It is also available on Arch Linux via the AUR::
-
-   $ git clone https://aur.archlinux.org/python-f90nml.git
-   $ cd python-f90nml
-   $ makepkg -sri
-
-``f90nml`` is currently not available on other Linux distributions, but
-volunteers are welcome to submit and maintain the packages.
-
 The latest version of ``f90nml`` can be installed from source::
 
    $ git clone https://github.com/marshallward/f90nml.git
    $ cd f90nml
    $ pip install .
+
+
+Package distribution
+--------------------
+
+``f90nml`` is not distributed through any official packaging tools, but it is
+available on Arch Linux via the AUR::
+
+   $ git clone https://aur.archlinux.org/python-f90nml.git
+   $ cd python-f90nml
+   $ makepkg -sri
+
+Volunteers are welcome to submit and maintain ``f90nml`` on other
+distributions.
+
+
+Local install
+-------------
 
 Users without install privileges can append the ``--user`` flag to ``pip`` from
 the top ``f90nml`` directory::
@@ -165,6 +174,20 @@ When using ``setup.py`` locally, some users have reported that ``--prefix=``
 may need to be appended to the command::
 
    $ python setup.py install --user --prefix=
+
+
+YAML support
+------------
+
+The command line tool offers support for conversion between namelists and YAML
+formatted output.  If PyYAML is already installed, then no other steps are
+required.  To require YAML support, install the ``yaml`` extras package::
+
+   $ pip install f90nml[yaml]
+
+To install as a user::
+
+   $ pip install -e --user .[yaml]
 
 
 Contributing to ``f90nml``

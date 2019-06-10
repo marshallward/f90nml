@@ -106,6 +106,8 @@ def parse():
     if (input_fmt == 'yaml' or output_fmt == 'yaml') and not has_yaml:
         print('f90nml: error: YAML module could not be found.',
               file=sys.stderr)
+        print('  To enable YAML support, install PyYAML or use the '
+              'f90nml[yaml] package.', file=sys.stderr)
         sys.exit(-1)
 
     # Do not patch non-namelist output
@@ -179,7 +181,6 @@ def parse():
                     input_data = input_data.todict(complex_tuple=True)
                     yaml.dump(input_data, output_file,
                               default_flow_style=True)
-                              #default_flow_style=False)
             else:
                 # Default to namelist output
                 f90nml.write(input_data, output_file)
