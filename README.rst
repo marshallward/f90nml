@@ -164,7 +164,7 @@ Local install
 Users without install privileges can append the ``--user`` flag to ``pip`` from
 the top ``f90nml`` directory::
 
-   $ pip install --user -e .
+   $ pip install --user .
 
 If pip is not available, then ``setup.py`` can still be used::
 
@@ -187,7 +187,7 @@ required.  To require YAML support, install the ``yaml`` extras package::
 
 To install as a user::
 
-   $ pip install --user -e .[yaml]
+   $ pip install --user .[yaml]
 
 
 Contributing to ``f90nml``
