@@ -1,3 +1,5 @@
+1.1.2:
+    - README update to remove `-e` flags for local installs.
 1.1.1:
     - YAML: Additional install support (f90nml[yaml]) package and additional
       documentation for supporting YAML conversion.
