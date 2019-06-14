@@ -81,7 +81,7 @@ specified in the namelist, the data type of each value must be inferred by the
 typing rules within namelists, such as the optional use of string delimiters or
 the multiple representations of logical values, can lead to further ambiguity.
 `f90nml` provides various control flags to manage these cases.  A truly
-ambiguous value will typically be intepreted as a literal string, rather than
+ambiguous value will typically be interpreted as a literal string, rather than
 raise an error.
 
 Another limitation of the namelist format is the use of a arbitrary start index
