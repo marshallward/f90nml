@@ -1,13 +1,18 @@
 language: python
+group: travis_latest
+dist: xenial
+
 python:
-    - "2.6"
-    - "2.7"
-    - "3.3"
-    - "3.4"
-    - "3.5"
-    - "3.6"
-    - "pypy"
-    - "pypy3"
+    - 2.6
+    - 2.7
+    - 3.3
+    - 3.4
+    - 3.5
+    - 3.6
+    - 3.7
+    - pypy
+    - pypy3
+
 install:
     - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then
         pip install ordereddict; fi
@@ -19,4 +24,3 @@ script:
 after_success:
     - coverage report -m
     - coveralls
-sudo: False
