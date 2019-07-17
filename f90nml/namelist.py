@@ -118,13 +118,14 @@ class Namelist(OrderedDict):
 
         elif is_nullable_list(value, dict):
             for i, v in enumerate(value):
-                if v is not None:
+                if isinstance(v, Namelist) or v is None:
+                    value[i] = v
+                else:
+                    # value is a non-Namelist dict
                     value[i] = Namelist(
                         v,
                         default_start_index=self.default_start_index
                     )
-                else:
-                    value[i] = None
 
         super(Namelist, self).__setitem__(key.lower(), value)
 
