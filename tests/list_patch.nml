@@ -1,0 +1,3 @@
+&list_patch_nml
+    x = 'a', 'b', 'c', 'd', 'e'
+/

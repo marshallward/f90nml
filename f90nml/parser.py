@@ -583,8 +583,6 @@ class Parser(object):
                 if self.token in ('/', '&', '$', '='):
                     break
                 else:
-                    # Get the remaining length of the unpatched vector?
-
                     # NOTE: it is probably very inefficient to keep re-creating
                     # iterators upon every element; this solution reflects the
                     # absence of mature lookahead in the script.
@@ -594,19 +592,17 @@ class Parser(object):
                     # represents a direction to fully rewrite the parser using
                     # `tee`.
 
-                    self.tokens, lookahead = itertools.tee(self.tokens)
+                    # NOTE: We may be able to assume that self.token is a value
+                    #       rather than prepending it to the iterator.
+                    self.tokens, pre_lookahead = itertools.tee(self.tokens)
+                    lookahead = itertools.chain([self.token], pre_lookahead)
                     n_vals_remain = count_values(lookahead)
 
                     if patch_values:
-                        # XXX: The (p_idx - 1) <= n_vals_remain test is dodgy
-                        # and does not really make sense to me, but it appears
-                        # to work.
-
                         # TODO: Patch indices that are not set in the namelist
-
-                        if (p_idx < len(patch_values) and
-                                (p_idx - 1) <= n_vals_remain and
-                                len(patch_values) > 0 and self.token != ','):
+                        if (p_idx < len(patch_values)
+                                and n_vals_remain > 0
+                                and self.token != ','):
                             p_val = patch_values[p_idx]
                             p_repr = patch_nml._f90repr(patch_values[p_idx])
                             p_idx += 1
@@ -931,12 +927,12 @@ def count_values(tokens):
     """Identify the number of values ahead of the current token."""
     ntoks = 0
     for tok in tokens:
-        if tok in ('=', '/', '$', '&'):
+        if tok.isspace() or tok == ',':
+            continue
+        elif tok in ('=', '/', '$', '&'):
             if ntoks > 0 and tok == '=':
                 ntoks -= 1
             break
-        elif tok in whitespace + ',':
-            continue
         else:
             ntoks += 1
 

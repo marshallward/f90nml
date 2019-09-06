@@ -369,6 +369,12 @@ class Test(unittest.TestCase):
 
         self.ext_token_nml = {'ext_token_nml': {'x': 1}}
 
+        self.list_patch_nml = {
+            'list_patch_nml': {
+                'x': ['1', '2', '3', '4', '5']
+            }
+        }
+
         self.repatch_nml = {
             'repatch_nml': {
                 'x': [5, 6],
@@ -683,6 +689,14 @@ class Test(unittest.TestCase):
     def test_patch_typeerror(self):
         self.assertRaises(TypeError, f90nml.patch, 'types.nml', 'xyz',
                           'tmp.nml')
+
+    def test_patch_list(self):
+        f90nml.patch('list_patch.nml', self.list_patch_nml, 'tmp.nml')
+        test_nml = f90nml.read('tmp.nml')
+        try:
+            self.assertEqual(test_nml, self.list_patch_nml)
+        finally:
+            os.remove('tmp.nml')
 
     def test_repatch(self):
         f90nml.patch('repatch.nml', self.repatch_nml, 'tmp.nml')
