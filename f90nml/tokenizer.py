@@ -29,6 +29,9 @@ class Tokenizer(object):
         # Set to true if inside a namelist group
         self.group_token = None
 
+        # Standard token sets
+        self.comment_tokens = '!'
+
     def parse(self, line):
         """Tokenize a line of Fortran source."""
         tokens = []
@@ -52,7 +55,7 @@ class Tokenizer(object):
                     word += self.char
                     self.update_chars()
 
-            elif self.char in ('!', '#') or self.group_token is None:
+            elif self.char in self.comment_tokens or self.group_token is None:
                 # Abort the iteration and build the comment token
                 word = line[self.idx:-1]
                 self.char = '\n'

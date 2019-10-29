@@ -284,6 +284,7 @@ class Parser(object):
         nml_patch = nml_patch_in if nml_patch_in is not None else Namelist()
 
         tokenizer = Tokenizer()
+        tokenizer.comment_tokens = self.comment_tokens
         f90lex = []
         for line in nml_file:
             toks = tokenizer.parse(line)
