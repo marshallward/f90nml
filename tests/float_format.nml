@@ -15,4 +15,6 @@
     v_no_exp_neg_dot = 1.000
     v_neg_no_exp_pos = -1.000
     v_neg_no_exp_neg = -1.000
+    v_pos_decimal = 0.010
+    v_neg_decimal = -0.010
 /

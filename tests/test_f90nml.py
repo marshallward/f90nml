@@ -197,6 +197,8 @@ class Test(unittest.TestCase):
                 'v_no_exp_neg_dot': 1.,
                 'v_neg_no_exp_pos': -1.,
                 'v_neg_no_exp_neg': -1.,
+                'v_pos_decimal': 0.01,
+                'v_neg_decimal': -0.01,
             }
         }
 
@@ -204,6 +206,7 @@ class Test(unittest.TestCase):
             'string_nml': {
                 'str_basic': 'hello',
                 'str_no_delim': 'hello',
+                'str_no_delim_token': '+hello',
                 'str_no_delim_no_esc': "a''b",
                 'single_esc_delim': "a 'single' delimiter",
                 'double_esc_delim': 'a "double" delimiter',

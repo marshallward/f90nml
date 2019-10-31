@@ -15,7 +15,7 @@ class Tokenizer(object):
     lexical_tokens = '=+-*/()[],.:;%&<>'                    # Meaningful?
 
     # I only use this one
-    punctuation = '=+-*/\\()[]{},:;%&~<>?`|$#@'    # Unhandled Table 3.1 tokens
+    punctuation = '=*/\\()[]{},:;%&~<>?`|$#@'    # Unhandled Table 3.1 tokens
 
     def __init__(self):
         """Initialise the tokenizer."""
@@ -63,67 +63,19 @@ class Tokenizer(object):
             elif self.char in '"\'' or self.prior_delim:
                 word = self.parse_string()
 
-            elif self.char.isalpha():
-                word = self.parse_name(line)
-
-            elif self.char in ('+', '-'):
-                # Lookahead to check for IEEE value
-                self.characters, lookahead = itertools.tee(self.characters)
-                ieee_val = ''.join(itertools.takewhile(str.isalpha, lookahead))
-                if ieee_val.lower() in ('inf', 'infinity', 'nan'):
-                    word = self.char + ieee_val
-                    self.characters = lookahead
-                    self.prior_char = ieee_val[-1]
-                    self.char = next(lookahead, '\n')
-                else:
-                    word = self.parse_numeric()
-
-            elif self.char.isdigit():
-                word = self.parse_numeric()
-
-            elif self.char == '.':
-                self.update_chars()
-                if self.char.isdigit():
-                    frac = self.parse_numeric()
-                    word = '.' + frac
-                else:
-                    word = '.'
-                    while self.char.isalpha():
-                        word += self.char
-                        self.update_chars()
-                    if self.char == '.':
-                        word += self.char
-                        self.update_chars()
-
             elif self.char in Tokenizer.punctuation:
                 word = self.char
                 self.update_chars()
 
             else:
-                # This should never happen
-                raise ValueError
+                while (not self.char.isspace()
+                       and self.char not in Tokenizer.punctuation):
+                    word += self.char
+                    self.update_chars()
 
             tokens.append(word)
 
         return tokens
-
-    def parse_name(self, line):
-        """Tokenize a Fortran name, such as a variable or subroutine."""
-        end = self.idx
-        for char in line[self.idx:]:
-            if not char.isalnum() and char not in '\'"_':
-                break
-            end += 1
-
-        word = line[self.idx:end]
-
-        self.idx = end - 1
-        # Update iterator, minus first character which was already read
-        self.characters = itertools.islice(self.characters, len(word) - 1,
-                                           None)
-        self.update_chars()
-
-        return word
 
     def parse_string(self):
         """Tokenize a Fortran string."""
@@ -153,36 +105,6 @@ class Tokenizer(object):
             else:
                 word += self.char
                 self.update_chars()
-
-        return word
-
-    def parse_numeric(self):
-        """Tokenize a Fortran numerical value."""
-        word = ''
-        frac = False
-
-        if self.char == '-':
-            word += self.char
-            self.update_chars()
-
-        while self.char.isdigit() or (self.char == '.' and not frac):
-            # Only allow one decimal point
-            if self.char == '.':
-                frac = True
-            word += self.char
-            self.update_chars()
-
-        # Check for float exponent
-        if self.char in 'eEdD':
-            word += self.char
-            self.update_chars()
-
-        if self.char in '+-':
-            word += self.char
-            self.update_chars()
-        while self.char.isdigit():
-            word += self.char
-            self.update_chars()
 
         return word
 

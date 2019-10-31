@@ -19,4 +19,7 @@
     v_no_exp_neg_dot = 1.-0
     v_neg_no_exp_pos = -1+0
     v_neg_no_exp_neg = -1-0
+
+    v_pos_decimal = +.01
+    v_neg_decimal = -.01
 /
