@@ -330,6 +330,9 @@ class Test(unittest.TestCase):
             'bcast_mixed_nml': {
                 'x': [1, 1, 1, 2, 3, 4],
                 'y': [1, 1, 1, 2, 2, 3],
+            },
+            'bcast_null_endcomma': {
+                'x': [None, None, None],
             }
         }
 

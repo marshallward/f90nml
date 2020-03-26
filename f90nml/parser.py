@@ -561,12 +561,11 @@ class Parser(object):
                         self._append_value(v_values, None, v_idx, n_vals)
 
                 elif self.prior_token == '*':
-
                     if self.token not in ('/', '&', '$'):
                         self._update_tokens()
 
                     if (self.token == '=' or (self.token in ('/', '&', '$') and
-                                              self.prior_token == '*')):
+                                              self.prior_token in ('*', ','))):
                         next_value = None
                     else:
                         next_value = self._parse_value()
