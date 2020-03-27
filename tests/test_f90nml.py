@@ -323,7 +323,16 @@ class Test(unittest.TestCase):
                 'y': [None, None, None],
                 'z': [True, True, True, True],
             },
+            'bcast_nml_comma': {
+                'x': [2.0, 2.0],
+                'y': [None, None, None],
+                'z': [True, True, True, True],
+            },
             'bcast_endnull_nml': {
+                'x': [2.0, 2.0],
+                'y': [None, None, None],
+            },
+            'bcast_endnull_nml_comma': {
                 'x': [2.0, 2.0],
                 'y': [None, None, None],
             },
@@ -331,9 +340,11 @@ class Test(unittest.TestCase):
                 'x': [1, 1, 1, 2, 3, 4],
                 'y': [1, 1, 1, 2, 2, 3],
             },
-            'bcast_null_endcomma': {
-                'x': [None, None, None],
-            }
+            'bcast_mixed_null_nml': {
+                'x': [1, None, None, None, 3, 4],
+                'y': [1, 1, 1, None, None, None, 3, 4],
+                'z': [1, None, None, None, None, 4],
+            },
         }
 
         self.comment_nml = {

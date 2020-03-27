@@ -564,9 +564,15 @@ class Parser(object):
                     if self.token not in ('/', '&', '$'):
                         self._update_tokens()
 
-                    if (self.token == '=' or (self.token in ('/', '&', '$') and
-                                              self.prior_token in ('*', ','))):
+                    if (self.prior_token == ',' or self.token == '='
+                            or (self.token in ('/', '&', '$')
+                                and self.prior_token == '*')):
                         next_value = None
+
+                        # XXX: Repeated ,, after N*, will be off by one...
+                        if self.prior_token == ',' and self.token == ',':
+                            n_vals += 1
+
                     else:
                         next_value = self._parse_value()
 

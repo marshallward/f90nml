@@ -4,9 +4,21 @@
     z = 4*.true.
 /
 
+&bcast_nml_comma
+    x = 2*2.0,
+    y = 3*,
+    z = 4*.true.,
+/
+
+
 &bcast_endnull_nml
     x = 2*2.0
     y = 3*
+/
+
+&bcast_endnull_nml_comma
+    x = 2*2.0,
+    y = 3*,
 /
 
 &bcast_mixed_nml
@@ -14,6 +26,8 @@
     y = 3*1, 2*2, 3
 /
 
-&bcast_null_endcomma
-    x = 3*,
+&bcast_mixed_null_nml
+    x = 1, 3*, 3, 4
+    y = 3*1, 3*, 3, 4
+    z = 1, 3*, , 4
 /
