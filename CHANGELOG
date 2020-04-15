@@ -1,3 +1,9 @@
+1.2:
+    - Bugfix: Repeated null arrays as final elements now parse correctly.
+    - Bugfix: Preprossor comment token # now correctly disabled on default.
+    - Bugfix: Several indexing issues with array patching have been fixed.
+    - Improved "duck typing" tokenization of numerics and other data types,
+    - Removal of Namelist constructor calls in __setitem__.
 1.1.2:
     - README update to remove `-e` flags for local installs.
 1.1.1:
