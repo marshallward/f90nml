@@ -390,7 +390,7 @@ class Namelist(OrderedDict):
             raise TypeError('default_start_index must be an integer.')
         self._default_start_index = value
 
-    def write(self, nml_path, force=False, sort=False):
+    def write(self, nml_path, force=False, sort=False, colwidth=0):
         """Write Namelist to a Fortran 90 namelist file.
 
         >>> nml = f90nml.read('input.nml')
@@ -402,7 +402,7 @@ class Namelist(OrderedDict):
 
         nml_file = nml_path if nml_is_file else open(nml_path, 'w')
         try:
-            self._writestream(nml_file, sort)
+            self._writestream(nml_file, sort=sort, colwidth=colwidth)
         finally:
             if not nml_is_file:
                 nml_file.close()
@@ -430,7 +430,7 @@ class Namelist(OrderedDict):
             for inner_key, inner_value in value.items():
                 yield (key, inner_key), inner_value
 
-    def _writestream(self, nml_file, sort=False):
+    def _writestream(self, nml_file, sort=False, colwidth=0):
         """Output Namelist to a streamable file object."""
         # Reset newline flag
         self._newline = False
@@ -444,11 +444,14 @@ class Namelist(OrderedDict):
             # Check for repeated namelist records (saved as lists)
             if isinstance(grp_vars, list):
                 for g_vars in grp_vars:
-                    self._write_nmlgrp(grp_name, g_vars, nml_file, sort)
+                    self._write_nmlgrp(grp_name, g_vars, nml_file, sort=sort,
+                                       colwidth=colwidth)
             else:
-                self._write_nmlgrp(grp_name, grp_vars, nml_file, sort)
+                self._write_nmlgrp(grp_name, grp_vars, nml_file, sort=sort,
+                                   colwidth=colwidth)
 
-    def _write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False):
+    def _write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False,
+                      colwidth=0):
         """Write namelist group to target file."""
         if self._newline:
             print(file=nml_file)
@@ -466,13 +469,15 @@ class Namelist(OrderedDict):
 
             v_start = grp_vars.start_index.get(v_name, None)
 
-            for v_str in self._var_strings(v_name, v_val, v_start=v_start):
+            for v_str in self._var_strings(v_name, v_val, v_start=v_start,
+                                           colwidth=colwidth):
                 nml_line = self.indent + '{0}'.format(v_str)
                 print(nml_line, file=nml_file)
 
         print('/', file=nml_file)
 
-    def _var_strings(self, v_name, v_values, v_idx=None, v_start=None):
+    def _var_strings(self, v_name, v_values, v_idx=None, v_start=None,
+                     colwidth=0):
         """Convert namelist variable to list of fixed-width strings."""
         if self.uppercase:
             v_name = v_name.upper()
@@ -504,7 +509,7 @@ class Namelist(OrderedDict):
             for idx, val in enumerate(v_values, start=i_s):
                 v_idx_new = v_idx + [idx]
                 v_strs = self._var_strings(v_name, val, v_idx=v_idx_new,
-                                           v_start=v_start)
+                                           v_start=v_start, colwidth=colwidth)
                 var_strs.extend(v_strs)
 
         # Parse derived type contents
@@ -515,7 +520,8 @@ class Namelist(OrderedDict):
                 v_start_new = v_values.start_index.get(f_name, None)
 
                 v_strs = self._var_strings(v_title, f_vals,
-                                           v_start=v_start_new)
+                                           v_start=v_start_new,
+                                           colwidth=colwidth)
                 var_strs.extend(v_strs)
 
         # Parse an array of derived types
@@ -533,7 +539,7 @@ class Namelist(OrderedDict):
 
                 v_title = v_name + '({0})'.format(idx)
 
-                v_strs = self._var_strings(v_title, val)
+                v_strs = self._var_strings(v_title, val, colwidth=colwidth)
                 var_strs.extend(v_strs)
 
         else:
@@ -586,7 +592,7 @@ class Namelist(OrderedDict):
             val_line = ''
             for v_val in v_values:
 
-                v_header = v_name + v_idx_repr + ' = '
+                v_header = (v_name + v_idx_repr).ljust(colwidth) + ' = '
                 # Increase column width if the header exceeds this value
                 if len(self.indent + v_header) >= self.column_width:
                     column_width = len(self.indent + v_header) + 1
@@ -614,12 +620,14 @@ class Namelist(OrderedDict):
 
             # Complete the set of values
             if val_strs:
-                var_strs.append('{0}{1} = {2}'
-                                ''.format(v_name, v_idx_repr,
-                                          val_strs[0]).strip())
+                var_strs.append('{0}{1}'.format(v_name, v_idx_repr).strip()
+                                .ljust(colwidth)
+                                + ' = '
+                                + '{}'.format(val_strs[0]).strip())
 
                 for v_str in val_strs[1:]:
-                    var_strs.append(' ' * len(v_header) + v_str)
+                    var_strs.append((' ' * len(v_header)).ljust(colwidth+3)
+                                    + v_str)
 
         return var_strs
 
