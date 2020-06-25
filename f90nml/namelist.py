@@ -264,7 +264,7 @@ class Namelist(OrderedDict):
     def indent(self):
         r"""Set the whitespace indentation of namelist entries.
 
-        :type: ``int``, ``str`` 
+        :type: ``int``, ``str``
         :default: ``'    '`` (four spaces)
 
         This can be set to an integer, denoting the number of spaces, or to an
