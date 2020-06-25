@@ -43,7 +43,10 @@ class Parser(object):
 
     @property
     def comment_tokens(self):
-        """List of tokens used to designate comments in a namelist file.
+        """String of single-character comment tokens in the namelist.
+
+        :type: ``str``
+        :default: ``'!'``
 
         Some Fortran programs will introduce alternative comment tokens (e.g.
         ``#``) for internal preprocessing.
@@ -57,7 +60,7 @@ class Parser(object):
 
         Be aware that this is non-standard Fortran and could mangle any strings
         using the ``#`` characters.  Characters inside string delimiters should
-        be protected.
+        be protected, however.
         """
         return self._comment_tokens
 
@@ -70,7 +73,10 @@ class Parser(object):
 
     @property
     def default_start_index(self):
-        """Assumed starting index for a vector (Default: 1).
+        """Assumed starting index for a vector.
+
+        :type: ``int``
+        :default: 1
 
         Since Fortran allows users to set an arbitrary start index, it is not
         always possible to assign an index to values when no index range has
@@ -112,27 +118,11 @@ class Parser(object):
         self._default_start_index = value
 
     @property
-    def sparse_arrays(self):
-        """Store unset rows of multidimensional arrays as empty lists.
-
-        Enabling this flag will replace rows of unset values with empty lists,
-        and will also not pad any existing rows when other rows are expanded.
-
-        This is not a true sparse representation, but rather is slightly more
-        sparse than the default dense array representation.
-        """
-        return self._sparse_arrays
-
-    @sparse_arrays.setter
-    def sparse_arrays(self, value):
-        """Validate and enable spare arrays."""
-        if not isinstance(value, bool):
-            raise TypeError('sparse_arrays attribute must be a logical type.')
-        self._sparse_arrays = value
-
-    @property
     def global_start_index(self):
         """Define an explicit start index for all vectors.
+
+        :type: ``int``, ``None``
+        :default: ``None``
 
         When set to ``None``, vectors are assumed to start at the lowest
         specified index.  If no index appears in the namelist, then
@@ -178,6 +168,9 @@ class Parser(object):
     def row_major(self):
         """Read multidimensional arrays in row-major format.
 
+        :type: ``bool``
+        :default: ``False``
+
         Multidimensional array data contiguity is preserved by default, so that
         column-major Fortran data is represented as row-major Python list of
         lists.
@@ -199,8 +192,33 @@ class Parser(object):
                 self._row_major = value
 
     @property
+    def sparse_arrays(self):
+        """Store unset rows of multidimensional arrays as empty lists.
+
+        :type: ``bool``
+        :default: ``False``
+
+        Enabling this flag will replace rows of unset values with empty lists,
+        and will also not pad any existing rows when other rows are expanded.
+
+        This is not a true sparse representation, but rather is slightly more
+        sparse than the default dense array representation.
+        """
+        return self._sparse_arrays
+
+    @sparse_arrays.setter
+    def sparse_arrays(self, value):
+        """Validate and enable spare arrays."""
+        if not isinstance(value, bool):
+            raise TypeError('sparse_arrays attribute must be a logical type.')
+        self._sparse_arrays = value
+
+    @property
     def strict_logical(self):
         """Use strict rules for parsing logical data value parsing.
+
+        :type: ``bool``
+        :default: ``True``
 
         The ``strict_logical`` flag will limit the parsing of non-delimited
         logical strings as logical values.  The default value is ``True``.
@@ -211,9 +229,9 @@ class Parser(object):
 
         When ``strict_logical`` is disabled, any value starting with ``.t`` or
         ``t`` is interpreted as ``True``, while any string starting with ``.f``
-        or ``f`` is interpreted as ``False``, as described in the Fortran
-        specification.  However, it can interfere with namelists which contain
-        strings which do not use delimiters.
+        or ``f`` is interpreted as ``False``, as described in the language
+        standard.  However, it can interfere with namelists which contain
+        non-delimited strings.
         """
         return self._strict_logical
 
