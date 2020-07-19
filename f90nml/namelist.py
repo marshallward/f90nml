@@ -499,8 +499,8 @@ class Namelist(OrderedDict):
             v_start = grp_vars.start_index.get(v_name, None)
 
             for v_str in self._var_strings(v_name, v_val, v_start=v_start):
-                nml_line = self.indent + '{0}'.format(v_str)
-                print(nml_line, file=nml_file)
+                #nml_line = self.indent + '{0}'.format(v_str)
+                print(v_str, file=nml_file)
 
         print('/', file=nml_file)
 
@@ -612,13 +612,10 @@ class Namelist(OrderedDict):
                 v_idx_repr = ''
 
             # Split output across multiple lines (if necessary)
-
+            v_header = self.indent + v_name + v_idx_repr + ' = '
             val_strs = []
-
             val_line = ''
             for v_val in v_values:
-
-                v_header = self.indent + v_name + v_idx_repr + ' = '
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
                     column_width = len(v_header) + 1
@@ -646,15 +643,10 @@ class Namelist(OrderedDict):
 
             # Complete the set of values
             if val_strs:
-                var_strs.append('{0}{1} = {2}'
-                                ''.format(v_name, v_idx_repr,
-                                          val_strs[0]).strip())
+                var_strs.append(v_header + val_strs[0])
 
                 for v_str in val_strs[1:]:
-                    # TODO: Remove self.indent reference
-                    var_strs.append(
-                        ' ' * (len(v_header) - len(self.indent)) + v_str
-                    )
+                    var_strs.append(' ' * len(v_header) + v_str)
 
         return var_strs
 
