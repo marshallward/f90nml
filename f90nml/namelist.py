@@ -618,14 +618,14 @@ class Namelist(OrderedDict):
             val_line = ''
             for v_val in v_values:
 
-                v_header = v_name + v_idx_repr + ' = '
+                v_header = self.indent + v_name + v_idx_repr + ' = '
                 # Increase column width if the header exceeds this value
-                if len(self.indent + v_header) >= self.column_width:
-                    column_width = len(self.indent + v_header) + 1
+                if len(v_header) >= self.column_width:
+                    column_width = len(v_header) + 1
                 else:
                     column_width = self.column_width
 
-                v_width = column_width - len(self.indent + v_header)
+                v_width = column_width - len(v_header)
 
                 if len(val_line) < v_width:
                     val_line += self._f90repr(v_val) + ', '
@@ -651,7 +651,10 @@ class Namelist(OrderedDict):
                                           val_strs[0]).strip())
 
                 for v_str in val_strs[1:]:
-                    var_strs.append(' ' * len(v_header) + v_str)
+                    # TODO: Remove self.indent reference
+                    var_strs.append(
+                        ' ' * (len(v_header) - len(self.indent)) + v_str
+                    )
 
         return var_strs
 
