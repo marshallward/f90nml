@@ -614,7 +614,7 @@ class Namelist(OrderedDict):
             # Split output across multiple lines (if necessary)
             v_header = self.indent + v_name + v_idx_repr + ' = '
             val_strs = []
-            val_line = ''
+            val_line = v_header
             for v_val in v_values:
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
@@ -622,17 +622,15 @@ class Namelist(OrderedDict):
                 else:
                     column_width = self.column_width
 
-                v_width = column_width - len(v_header)
-
-                if len(val_line) < v_width:
+                if len(val_line) < column_width:
                     val_line += self._f90repr(v_val) + ', '
 
-                if len(val_line) >= v_width:
+                if len(val_line) >= column_width:
                     val_strs.append(val_line.rstrip())
-                    val_line = ''
+                    val_line = ' ' * len(v_header)
 
             # Append any remaining values
-            if val_line:
+            if val_line and not val_line.isspace():
                 val_strs.append(val_line.rstrip())
 
             if val_strs:
@@ -643,10 +641,7 @@ class Namelist(OrderedDict):
 
             # Complete the set of values
             if val_strs:
-                var_strs.append(v_header + val_strs[0])
-
-                for v_str in val_strs[1:]:
-                    var_strs.append(' ' * len(v_header) + v_str)
+                var_strs.extend(val_strs)
 
         return var_strs
 
