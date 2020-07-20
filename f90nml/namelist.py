@@ -499,8 +499,8 @@ class Namelist(OrderedDict):
             v_start = grp_vars.start_index.get(v_name, None)
 
             for v_str in self._var_strings(v_name, v_val, v_start=v_start):
-                nml_line = self.indent + '{0}'.format(v_str)
-                print(nml_line, file=nml_file)
+                #nml_line = self.indent + '{0}'.format(v_str)
+                print(v_str, file=nml_file)
 
         print('/', file=nml_file)
 
@@ -612,46 +612,64 @@ class Namelist(OrderedDict):
                 v_idx_repr = ''
 
             # Split output across multiple lines (if necessary)
-
+            v_header = self.indent + v_name + v_idx_repr + ' = '
             val_strs = []
-
-            val_line = ''
-            for v_val in v_values:
-
-                v_header = v_name + v_idx_repr + ' = '
+            val_line = v_header
+            for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
-                if len(self.indent + v_header) >= self.column_width:
-                    column_width = len(self.indent + v_header) + 1
+                if len(v_header) >= self.column_width:
+                    column_width = len(v_header) + 1
                 else:
                     column_width = self.column_width
 
-                v_width = column_width - len(self.indent + v_header)
+                if len(val_line) < column_width:
+                    # NOTE: We allow non-strings to extend past the column
+                    #   limit, but strings will be split as needed.
+                    v_str = self._f90repr(v_val)
+                    if isinstance(v_val, str):
+                        idx = column_width - len(val_line)
 
-                if len(val_line) < v_width:
-                    val_line += self._f90repr(v_val) + ', '
+                        # Split the line along idx until we either exceed the
+                        #   column width, or read the end of the string.
+                        while True:
+                            v_l, v_r = v_str[:idx], v_str[idx:]
+                            val_line += v_l
 
-                if len(val_line) >= v_width:
+                            if i_val < len(v_values) - 1 or self.end_comma:
+                                val_line += ', '
+
+                            if len(val_line) >= column_width:
+                                val_strs.append(val_line.rstrip())
+                                val_line = ''
+
+                            if v_r:
+                                v_str = v_r
+
+                                # Subsequent segments start on column zero
+                                idx = column_width
+                            else:
+                                break
+                    else:
+                        val_line += v_str
+                        if i_val < len(v_values) - 1 or self.end_comma:
+                            val_line += ', '
+
+                if len(val_line) >= column_width:
                     val_strs.append(val_line.rstrip())
-                    val_line = ''
+                    val_line = ' ' * len(v_header)
 
             # Append any remaining values
-            if val_line:
+            if val_line and not val_line.isspace():
                 val_strs.append(val_line.rstrip())
 
-            if val_strs:
-                if self.end_comma or v_values[-1] is None:
-                    pass
-                else:
-                    val_strs[-1] = val_strs[-1][:-1]
+            # Final null values must always precede a comma
+            if val_strs and v_values[-1] is None:
+                # NOTE: val_strs has been rstrip-ed so lead with a space
+                val_strs[-1] += ' ,'
 
             # Complete the set of values
             if val_strs:
-                var_strs.append('{0}{1} = {2}'
-                                ''.format(v_name, v_idx_repr,
-                                          val_strs[0]).strip())
-
-                for v_str in val_strs[1:]:
-                    var_strs.append(' ' * len(v_header) + v_str)
+                var_strs.extend(val_strs)
 
         return var_strs
 

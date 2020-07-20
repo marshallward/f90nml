@@ -384,6 +384,12 @@ class Test(unittest.TestCase):
             }
         }
 
+        self.long_string_nml = {
+            'long_string_nml' : {
+                's': ' '.join(12 * ['abcdefghijklmnopqrstuvwxyz'])
+            }
+        }
+
         self.ext_token_nml = {'ext_token_nml': {'x': 1}}
 
         self.list_patch_nml = {
@@ -654,7 +660,12 @@ class Test(unittest.TestCase):
     def test_long_varname(self):
         test_nml = f90nml.read('types.nml')
         test_nml.column_width = 10
-        self.assert_write(test_nml, 'types.nml')
+        self.assert_write(test_nml, 'types_col10.nml')
+
+    def test_long_string(self):
+        test_nml = f90nml.read('long_string.nml')
+        self.assertEqual(self.long_string_nml, test_nml)
+        self.assert_write(test_nml, 'long_string_target.nml')
 
     def test_ext_token(self):
         test_nml = f90nml.read('ext_token.nml')
