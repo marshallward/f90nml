@@ -10,7 +10,6 @@ from __future__ import print_function
 
 import warnings
 import copy
-import sys
 from string import whitespace
 import itertools
 

@@ -615,7 +615,7 @@ class Namelist(OrderedDict):
             v_header = self.indent + v_name + v_idx_repr + ' = '
             val_strs = []
             val_line = v_header
-            for v_val in v_values:
+            for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
                     column_width = len(v_header) + 1
@@ -623,7 +623,36 @@ class Namelist(OrderedDict):
                     column_width = self.column_width
 
                 if len(val_line) < column_width:
-                    val_line += self._f90repr(v_val) + ', '
+                    # NOTE: We allow non-strings to extend past the column
+                    #   limit, but strings will be split as needed.
+                    v_str = self._f90repr(v_val)
+                    if isinstance(v_val, str):
+                        idx = column_width - len(val_line)
+
+                        # Split the line along idx until we either exceed the
+                        #   column width, or read the end of the string.
+                        while True:
+                            v_l, v_r = v_str[:idx], v_str[idx:]
+                            val_line += v_l
+
+                            if i_val < len(v_values) - 1 or self.end_comma:
+                                val_line += ', '
+
+                            if len(val_line) >= column_width:
+                                val_strs.append(val_line.rstrip())
+                                val_line = ''
+
+                            if v_r:
+                                v_str = v_r
+
+                                # Subsequent segments start on column zero
+                                idx = column_width
+                            else:
+                                break
+                    else:
+                        val_line += v_str
+                        if i_val < len(v_values) - 1 or self.end_comma:
+                            val_line += ', '
 
                 if len(val_line) >= column_width:
                     val_strs.append(val_line.rstrip())
@@ -633,11 +662,10 @@ class Namelist(OrderedDict):
             if val_line and not val_line.isspace():
                 val_strs.append(val_line.rstrip())
 
-            if val_strs:
-                if self.end_comma or v_values[-1] is None:
-                    pass
-                else:
-                    val_strs[-1] = val_strs[-1][:-1]
+            # Final null values must always precede a comma
+            if val_strs and v_values[-1] is None:
+                # NOTE: val_strs has been rstrip-ed so lead with a space
+                val_strs[-1] += ' ,'
 
             # Complete the set of values
             if val_strs:
