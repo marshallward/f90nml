@@ -76,6 +76,9 @@ class Namelist(OrderedDict):
         self._logical_repr = {False: '.false.', True: '.true.'}
         self._index_spacing = False
 
+        # TODO: Rename, move to property
+        self.colwidth = 0
+
         # Namelist group spacing flag
         self._newline = False
 
@@ -151,8 +154,11 @@ class Namelist(OrderedDict):
     def column_width(self):
         """Set the maximum number of characters per line of the namelist file.
 
+        :type: ``int``
+        :default: 72
+
         Tokens longer than ``column_width`` are allowed to extend past this
-        limit.  (Default: 72)
+        limit.
         """
         return self._column_width
 
@@ -168,12 +174,104 @@ class Namelist(OrderedDict):
             raise TypeError('Column width must be a nonnegative integer.')
 
     @property
+    def default_start_index(self):
+        """Set the default start index for vectors with no explicit index.
+
+        :type: ``int``, ``None``
+        :default: ``None``
+
+        When the `default_start_index` is set, all vectors without an explicit
+        start index are assumed to begin with `default_start_index`.  This
+        index is shown when printing the namelist output.
+
+        If set to `None`, then no start index is assumed and is left as
+        implicit for any vectors undefined in `start_index`.
+        """
+        return self._default_start_index
+
+    @default_start_index.setter
+    def default_start_index(self, value):
+        if not isinstance(value, int):
+            raise TypeError('default_start_index must be an integer.')
+        self._default_start_index = value
+
+    @property
+    def end_comma(self):
+        """Append commas to the end of namelist variable entries.
+
+        :type: ``bool``
+        :default: ``False``
+
+        Fortran will generally disregard any commas separating variable
+        assignments, and the default behaviour is to omit these commas from the
+        output.  Enabling this flag will append commas at the end of the line
+        for each variable assignment.
+        """
+        return self._end_comma
+
+    @end_comma.setter
+    def end_comma(self, value):
+        """Validate and set the comma termination flag."""
+        if not isinstance(value, bool):
+            raise TypeError('end_comma attribute must be a logical type.')
+        self._end_comma = value
+
+    @property
+    def false_repr(self):
+        """Set the string representation of logical false values.
+
+        :type: ``str``
+        :default: ``'.false.'``
+
+        This is equivalent to the first element of ``logical_repr``.
+        """
+        return self._logical_repr[0]
+
+    @false_repr.setter
+    def false_repr(self, value):
+        """Validate and set the logical false representation."""
+        if isinstance(value, str):
+            if not (value.lower().startswith('f') or
+                    value.lower().startswith('.f')):
+                raise ValueError("Logical false representation must start "
+                                 "with 'F' or '.F'.")
+            else:
+                self._logical_repr[0] = value
+        else:
+            raise TypeError('Logical false representation must be a string.')
+
+    @property
+    def float_format(self):
+        """Set the namelist floating point format.
+
+        :type: ``str``
+        :default: ``''``
+
+        The property sets the format string for floating point numbers,
+        following the format expected by the Python ``format()`` function.
+        """
+        return self._float_format
+
+    @float_format.setter
+    def float_format(self, value):
+        """Validate and set the upper case flag."""
+        if isinstance(value, str):
+            # Duck-test the format string; raise ValueError on fail
+            '{0:{1}}'.format(1.23, value)
+
+            self._float_format = value
+        else:
+            raise TypeError('Floating point format code must be a string.')
+
+    @property
     def indent(self):
         r"""Set the whitespace indentation of namelist entries.
 
+        :type: ``int``, ``str``
+        :default: ``'    '`` (four spaces)
+
         This can be set to an integer, denoting the number of spaces, or to an
         explicit whitespace character, such as a tab (``\t``).
-        (Default: 4)
         """
         return self._indent
 
@@ -200,26 +298,12 @@ class Namelist(OrderedDict):
                             'width.')
 
     @property
-    def end_comma(self):
-        """Append commas to the end of namelist variable entries.
-
-        Fortran will generally disregard any commas separating variable
-        assignments, and the default behaviour is to omit these commas from the
-        output.  Enabling this flag will append commas at the end of the line
-        for each variable assignment.
-        """
-        return self._end_comma
-
-    @end_comma.setter
-    def end_comma(self, value):
-        """Validate and set the comma termination flag."""
-        if not isinstance(value, bool):
-            raise TypeError('end_comma attribute must be a logical type.')
-        self._end_comma = value
-
-    @property
     def index_spacing(self):
-        """Apply a space between indexes of multidimensional vectors."""
+        """Apply a space between indexes of multidimensional vectors.
+
+        :type: ``bool``
+        :default: ``False``
+        """
         return self._index_spacing
 
     @index_spacing.setter
@@ -229,50 +313,20 @@ class Namelist(OrderedDict):
             raise TypeError('index_spacing attribute must be a logical type.')
         self._index_spacing = value
 
-    @property
-    def uppercase(self):
-        """Print group and variable names in uppercase."""
-        return self._uppercase
-
-    @uppercase.setter
-    def uppercase(self, value):
-        """Validate and set the uppercase flag."""
-        if not isinstance(value, bool):
-            raise TypeError('uppercase attribute must be a logical type.')
-        self._uppercase = value
-
-    @property
-    def float_format(self):
-        """Set the namelist floating point format.
-
-        The property sets the format string for floating point numbers,
-        following the format expected by the Python ``format()`` function.
-        """
-        return self._float_format
-
-    @float_format.setter
-    def float_format(self, value):
-        """Validate and set the upper case flag."""
-        if isinstance(value, str):
-            # Duck-test the format string; raise ValueError on fail
-            '{0:{1}}'.format(1.23, value)
-
-            self._float_format = value
-        else:
-            raise TypeError('Floating point format code must be a string.')
-
     # NOTE: This presumes that bools and ints are identical as dict keys
     @property
     def logical_repr(self):
         """Set the string representation of logical values.
+
+        :type: ``dict``
+        :default: ``{False: '.false.', True: '.true.'}``
 
         There are multiple valid representations of True and False values in
         Fortran.  This property sets the preferred representation in the
         namelist output.
 
         The properties ``true_repr`` and ``false_repr`` are also provided as
-        interfaces to the ``logical_repr`` tuple.
-        (Default: ``.false., .true.``)
+        interfaces to the elements of ``logical_repr``.
         """
         return self._logical_repr
 
@@ -292,6 +346,9 @@ class Namelist(OrderedDict):
     def true_repr(self):
         """Set the string representation of logical true values.
 
+        :type: ``str``
+        :default: ``.true.``
+
         This is equivalent to the second element of ``logical_repr``.
         """
         return self._logical_repr[1]
@@ -310,29 +367,11 @@ class Namelist(OrderedDict):
             raise TypeError('Logical true representation must be a string.')
 
     @property
-    def false_repr(self):
-        """Set the string representation of logical false values.
-
-        This is equivalent to the first element of ``logical_repr``.
-        """
-        return self._logical_repr[0]
-
-    @false_repr.setter
-    def false_repr(self, value):
-        """Validate and set the logical false representation."""
-        if isinstance(value, str):
-            if not (value.lower().startswith('f') or
-                    value.lower().startswith('.f')):
-                raise ValueError("Logical false representation must start "
-                                 "with 'F' or '.F'.")
-            else:
-                self._logical_repr[0] = value
-        else:
-            raise TypeError('Logical false representation must be a string.')
-
-    @property
     def start_index(self):
         """Set the starting index for each vector in the namelist.
+
+        :type: ``dict``
+        :default: ``{}``
 
         ``start_index`` is stored as a dict which contains the starting index
         for each vector saved in the namelist.  For the namelist ``vec.nml``
@@ -370,27 +409,7 @@ class Namelist(OrderedDict):
             raise TypeError('start_index attribute must be a dict.')
         self._start_index = value
 
-    @property
-    def default_start_index(self):
-        """Set the default start index for vectors with no explicit index.
-
-        When the `default_start_index` is set, all vectors without an explicit
-        start index are assumed to begin with `default_start_index`.  This
-        index is shown when printing the namelist output.
-        (Default: None)
-
-        If set to `None`, then no start index is assumed and is left as
-        implicit for any vectors undefined in `start_index`.
-        """
-        return self._default_start_index
-
-    @default_start_index.setter
-    def default_start_index(self, value):
-        if not isinstance(value, int):
-            raise TypeError('default_start_index must be an integer.')
-        self._default_start_index = value
-
-    def write(self, nml_path, force=False, sort=False, colwidth=0):
+    def write(self, nml_path, force=False, sort=False):
         """Write Namelist to a Fortran 90 namelist file.
 
         >>> nml = f90nml.read('input.nml')
@@ -402,10 +421,26 @@ class Namelist(OrderedDict):
 
         nml_file = nml_path if nml_is_file else open(nml_path, 'w')
         try:
-            self._writestream(nml_file, sort=sort, colwidth=colwidth)
+            self._writestream(nml_file, sort=sort)
         finally:
             if not nml_is_file:
                 nml_file.close()
+
+    @property
+    def uppercase(self):
+        """Print group and variable names in uppercase.
+
+        :type: ``bool``
+        :default: ``False``
+        """
+        return self._uppercase
+
+    @uppercase.setter
+    def uppercase(self, value):
+        """Validate and set the uppercase flag."""
+        if not isinstance(value, bool):
+            raise TypeError('uppercase attribute must be a logical type.')
+        self._uppercase = value
 
     def patch(self, nml_patch):
         """Update the namelist from another partial or full namelist.
@@ -430,7 +465,7 @@ class Namelist(OrderedDict):
             for inner_key, inner_value in value.items():
                 yield (key, inner_key), inner_value
 
-    def _writestream(self, nml_file, sort=False, colwidth=0):
+    def _writestream(self, nml_file, sort=False):
         """Output Namelist to a streamable file object."""
         # Reset newline flag
         self._newline = False
@@ -444,14 +479,11 @@ class Namelist(OrderedDict):
             # Check for repeated namelist records (saved as lists)
             if isinstance(grp_vars, list):
                 for g_vars in grp_vars:
-                    self._write_nmlgrp(grp_name, g_vars, nml_file, sort=sort,
-                                       colwidth=colwidth)
+                    self._write_nmlgrp(grp_name, g_vars, nml_file, sort=sort)
             else:
-                self._write_nmlgrp(grp_name, grp_vars, nml_file, sort=sort,
-                                   colwidth=colwidth)
+                self._write_nmlgrp(grp_name, grp_vars, nml_file, sort=sort)
 
-    def _write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False,
-                      colwidth=0):
+    def _write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False):
         """Write namelist group to target file."""
         if self._newline:
             print(file=nml_file)
@@ -469,15 +501,12 @@ class Namelist(OrderedDict):
 
             v_start = grp_vars.start_index.get(v_name, None)
 
-            for v_str in self._var_strings(v_name, v_val, v_start=v_start,
-                                           colwidth=colwidth):
-                nml_line = self.indent + '{0}'.format(v_str)
-                print(nml_line, file=nml_file)
+            for v_str in self._var_strings(v_name, v_val, v_start=v_start):
+                print(v_str, file=nml_file)
 
         print('/', file=nml_file)
 
-    def _var_strings(self, v_name, v_values, v_idx=None, v_start=None,
-                     colwidth=0):
+    def _var_strings(self, v_name, v_values, v_idx=None, v_start=None):
         """Convert namelist variable to list of fixed-width strings."""
         if self.uppercase:
             v_name = v_name.upper()
@@ -508,8 +537,8 @@ class Namelist(OrderedDict):
 
             for idx, val in enumerate(v_values, start=i_s):
                 v_idx_new = v_idx + [idx]
-                v_strs = self._var_strings(v_name, val, v_idx=v_idx_new,
-                                           v_start=v_start, colwidth=colwidth)
+                v_strs = self._var_strings(v_name, val, v_idx=v_idx_new, 
+                                           v_start=v_start)
                 var_strs.extend(v_strs)
 
         # Parse derived type contents
@@ -520,8 +549,7 @@ class Namelist(OrderedDict):
                 v_start_new = v_values.start_index.get(f_name, None)
 
                 v_strs = self._var_strings(v_title, f_vals,
-                                           v_start=v_start_new,
-                                           colwidth=colwidth)
+                                           v_start=v_start_new)
                 var_strs.extend(v_strs)
 
         # Parse an array of derived types
@@ -539,7 +567,7 @@ class Namelist(OrderedDict):
 
                 v_title = v_name + '({0})'.format(idx)
 
-                v_strs = self._var_strings(v_title, val, colwidth=colwidth)
+                v_strs = self._var_strings(v_title, val)
                 var_strs.extend(v_strs)
 
         else:
@@ -586,48 +614,64 @@ class Namelist(OrderedDict):
                 v_idx_repr = ''
 
             # Split output across multiple lines (if necessary)
-
+            v_header = (self.indent + v_name + v_idx_repr).ljust(self.colwidth) + ' = '
             val_strs = []
-
-            val_line = ''
-            for v_val in v_values:
-
-                v_header = (v_name + v_idx_repr).ljust(colwidth) + ' = '
+            val_line = v_header
+            for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
-                if len(self.indent + v_header) >= self.column_width:
-                    column_width = len(self.indent + v_header) + 1
+                if len(v_header) >= self.column_width:
+                    column_width = len(v_header) + 1
                 else:
                     column_width = self.column_width
 
-                v_width = column_width - len(self.indent + v_header)
+                if len(val_line) < column_width:
+                    # NOTE: We allow non-strings to extend past the column
+                    #   limit, but strings will be split as needed.
+                    v_str = self._f90repr(v_val)
+                    if isinstance(v_val, str):
+                        idx = column_width - len(val_line)
 
-                if len(val_line) < v_width:
-                    val_line += self._f90repr(v_val) + ', '
+                        # Split the line along idx until we either exceed the
+                        #   column width, or read the end of the string.
+                        while True:
+                            v_l, v_r = v_str[:idx], v_str[idx:]
+                            val_line += v_l
 
-                if len(val_line) >= v_width:
+                            if i_val < len(v_values) - 1 or self.end_comma:
+                                val_line += ', '
+
+                            if len(val_line) >= column_width:
+                                val_strs.append(val_line.rstrip())
+                                val_line = ''
+
+                            if v_r:
+                                v_str = v_r
+
+                                # Subsequent segments start on column zero
+                                idx = column_width
+                            else:
+                                break
+                    else:
+                        val_line += v_str
+                        if i_val < len(v_values) - 1 or self.end_comma:
+                            val_line += ', '
+
+                if len(val_line) >= column_width:
                     val_strs.append(val_line.rstrip())
-                    val_line = ''
+                    val_line = ' ' * len(v_header)
 
             # Append any remaining values
-            if val_line:
+            if val_line and not val_line.isspace():
                 val_strs.append(val_line.rstrip())
 
-            if val_strs:
-                if self.end_comma or v_values[-1] is None:
-                    pass
-                else:
-                    val_strs[-1] = val_strs[-1][:-1]
+            # Final null values must always precede a comma
+            if val_strs and v_values[-1] is None:
+                # NOTE: val_strs has been rstrip-ed so lead with a space
+                val_strs[-1] += ' ,'
 
             # Complete the set of values
             if val_strs:
-                var_strs.append('{0}{1}'.format(v_name, v_idx_repr).strip()
-                                .ljust(colwidth)
-                                + ' = '
-                                + '{}'.format(val_strs[0]).strip())
-
-                for v_str in val_strs[1:]:
-                    var_strs.append((' ' * len(v_header)).ljust(colwidth+3)
-                                    + v_str)
+                var_strs.extend(val_strs)
 
         return var_strs
 

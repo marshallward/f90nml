@@ -47,7 +47,7 @@ def reads(nml_string):
     return parser.reads(nml_string)
 
 
-def write(nml, nml_path, force=False, sort=False, colwidth=0):
+def write(nml, nml_path, force=False, sort=False):
     """Save a namelist to disk using either a file object or its file path.
 
     File object usage:
@@ -79,7 +79,7 @@ def write(nml, nml_path, force=False, sort=False, colwidth=0):
     else:
         nml_in = nml
 
-    nml_in.write(nml_path, force=force, sort=sort, colwidth=colwidth)
+    nml_in.write(nml_path, force=force, sort=sort)
 
 
 def patch(nml_path, nml_patch, out_path=None):
