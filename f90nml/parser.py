@@ -280,7 +280,7 @@ class Parser(object):
             try:
                 return self._readstream(nml_file, nml_patch)
             except StopIteration:
-                raise ValueError
+                raise ValueError('End-of-file reached before end of namelist.')
 
             # Close the files we opened on any exceptions within readstream
             finally:
