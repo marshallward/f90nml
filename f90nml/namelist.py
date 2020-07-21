@@ -499,7 +499,6 @@ class Namelist(OrderedDict):
             v_start = grp_vars.start_index.get(v_name, None)
 
             for v_str in self._var_strings(v_name, v_val, v_start=v_start):
-                #nml_line = self.indent + '{0}'.format(v_str)
                 print(v_str, file=nml_file)
 
         print('/', file=nml_file)

@@ -279,6 +279,8 @@ class Parser(object):
             nml_file = open(nml_fname, 'r') if nml_is_path else nml_fname
             try:
                 return self._readstream(nml_file, nml_patch)
+            except StopIteration:
+                raise ValueError
 
             # Close the files we opened on any exceptions within readstream
             finally:
