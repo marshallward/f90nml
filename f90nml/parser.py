@@ -355,7 +355,10 @@ class Parser(object):
                 break
 
             # Create the next namelist
-            self._update_tokens()
+            try:
+                self._update_tokens()
+            except StopIteration:
+                raise ValueError('End-of-file after namelist group token `&`.')
             g_name = self.token
 
             g_vars = Namelist()
@@ -368,7 +371,11 @@ class Parser(object):
             while g_name:
 
                 if self.token not in ('=', '%', '('):
-                    self._update_tokens()
+                    try:
+                        self._update_tokens()
+                    except StopIteration:
+                        raise ValueError('End-of-file before end of namelist '
+                            'group: \'&{}\''.format(g_name))
 
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
