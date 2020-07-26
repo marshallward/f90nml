@@ -1193,6 +1193,16 @@ class Test(unittest.TestCase):
 
         f90nml.cli.has_yaml = orig_has_yaml
 
+    # Failed namelist parsing
+    # NOTE: This is a very weak test, since '& x=1' / will pass
+    def test_grp_token_end(self):
+        self.assertRaises(ValueError, f90nml.reads, '&')
+
+    def test_no_group_name(self):
+        self.assertRaises(ValueError, f90nml.reads, '& /')
+
+    def test_no_group_end(self):
+        self.assertRaises(ValueError, f90nml.reads, '&end')
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
