@@ -891,6 +891,15 @@ class Test(unittest.TestCase):
 
         self.assertRaises(TypeError, setattr, test_nml, 'uppercase', 'xyz')
 
+    def test_index_spacing(self):
+        test_nml = f90nml.read('multidim.nml')
+        test_nml.index_spacing = True
+
+        self.assertEqual(test_nml.index_spacing, True)
+        self.assert_write(test_nml, 'multidim_idx_space.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'index_spacing', 123)
+
     def test_float_format(self):
         test_nml = f90nml.read('float.nml')
         test_nml.float_format = '.3f'
