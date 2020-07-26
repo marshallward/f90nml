@@ -1031,6 +1031,18 @@ class Test(unittest.TestCase):
         def test_numpy_write(self):
             self.assert_write(self.numpy_nml, 'numpy_types.nml')
 
+    def test_read_string(self):
+        test_nml = f90nml.reads(''
+            '&types_nml'
+            ' v_integer = 1'
+            ' v_float = 1.0'
+            ' v_complex = (1.0, 2.0)'
+            ' v_logical = .true.'
+            ' v_string = \'Hello\''
+            '/'
+        )
+        self.assertEqual(self.types_nml, test_nml)
+
     # CLI tests
     def test_cli_help(self):
         cmd = ['f90nml']
