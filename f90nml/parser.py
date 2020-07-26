@@ -296,7 +296,10 @@ class Parser(object):
         >>> parser = f90nml.Parser()
         >>> data_nml = parser.reads('&data_nml x=1 y=2 /')
         """
-        return self._readstream(iter(nml_string.splitlines()))
+        try:
+            return self._readstream(iter(nml_string.splitlines()))
+        except StopIteration:
+            raise ValueError('End-of-file reached before end of namelist.')
 
     def _readstream(self, nml_file, nml_patch_in=None):
         """Parse an input stream containing a Fortran namelist."""

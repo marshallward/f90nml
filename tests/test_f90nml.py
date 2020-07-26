@@ -1201,8 +1201,14 @@ class Test(unittest.TestCase):
     def test_no_group_name(self):
         self.assertRaises(ValueError, f90nml.reads, '& /')
 
-    def test_no_group_end(self):
+    def test_empty_grp_no_end(self):
         self.assertRaises(ValueError, f90nml.reads, '&end')
+
+    def test_string_grp_no_end(self):
+        self.assertRaises(ValueError, f90nml.reads, '&a_nml x = 1')
+
+    def test_file_grp_no_end(self):
+        self.assertRaises(ValueError, f90nml.read, 'grp_no_end.nml')
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
