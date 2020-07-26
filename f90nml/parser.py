@@ -377,8 +377,10 @@ class Parser(object):
                     try:
                         self._update_tokens()
                     except StopIteration:
-                        raise ValueError('End-of-file before end of namelist '
-                            'group: \'&{}\''.format(g_name))
+                        raise ValueError(
+                            'End-of-file before end of namelist group: \'&{}\''
+                            ''.format(g_name)
+                        )
 
                 # Set the next active variable
                 if self.token in ('=', '(', '%'):
