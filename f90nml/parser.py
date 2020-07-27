@@ -526,7 +526,6 @@ class Parser(object):
                 if vpar and isinstance(vpar, list):
                     # If new element is not a list, then assume it's the first
                     # element of the list.
-                    # NOTE: This is untested, is it needed?
                     if dt_idx is None:
                         dt_idx = self.default_start_index
 

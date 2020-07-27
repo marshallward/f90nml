@@ -41,3 +41,9 @@
     a%b(1)%c = 1
     a%b(1)%d = 2
 /
+
+&dtype_list_ooo_noidx
+    a(1)%i = 123
+    a(2)%i = 456
+    a(3)%i = 789
+/

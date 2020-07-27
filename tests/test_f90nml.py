@@ -272,7 +272,14 @@ class Test(unittest.TestCase):
                 'a': {
                     'b': [{'c': 1, 'd': 2}]
                 }
-            }
+            },
+            'dtype_list_ooo_noidx': {
+                'a': [
+                    {'i': 123},
+                    {'i': 456},
+                    {'i': 789},
+                ],
+            },
         }
 
         self.dtype_case_nml = {
@@ -314,7 +321,7 @@ class Test(unittest.TestCase):
                         None, None, None, {'a': 1}
                     ]
                 }
-            }
+            },
         }
 
         self.bcast_nml = {
