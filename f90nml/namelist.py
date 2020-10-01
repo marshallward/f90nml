@@ -653,9 +653,10 @@ class Namelist(OrderedDict):
                         if i_val < len(v_values) - 1 or self.end_comma:
                             val_line += ', '
 
+                # Line break
                 if len(val_line) >= column_width:
-                    val_strs.append(val_line.rstrip())
-                    val_line = ' ' * len(v_header)
+                    val_strs.append(val_line.rstrip())  # Append current line to list of lines
+                    val_line = ' ' * len(v_header)      # Start new line with space corresponding to header
 
             # Append any remaining values
             if val_line and not val_line.isspace():
