@@ -831,8 +831,7 @@ class Namelist(OrderedDict):
         >>> _compress(Namelist, [1, 1, 1, 2, 1, 1])
         [[3, 1], [1, 2], [2, 1]]
         """
-        if len(values) < 1:
-            return []
+        assert len(values) > 0
         last_value = values[0]
         c_values = [[1, last_value]]
 
