@@ -636,7 +636,6 @@ class Namelist(OrderedDict):
 
             if self._compressed:
                 v_values = self._compress(v_values)
-
             for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
@@ -834,13 +833,11 @@ class Namelist(OrderedDict):
         """
         if len(values) < 1:
             return []
-
         last_value = values[0]
         c_values = [[1, last_value]]
 
         if len(values) == 1:
             return c_values
-
         for value in values[1:]:
             if value == last_value:
                 c_values[-1][0] += 1
