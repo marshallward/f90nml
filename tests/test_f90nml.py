@@ -1218,6 +1218,11 @@ class Test(unittest.TestCase):
         nml.compressed = True
         self.assertTrue(nml.compressed)
 
+    def test_set_compressed_flag_incorrect(self):
+        nml = f90nml.Namelist()
+        with self.assertRaises(TypeError):
+            nml.compressed = 'Hello'
+
     # TODO fails in _var_strings 
     # def test_compressed_empty(self):
         # nml_dict = {'a':{'b' : []}}
