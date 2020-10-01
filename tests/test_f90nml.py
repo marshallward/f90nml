@@ -1209,6 +1209,38 @@ class Test(unittest.TestCase):
 
         f90nml.cli.has_yaml = orig_has_yaml
 
+    def test_check_compressed_flag(self):
+        nml = f90nml.Namelist()
+        self.assertFalse(nml.compressed)
+
+    def test_set_compressed_flag(self):
+        nml = f90nml.Namelist()
+        nml.compressed = True
+        self.assertTrue(nml.compressed)
+
+    # TODO fails in _var_strings 
+    # def test_compressed_empty(self):
+        # nml_dict = {'a':{'b' : []}}
+        # nml = f90nml.Namelist(nml_dict)
+        # nml.compressed = True
+        # out = StringIO()
+        # print(nml, file=out)
+        # out.seek(0)
+        # line1 = out.readline()
+        # line2 = out.readline()
+        # self.assertEqual(line2.lstrip(), 'b = 1, 2, 3\n')
+
+    def test_compressed_single(self):
+        nml_dict = {'a':{'b' : [1]}}
+        nml = f90nml.Namelist(nml_dict)
+        nml.compressed = True
+        out = StringIO()
+        print(nml, file=out)
+        out.seek(0)
+        line1 = out.readline()
+        line2 = out.readline()
+        self.assertEqual(line2.lstrip(), 'b = 1\n')
+
     def test_compressed_no_consecutive(self):
         nml_dict = {'a':{'b' : [1, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
