@@ -75,6 +75,7 @@ class Namelist(OrderedDict):
         self._float_format = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
         self._index_spacing = False
+        self._compressed = False
 
         # Namelist group spacing flag
         self._newline = False
@@ -406,6 +407,24 @@ class Namelist(OrderedDict):
             raise TypeError('start_index attribute must be a dict.')
         self._start_index = value
 
+    @property
+    def compressed(self):
+        r"""Set whether the namelist should be written compressed, 
+        i.e. whether arrays should be written as 1, 2, 2 or as 1, 2*2
+        
+        :type: ``bool``
+        :default: ``False``
+        """
+        return self._compressed
+
+    @compressed.setter
+    def compressed(self, value):
+        """Set whether array output should be done in compressed form."""
+        if isinstance(value, bool):
+            self._compressed = value
+        else:
+            raise TypeError(r"Compressed must be of type ``bool``")
+
     def write(self, nml_path, force=False, sort=False):
         """Write Namelist to a Fortran 90 namelist file.
 
@@ -614,6 +633,10 @@ class Namelist(OrderedDict):
             v_header = self.indent + v_name + v_idx_repr + ' = '
             val_strs = []
             val_line = v_header
+
+            if self._compressed:
+                v_values = self._compress(v_values)
+            
             for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
@@ -624,7 +647,10 @@ class Namelist(OrderedDict):
                 if len(val_line) < column_width:
                     # NOTE: We allow non-strings to extend past the column
                     #   limit, but strings will be split as needed.
-                    v_str = self._f90repr(v_val)
+                    if self._compressed:
+                        v_str = self._f90comprepr(v_val)
+                    else:
+                        v_str = self._f90repr(v_val)
                     if isinstance(v_val, str):
                         idx = column_width - len(val_line)
 
@@ -770,6 +796,58 @@ class Namelist(OrderedDict):
         result = result.replace('\\\\', '\\')
 
         return result
+
+    def _f90comprepr(self, value):
+        """(list([n, val])) -> str
+
+        Returns the compressed fortran representation of n successive val.
+        Suppresses the output of n if n is 1.
+
+        >>> _f90comprepr([1, 5])
+        '5'
+        >>> _f90comprepr([3, 5])
+        '3*5'
+
+        """
+        # Assertions that the input is in the format we want: [n, v]
+        # Where n is the number of successive values of v
+        try:
+            n, v = value
+            assert isinstance(n, int)
+        except:
+            raise TypeError("for the compressed representation we need a len-2 list of n, v")
+        if value[0] == 1:
+            return self._f90repr(value[1])
+        else:
+            return '{0}*{1}'.format(value[0], self._f90repr(value[1]))
+
+    def _compress(self, values):
+        """ (list) -> (list of list(int, *))
+
+        Returns a compressed list, where each element is a list of two elements:
+        The first is the number of successive identical elements in the input list `values`,
+        the second is the element.
+
+        >>> _compress(Namelist, [1, 1, 1, 2, 1, 1])
+        [[3, 1], [1, 2], [2, 1]]
+        """
+        if len(values) < 1:
+            return []
+        
+        last_value = values[0]
+        c_values = [[1, last_value]]
+
+        if len(values) == 1:
+            return c_values
+        
+        for value in values[1:]:
+            if value == last_value:
+                c_values[-1][0] += 1
+            else:
+                c_values.append([1, value])
+                last_value = value
+        return c_values
+
 
 
 def is_nullable_list(val, vtype):
