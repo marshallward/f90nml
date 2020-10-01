@@ -409,9 +409,9 @@ class Namelist(OrderedDict):
 
     @property
     def compressed(self):
-        r"""Set whether the namelist should be written compressed, 
+        r"""Set whether the namelist should be written compressed,
         i.e. whether arrays should be written as 1, 2, 2 or as 1, 2*2
-        
+
         :type: ``bool``
         :default: ``False``
         """
@@ -636,7 +636,7 @@ class Namelist(OrderedDict):
 
             if self._compressed:
                 v_values = self._compress(v_values)
-            
+
             for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
@@ -681,8 +681,10 @@ class Namelist(OrderedDict):
 
                 # Line break
                 if len(val_line) >= column_width:
-                    val_strs.append(val_line.rstrip())  # Append current line to list of lines
-                    val_line = ' ' * len(v_header)      # Start new line with space corresponding to header
+                    # Append current line to list of lines
+                    val_strs.append(val_line.rstrip())
+                    # Start new line with space corresponding to header
+                    val_line = ' ' * len(v_header)
 
             # Append any remaining values
             if val_line and not val_line.isspace():
@@ -811,11 +813,8 @@ class Namelist(OrderedDict):
         """
         # Assertions that the input is in the format we want: [n, v]
         # Where n is the number of successive values of v
-        try:
-            n, v = value
-            assert isinstance(n, int)
-        except:
-            raise TypeError("for the compressed representation we need a len-2 list of n, v")
+        n, v = value
+        assert isinstance(n, int)
         if value[0] == 1:
             return self._f90repr(value[1])
         else:
@@ -824,8 +823,10 @@ class Namelist(OrderedDict):
     def _compress(self, values):
         """ (list) -> (list of list(int, *))
 
-        Returns a compressed list, where each element is a list of two elements:
-        The first is the number of successive identical elements in the input list `values`,
+        Returns a compressed list, where each element is a list of two
+        elements:
+        The first is the number of successive identical elements in the
+        input list `values`,
         the second is the element.
 
         >>> _compress(Namelist, [1, 1, 1, 2, 1, 1])
@@ -833,13 +834,13 @@ class Namelist(OrderedDict):
         """
         if len(values) < 1:
             return []
-        
+
         last_value = values[0]
         c_values = [[1, last_value]]
 
         if len(values) == 1:
             return c_values
-        
+
         for value in values[1:]:
             if value == last_value:
                 c_values[-1][0] += 1
@@ -847,7 +848,6 @@ class Namelist(OrderedDict):
                 c_values.append([1, value])
                 last_value = value
         return c_values
-
 
 
 def is_nullable_list(val, vtype):
