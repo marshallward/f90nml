@@ -75,7 +75,7 @@ class Namelist(OrderedDict):
         self._float_format = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
         self._index_spacing = False
-        self._compressed = False
+        self._repeat = False
 
         # Namelist group spacing flag
         self._newline = False
@@ -408,22 +408,22 @@ class Namelist(OrderedDict):
         self._start_index = value
 
     @property
-    def compressed(self):
-        r"""Set whether the namelist should be written compressed,
+    def repeat(self):
+        r"""Set whether the namelist should be written with repeats,
         i.e. whether arrays should be written as 1, 2, 2 or as 1, 2*2
 
         :type: ``bool``
         :default: ``False``
         """
-        return self._compressed
+        return self._repeat
 
-    @compressed.setter
-    def compressed(self, value):
-        """Set whether array output should be done in compressed form."""
+    @repeat.setter
+    def repeat(self, value):
+        """Set whether array output should be done in repeat form."""
         if isinstance(value, bool):
-            self._compressed = value
+            self._repeat = value
         else:
-            raise TypeError(r"Compressed must be of type ``bool``")
+            raise TypeError(r"repeat must be of type ``bool``")
 
     def write(self, nml_path, force=False, sort=False):
         """Write Namelist to a Fortran 90 namelist file.
@@ -634,8 +634,8 @@ class Namelist(OrderedDict):
             val_strs = []
             val_line = v_header
 
-            if self._compressed:
-                v_values = self._compress(v_values)
+            if self._repeat:
+                v_values = self._repeats(v_values)
             for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
@@ -646,8 +646,8 @@ class Namelist(OrderedDict):
                 if len(val_line) < column_width:
                     # NOTE: We allow non-strings to extend past the column
                     #   limit, but strings will be split as needed.
-                    if self._compressed:
-                        v_str = self._f90comprepr(v_val)
+                    if self._repeat:
+                        v_str = self._f90repeatrepr(v_val)
                     else:
                         v_str = self._f90repr(v_val)
                     if isinstance(v_val, str):
@@ -798,15 +798,15 @@ class Namelist(OrderedDict):
 
         return result
 
-    def _f90comprepr(self, value):
+    def _f90repeatrepr(self, value):
         """(list([n, val])) -> str
 
         Returns the compressed fortran representation of n successive val.
         Suppresses the output of n if n is 1.
 
-        >>> _f90comprepr([1, 5])
+        >>> _f90repeatrepr([1, 5])
         '5'
-        >>> _f90comprepr([3, 5])
+        >>> _f90repeatrepr([3, 5])
         '3*5'
 
         """
@@ -819,31 +819,31 @@ class Namelist(OrderedDict):
         else:
             return '{0}*{1}'.format(value[0], self._f90repr(value[1]))
 
-    def _compress(self, values):
+    def _repeats(self, values):
         """ (list) -> (list of list(int, *))
 
-        Returns a compressed list, where each element is a list of two
+        Returns a repeater list, where each element is a list of two
         elements:
         The first is the number of successive identical elements in the
         input list `values`,
         the second is the element.
 
-        >>> _compress(Namelist, [1, 1, 1, 2, 1, 1])
+        >>> _repeats(Namelist, [1, 1, 1, 2, 1, 1])
         [[3, 1], [1, 2], [2, 1]]
         """
         assert len(values) > 0
         last_value = values[0]
-        c_values = [[1, last_value]]
+        r_values = [[1, last_value]]
 
         if len(values) == 1:
-            return c_values
+            return r_values
         for value in values[1:]:
             if value == last_value:
-                c_values[-1][0] += 1
+                r_values[-1][0] += 1
             else:
-                c_values.append([1, value])
+                r_values.append([1, value])
                 last_value = value
-        return c_values
+        return r_values
 
 
 def is_nullable_list(val, vtype):

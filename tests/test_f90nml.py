@@ -1209,25 +1209,25 @@ class Test(unittest.TestCase):
 
         f90nml.cli.has_yaml = orig_has_yaml
 
-    def test_check_compressed_flag(self):
+    def test_check_repeat_flag(self):
         nml = f90nml.Namelist()
-        self.assertFalse(nml.compressed)
+        self.assertFalse(nml.repeat)
 
-    def test_set_compressed_flag(self):
+    def test_set_repeat_flag(self):
         nml = f90nml.Namelist()
-        nml.compressed = True
-        self.assertTrue(nml.compressed)
+        nml.repeat = True
+        self.assertTrue(nml.repeat)
 
-    def test_set_compressed_flag_incorrect(self):
+    def test_set_repeat_flag_incorrect(self):
         nml = f90nml.Namelist()
         with self.assertRaises(TypeError):
-            nml.compressed = 'Hello'
+            nml.repeat = 'Hello'
 
     # TODO fails in _var_strings 
-    # def test_compressed_empty(self):
+    # def test_repeat_empty(self):
         # nml_dict = {'a':{'b' : []}}
         # nml = f90nml.Namelist(nml_dict)
-        # nml.compressed = True
+        # nml.repeat = True
         # out = StringIO()
         # print(nml, file=out)
         # out.seek(0)
@@ -1235,10 +1235,10 @@ class Test(unittest.TestCase):
         # line2 = out.readline()
         # self.assertEqual(line2.lstrip(), 'b = 1, 2, 3\n')
 
-    def test_compressed_single(self):
+    def test_repeat_single(self):
         nml_dict = {'a':{'b' : [1]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1246,10 +1246,10 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 1\n')
 
-    def test_compressed_no_consecutive(self):
+    def test_repeat_no_consecutive(self):
         nml_dict = {'a':{'b' : [1, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1257,10 +1257,10 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 1, 2, 3\n')
 
-    def test_compressed_middle_consecutive(self):
+    def test_repeat_middle_consecutive(self):
         nml_dict = {'a':{'b' : [1, 2, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1268,10 +1268,10 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 1, 2*2, 3\n')
 
-    def test_compressed_beginning_consecutive(self):
+    def test_repeat_beginning_consecutive(self):
         nml_dict = {'a':{'b' : [1, 1, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1279,10 +1279,10 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 2*1, 2, 3\n')
 
-    def test_compressed_end_consecutive(self):
+    def test_repeat_end_consecutive(self):
         nml_dict = {'a':{'b' : [1, 2, 3, 3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1290,10 +1290,10 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 1, 2, 2*3\n')
 
-    def test_compressed_consecutive_repeating(self):
+    def test_repeat_consecutive_repeating(self):
         nml_dict = {'a':{'b' : [1, 1, 2, 3, 1, 1, 1]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1301,10 +1301,10 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 2*1, 2, 3, 3*1\n')
 
-    def test_compressed_all_repeating(self):
+    def test_repeat_all_repeating(self):
         nml_dict = {'a':{'b' : [1, 1, 1, 1, 1]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1312,10 +1312,10 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 5*1\n')
 
-    def test_compressed_repeating_float(self):
+    def test_repeat_repeating_float(self):
         nml_dict = {'a':{'b' : [1.0, 1.0, 2.0, 0.3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1323,10 +1323,10 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 2*1.0, 2.0, 0.3\n')
 
-    def test_compressed_repeating_complex(self):
+    def test_repeat_repeating_complex(self):
         nml_dict = {'a':{'b' : [1+2j, 1+2j, 3j]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1334,10 +1334,10 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 2*(1.0, 2.0), (0.0, 3.0)\n')
 
-    def test_compressed_repeating_logical(self):
+    def test_repeat_repeating_logical(self):
         nml_dict = {'a':{'b' : [True, True, False]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.compressed = True
+        nml.repeat = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
