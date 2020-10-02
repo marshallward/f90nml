@@ -7,7 +7,7 @@ a Python environment.
 :license: Apache License, Version 2.0, see LICENSE for details.
 """
 from __future__ import print_function
-
+import itertools
 import copy
 import numbers
 import os
@@ -26,6 +26,8 @@ except NameError:
     basestring = str    # Python 3.x
 
 
+
+
 class Namelist(OrderedDict):
     """Representation of Fortran namelist in a Python environment.
 
@@ -36,6 +38,10 @@ class Namelist(OrderedDict):
     In addition to the standard methods supported by `dict`, several additional
     methods and properties are provided for working with Fortran namelists.
     """
+    class RepeatValue(object):
+        def __init__(self, n, value):
+            self.repeats = n
+            self.value = value
 
     def __init__(self, *args, **kwds):
         """Create the Namelist object."""
@@ -635,7 +641,9 @@ class Namelist(OrderedDict):
             val_line = v_header
 
             if self._repeat:
-                v_values = self._repeats(v_values)
+                v_values = list(
+                    self.RepeatValue(len(list(x)), val) for val, x in itertools.groupby(v_values)
+                )
             for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
@@ -646,10 +654,7 @@ class Namelist(OrderedDict):
                 if len(val_line) < column_width:
                     # NOTE: We allow non-strings to extend past the column
                     #   limit, but strings will be split as needed.
-                    if self._repeat:
-                        v_str = self._f90repeatrepr(v_val)
-                    else:
-                        v_str = self._f90repr(v_val)
+                    v_str = self._f90repr(v_val)
                     if isinstance(v_val, str):
                         idx = column_width - len(val_line)
 
@@ -755,7 +760,9 @@ class Namelist(OrderedDict):
 
     def _f90repr(self, value):
         """Convert primitive Python types to equivalent Fortran strings."""
-        if isinstance(value, bool):
+        if isinstance(value, self.RepeatValue):
+            return self._f90repeat(value)
+        elif isinstance(value, bool):
             return self._f90bool(value)
         elif isinstance(value, numbers.Integral):
             return self._f90int(value)
@@ -770,6 +777,14 @@ class Namelist(OrderedDict):
         else:
             raise ValueError('Type {0} of {1} cannot be converted to a Fortran'
                              ' type.'.format(type(value), value))
+
+    def _f90repeat(self, value):
+        """Return a Fortran 90 representation of a repeated value"""
+        if value.repeats == 1:
+            return self._f90repr(value.value)
+        else:
+            return "{0}*{1}".format(value.repeats, 
+                self._f90repr(value.value))
 
     def _f90bool(self, value):
         """Return a Fortran 90 representation of a logical value."""
@@ -797,53 +812,6 @@ class Namelist(OrderedDict):
         result = result.replace('\\\\', '\\')
 
         return result
-
-    def _f90repeatrepr(self, value):
-        """(list([n, val])) -> str
-
-        Returns the compressed fortran representation of n successive val.
-        Suppresses the output of n if n is 1.
-
-        >>> _f90repeatrepr([1, 5])
-        '5'
-        >>> _f90repeatrepr([3, 5])
-        '3*5'
-
-        """
-        # Assertions that the input is in the format we want: [n, v]
-        # Where n is the number of successive values of v
-        n, v = value
-        assert isinstance(n, int)
-        if value[0] == 1:
-            return self._f90repr(value[1])
-        else:
-            return '{0}*{1}'.format(value[0], self._f90repr(value[1]))
-
-    def _repeats(self, values):
-        """ (list) -> (list of list(int, *))
-
-        Returns a repeater list, where each element is a list of two
-        elements:
-        The first is the number of successive identical elements in the
-        input list `values`,
-        the second is the element.
-
-        >>> _repeats(Namelist, [1, 1, 1, 2, 1, 1])
-        [[3, 1], [1, 2], [2, 1]]
-        """
-        assert len(values) > 0
-        last_value = values[0]
-        r_values = [[1, last_value]]
-
-        if len(values) == 1:
-            return r_values
-        for value in values[1:]:
-            if value == last_value:
-                r_values[-1][0] += 1
-            else:
-                r_values.append([1, value])
-                last_value = value
-        return r_values
 
 
 def is_nullable_list(val, vtype):

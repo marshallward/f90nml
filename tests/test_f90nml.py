@@ -35,7 +35,6 @@ from f90nml.fpy import pybool
 from f90nml.namelist import Namelist
 from f90nml.findex import FIndex
 
-
 class Test(unittest.TestCase):
 
     def setUp(self):
@@ -1234,6 +1233,18 @@ class Test(unittest.TestCase):
         # line1 = out.readline()
         # line2 = out.readline()
         # self.assertEqual(line2.lstrip(), 'b = 1, 2, 3\n')
+
+
+    def test_repeat_scalar(self):
+        nml = f90nml.Namelist({'a':{'b':1}})
+        nml.repeat = True
+        out = StringIO()
+        print(nml, file=out)
+        out.seek(0)
+        line1 = out.readline()
+        line2 = out.readline()
+        self.assertEqual(line2.lstrip(), 'b = 1\n')
+        
 
     def test_repeat_single(self):
         nml_dict = {'a':{'b' : [1]}}
