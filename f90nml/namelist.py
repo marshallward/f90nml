@@ -26,8 +26,6 @@ except NameError:
     basestring = str    # Python 3.x
 
 
-
-
 class Namelist(OrderedDict):
     """Representation of Fortran namelist in a Python environment.
 
@@ -642,7 +640,8 @@ class Namelist(OrderedDict):
 
             if self._repeat:
                 v_values = list(
-                    self.RepeatValue(len(list(x)), val) for val, x in itertools.groupby(v_values)
+                    self.RepeatValue(len(list(x)), val)
+                    for val, x in itertools.groupby(v_values)
                 )
             for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
@@ -783,8 +782,8 @@ class Namelist(OrderedDict):
         if value.repeats == 1:
             return self._f90repr(value.value)
         else:
-            return "{0}*{1}".format(value.repeats, 
-                self._f90repr(value.value))
+            return "{0}*{1}".format(value.repeats,
+                                    self._f90repr(value.value))
 
     def _f90bool(self, value):
         """Return a Fortran 90 representation of a logical value."""
