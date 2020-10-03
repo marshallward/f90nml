@@ -79,7 +79,7 @@ class Namelist(OrderedDict):
         self._float_format = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
         self._index_spacing = False
-        self._repeat = False
+        self._repeat_counter = False
 
         # Namelist group spacing flag
         self._newline = False
@@ -412,20 +412,20 @@ class Namelist(OrderedDict):
         self._start_index = value
 
     @property
-    def repeat(self):
+    def repeat_counter(self):
         r"""Set whether the namelist should be written with repeats,
         i.e. whether arrays should be written as 1, 2, 2 or as 1, 2*2
 
         :type: ``bool``
         :default: ``False``
         """
-        return self._repeat
+        return self._repeat_counter
 
-    @repeat.setter
-    def repeat(self, value):
+    @repeat_counter.setter
+    def repeat_counter(self, value):
         """Set whether array output should be done in repeat form."""
         if isinstance(value, bool):
-            self._repeat = value
+            self._repeat_counter = value
         else:
             raise TypeError(r"repeat must be of type ``bool``")
 
@@ -638,7 +638,7 @@ class Namelist(OrderedDict):
             val_strs = []
             val_line = v_header
 
-            if self._repeat:
+            if self._repeat_counter:
                 v_values = list(
                     self.RepeatValue(len(list(x)), val)
                     for val, x in itertools.groupby(v_values)

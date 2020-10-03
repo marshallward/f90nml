@@ -1210,17 +1210,17 @@ class Test(unittest.TestCase):
 
     def test_check_repeat_flag(self):
         nml = f90nml.Namelist()
-        self.assertFalse(nml.repeat)
+        self.assertFalse(nml.repeat_counter)
 
     def test_set_repeat_flag(self):
         nml = f90nml.Namelist()
-        nml.repeat = True
-        self.assertTrue(nml.repeat)
+        nml.repeat_counter = True
+        self.assertTrue(nml.repeat_counter)
 
     def test_set_repeat_flag_incorrect(self):
         nml = f90nml.Namelist()
         with self.assertRaises(TypeError):
-            nml.repeat = 'Hello'
+            nml.repeat_counter = 'Hello'
 
     # TODO fails in _var_strings 
     # def test_repeat_empty(self):
@@ -1237,7 +1237,7 @@ class Test(unittest.TestCase):
 
     def test_repeat_scalar(self):
         nml = f90nml.Namelist({'a':{'b':1}})
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1249,7 +1249,7 @@ class Test(unittest.TestCase):
     def test_repeat_single(self):
         nml_dict = {'a':{'b' : [1]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1260,7 +1260,7 @@ class Test(unittest.TestCase):
     def test_repeat_no_consecutive(self):
         nml_dict = {'a':{'b' : [1, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1271,7 +1271,7 @@ class Test(unittest.TestCase):
     def test_repeat_middle_consecutive(self):
         nml_dict = {'a':{'b' : [1, 2, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1282,7 +1282,7 @@ class Test(unittest.TestCase):
     def test_repeat_beginning_consecutive(self):
         nml_dict = {'a':{'b' : [1, 1, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1293,7 +1293,7 @@ class Test(unittest.TestCase):
     def test_repeat_end_consecutive(self):
         nml_dict = {'a':{'b' : [1, 2, 3, 3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1304,7 +1304,7 @@ class Test(unittest.TestCase):
     def test_repeat_consecutive_repeating(self):
         nml_dict = {'a':{'b' : [1, 1, 2, 3, 1, 1, 1]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1315,7 +1315,7 @@ class Test(unittest.TestCase):
     def test_repeat_all_repeating(self):
         nml_dict = {'a':{'b' : [1, 1, 1, 1, 1]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1326,7 +1326,7 @@ class Test(unittest.TestCase):
     def test_repeat_repeating_float(self):
         nml_dict = {'a':{'b' : [1.0, 1.0, 2.0, 0.3]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1337,7 +1337,7 @@ class Test(unittest.TestCase):
     def test_repeat_repeating_complex(self):
         nml_dict = {'a':{'b' : [1+2j, 1+2j, 3j]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
@@ -1348,7 +1348,7 @@ class Test(unittest.TestCase):
     def test_repeat_repeating_logical(self):
         nml_dict = {'a':{'b' : [True, True, False]}}
         nml = f90nml.Namelist(nml_dict)
-        nml.repeat = True
+        nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
         out.seek(0)
