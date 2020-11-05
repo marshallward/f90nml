@@ -188,6 +188,13 @@ class Namelist(OrderedDict):
 
     @default_start_index.setter
     def default_start_index(self, value):
+        """
+        The start index.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+        """
         if not isinstance(value, int):
             raise TypeError('default_start_index must be an integer.')
         self._default_start_index = value

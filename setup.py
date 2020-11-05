@@ -29,12 +29,30 @@ class ProjectTest(Command):
     user_options = []
 
     def initialize_options(self):
+        """
+        Initializes the options.
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def finalize_options(self):
+        """
+        Finalize options. options. options.
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def run(self):
+        """
+        Run test suite.
+
+        Args:
+            self: (todo): write your description
+        """
         unittest = tests.test_f90nml.unittest
         testcase = tests.test_f90nml.Test
         suite = unittest.TestLoader().loadTestsFromTestCase(testcase)

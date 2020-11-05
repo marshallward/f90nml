@@ -866,6 +866,14 @@ class Parser(object):
 
 # Support functions
 def prepad_array(var, v_start_idx, new_start_idx):
+    """
+    Prepad a variable to a new array.
+
+    Args:
+        var: (array): write your description
+        v_start_idx: (str): write your description
+        new_start_idx: (str): write your description
+    """
     # NOTE: May be some way to use `pop` to avoid copying of index arrays...
     prior_var = var[:]
 

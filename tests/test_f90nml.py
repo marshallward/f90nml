@@ -39,6 +39,12 @@ from f90nml.findex import FIndex
 class Test(unittest.TestCase):
 
     def setUp(self):
+        """
+        Set the nml file type based on - line
+
+        Args:
+            self: (todo): write your description
+        """
         # Move to test directory if running from setup.py
         if os.path.basename(os.getcwd()) != 'tests':
             os.chdir('tests')
@@ -446,6 +452,14 @@ class Test(unittest.TestCase):
 
     # Support functions
     def assert_file_equal(self, source_fname, target_fname):
+        """
+        Asserts that two files are equal.
+
+        Args:
+            self: (todo): write your description
+            source_fname: (str): write your description
+            target_fname: (str): write your description
+        """
         with open(source_fname) as source:
             with open(target_fname) as target:
                 source_str = source.read()
@@ -453,10 +467,28 @@ class Test(unittest.TestCase):
                 self.assertEqual(source_str, target_str)
 
     def assert_write(self, nml, target_fname, sort=False):
+        """
+        Asserts that nml file exists.
+
+        Args:
+            self: (todo): write your description
+            nml: (todo): write your description
+            target_fname: (str): write your description
+            sort: (todo): write your description
+        """
         self.assert_write_path(nml, target_fname, sort)
         self.assert_write_file(nml, target_fname, sort)
 
     def assert_write_path(self, nml, target_fname, sort=False):
+        """
+        Asserts that nml file exists.
+
+        Args:
+            self: (todo): write your description
+            nml: (str): write your description
+            target_fname: (str): write your description
+            sort: (str): write your description
+        """
         tmp_fname = 'tmp.nml'
         f90nml.write(nml, tmp_fname, sort=sort)
         try:
@@ -465,6 +497,15 @@ class Test(unittest.TestCase):
             os.remove(tmp_fname)
 
     def assert_write_file(self, nml, target_fname, sort=False):
+        """
+        Asserts that the nml exists.
+
+        Args:
+            self: (todo): write your description
+            nml: (str): write your description
+            target_fname: (str): write your description
+            sort: (str): write your description
+        """
         tmp_fname = 'tmp.nml'
         with open(tmp_fname, 'w') as tmp_file:
             f90nml.write(nml, tmp_file, sort=sort)
@@ -475,6 +516,13 @@ class Test(unittest.TestCase):
             os.remove(tmp_fname)
 
     def get_cli_output(self, args, get_stderr=False):
+        """
+        Get the command output.
+
+        Args:
+            self: (todo): write your description
+            get_stderr: (todo): write your description
+        """
         argv_in, stdout_in, stderr_in = sys.argv, sys.stdout, sys.stderr
 
         sys.argv = args
@@ -504,68 +552,146 @@ class Test(unittest.TestCase):
 
     # Tests
     def test_empty_file(self):
+        """
+        Reads the empty empty empty empty empty empty.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('empty_file')
         self.assertEqual(self.empty_file, test_nml)
 
     def test_empty_nml(self):
+        """
+        Test if the current empty empty empty.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('empty.nml')
         self.assertEqual(self.empty_nml, test_nml)
         self.assert_write(test_nml, 'empty.nml')
 
     def test_null(self):
+        """
+        Read the null value of the null type.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('null.nml')
         self.assertEqual(self.null_nml, test_nml)
         self.assert_write(test_nml, 'null_target.nml')
 
     def test_unset(self):
+        """
+        Unset the test to test.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('unset.nml')
         self.assertEqual(self.unset_nml, test_nml)
         self.assert_write(test_nml, 'unset.nml')
 
     def test_types(self):
+        """
+        Reads the test types of a test types are valid.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('types.nml')
         self.assertEqual(self.types_nml, test_nml)
         self.assert_write(test_nml, 'types.nml')
 
     def test_vector(self):
+        """
+        Read the test vector of the vector
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('vector.nml')
         self.assertEqual(self.vector_nml, test_nml)
         self.assert_write(test_nml, 'vector_target.nml')
 
     def test_vector_default_index(self):
+        """
+        Sets the test index.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('vector.nml')
         test_nml.default_start_index = 2
         self.assertEqual(self.vector_nml, test_nml)
         self.assert_write(test_nml, 'vector_default_idx.nml')
 
     def test_multidim(self):
+        """
+        Reads the multidimator.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('multidim.nml')
         self.assertEqual(self.multidim_nml, test_nml)
         self.assert_write(test_nml, 'multidim_target.nml')
 
     def test_multidim_ooo(self):
+        """
+        Test for multidim multidim test function.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('multidim_ooo.nml')
         self.assertEqual(self.multidim_ooo_nml, test_nml)
         self.assert_write(test_nml, 'multidim_ooo_target.nml')
 
     def test_rowmaj_multidim(self):
+        """
+        Reads the multidim row is a multidim row.
+
+        Args:
+            self: (todo): write your description
+        """
         parser = f90nml.Parser()
         parser.row_major = True
         test_nml = parser.read('multidim.nml')
         self.assertEqual(self.md_rowmaj_nml, test_nml)
 
     def test_dense_arrays(self):
+        """
+        Test whether the dense arrays have the same.
+
+        Args:
+            self: (todo): write your description
+        """
         parser = f90nml.Parser()
         test_nml = parser.read('sparse_array.nml')
         self.assertEqual(self.dense_array_nml, test_nml)
 
     def test_sparse_arrays(self):
+        """
+        Parse the test arrays of the data
+
+        Args:
+            self: (todo): write your description
+        """
         parser = f90nml.Parser()
         parser.sparse_arrays = True
         test_nml = parser.read('sparse_array.nml')
         self.assertEqual(self.sparse_array_nml, test_nml)
 
     def test_vector_too_long(self):
+        """
+        Test if the first non - null.
+
+        Args:
+            self: (todo): write your description
+        """
         sys_stderr = sys.stderr
         sys.stderr = StringIO()
         test_nml = f90nml.read('values_exceed_index.nml')
@@ -573,6 +699,12 @@ class Test(unittest.TestCase):
         sys.stderr = sys_stderr
 
     def test_parser_property_invalid(self):
+        """
+        Raises validationexception is raised.
+
+        Args:
+            self: (todo): write your description
+        """
         parser = f90nml.Parser()
         self.assertRaises(TypeError, setattr, parser, 'comment_tokens', 123)
         self.assertRaises(TypeError, setattr, parser,
@@ -584,25 +716,55 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, parser, 'strict_logical', 'abc')
 
     def test_float(self):
+        """
+        Writes a float as a float.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('float.nml')
         self.assertEqual(self.float_nml, test_nml)
         self.assert_write(test_nml, 'float_target.nml')
 
     def test_string(self):
+        """
+        Reads the test string to a test string.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('string.nml')
         self.assertEqual(self.string_nml, test_nml)
         self.assert_write(test_nml, 'string_target.nml')
 
     def test_string_multiline(self):
+        """
+        Test if multiline string is a multiline.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('string_multiline.nml')
         self.assertEqual(self.string_multiline_nml, test_nml)
 
     def test_dtype(self):
+        """
+        Test if the dtype of the dtype.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('dtype.nml')
         self.assertEqual(self.dtype_nml, test_nml)
         self.assert_write(test_nml, 'dtype_target.nml')
 
     def test_ieee(self):
+        """
+        Test if the nml file
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('ieee.nml')
 
         # NaN values cannot be tested for equality, so explicitly test values
@@ -619,66 +781,144 @@ class Test(unittest.TestCase):
         self.assert_write(test_nml, 'ieee_target.nml')
 
     def test_dtype_case(self):
+        """
+        Assigns the test case to the test case.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('dtype_case.nml')
         self.assertEqual(self.dtype_case_nml, test_nml)
         self.assert_write(test_nml, 'dtype_case_target.nml')
 
     def test_bcast(self):
+        """
+        Assigns the test is a test
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('bcast.nml')
         self.assertEqual(self.bcast_nml, test_nml)
         self.assert_write(test_nml, 'bcast_target.nml')
 
     def test_comment(self):
+        """
+        Test if a comment.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('comment.nml')
         self.assertEqual(self.comment_nml, test_nml)
         self.assert_write(test_nml, 'comment_target.nml')
 
     def test_comment_alt(self):
+        """
+        Add comment comment comment.
+
+        Args:
+            self: (todo): write your description
+        """
         parser = f90nml.Parser()
         parser.comment_tokens = '#'
         test_nml = parser.read('comment_alt.nml')
         self.assertEqual(self.comment_alt_nml, test_nml)
 
     def test_grp_repeat(self):
+        """
+        Test if the next tick to the first.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('grp_repeat.nml')
         self.assertEqual(self.grp_repeat_nml, test_nml)
         self.assert_write(test_nml, 'grp_repeat_target.nml')
 
     def test_f77(self):
+        """
+        Read the test test test test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('f77.nml')
         self.assertEqual(self.f77_nml, test_nml)
         self.assert_write(test_nml, 'f77_target.nml')
 
     def test_dollar(self):
+        """
+        Test if a test
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('dollar.nml')
         self.assertEqual(self.dollar_nml, test_nml)
         self.assert_write(test_nml, 'dollar_target.nml')
 
     def test_multiline(self):
+        """
+        Writes the multiline multiline multiline.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('multiline.nml')
         self.assertEqual(self.multiline_nml, test_nml)
         self.assert_write(test_nml, 'multiline.nml')
 
     def test_multiline_index(self):
+        """
+        Writes the multiline index.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('multiline_index.nml')
         self.assertEqual(self.multiline_nml, test_nml)
         self.assert_write(test_nml, 'multiline_index.nml')
 
     def test_long_varname(self):
+        """
+        Reads the long name.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('types.nml')
         test_nml.column_width = 10
         self.assert_write(test_nml, 'types_col10.nml')
 
     def test_long_string(self):
+        """
+        Reads the string is long as a string.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('long_string.nml')
         self.assertEqual(self.long_string_nml, test_nml)
         self.assert_write(test_nml, 'long_string_target.nml')
 
     def test_ext_token(self):
+        """
+        Test if the token is valid.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('ext_token.nml')
         self.assertEqual(self.ext_token_nml, test_nml)
 
     def test_write_existing_file(self):
+        """
+        Test if the existing existing existing existing existing file.
+
+        Args:
+            self: (todo): write your description
+        """
         tmp_fname = 'tmp.nml'
         open(tmp_fname, 'w').close()
         test_nml = f90nml.read('empty.nml')
@@ -686,11 +926,23 @@ class Test(unittest.TestCase):
         os.remove(tmp_fname)
 
     def test_pop_key(self):
+        """
+        Populate the test key.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('empty.nml')
         test_nml.pop('empty_nml')
         self.assertEqual(test_nml, f90nml.namelist.Namelist())
 
     def test_patch_paths(self):
+        """
+        Test if the test test test test files.
+
+        Args:
+            self: (todo): write your description
+        """
         patch_nml = f90nml.read('types_patch.nml')
         f90nml.patch('types.nml', patch_nml, 'tmp.nml')
         test_nml = f90nml.read('tmp.nml')
@@ -700,6 +952,12 @@ class Test(unittest.TestCase):
             os.remove('tmp.nml')
 
     def test_patch_files(self):
+        """
+        Test if the test files exist.
+
+        Args:
+            self: (todo): write your description
+        """
         patch_nml = f90nml.read('types_patch.nml')
         with open('types.nml') as f_in:
             with open('tmp.nml', 'w') as f_out:
@@ -713,6 +971,12 @@ class Test(unittest.TestCase):
             os.remove('tmp.nml')
 
     def test_patch_case(self):
+        """
+        Set the test case.
+
+        Args:
+            self: (todo): write your description
+        """
         patch_nml = f90nml.read('types_patch.nml')
         f90nml.patch('types_uppercase.nml', patch_nml, 'tmp.nml')
         test_nml = f90nml.read('tmp.nml')
@@ -722,10 +986,22 @@ class Test(unittest.TestCase):
             os.remove('tmp.nml')
 
     def test_patch_typeerror(self):
+        """
+        Sets the test typeerror to the test.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(TypeError, f90nml.patch, 'types.nml', 'xyz',
                           'tmp.nml')
 
     def test_patch_list(self):
+        """
+        Add a test test list exists.
+
+        Args:
+            self: (todo): write your description
+        """
         f90nml.patch('list_patch.nml', self.list_patch_nml, 'tmp.nml')
         test_nml = f90nml.read('tmp.nml')
         try:
@@ -734,6 +1010,12 @@ class Test(unittest.TestCase):
             os.remove('tmp.nml')
 
     def test_repatch(self):
+        """
+        Repatch test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         f90nml.patch('repatch.nml', self.repatch_nml, 'tmp.nml')
         test_nml = f90nml.read('tmp.nml')
         try:
@@ -742,6 +1024,12 @@ class Test(unittest.TestCase):
             os.remove('tmp.nml')
 
     def test_default_patch(self):
+        """
+        Gets the default test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         patch_nml = f90nml.read('types_patch.nml')
         f90nml.patch('types.nml', patch_nml)
         test_nml = f90nml.read('types.nml~')
@@ -755,6 +1043,12 @@ class Test(unittest.TestCase):
             self.assertRaises(ValueError, f90nml.patch, nml_file, patch_nml)
 
     def test_patch_null(self):
+        """
+        Patch null null to null.
+
+        Args:
+            self: (todo): write your description
+        """
         try:
             f90nml.patch('types.nml', {}, 'tmp.nml')
             self.assert_file_equal('types.nml', 'tmp.nml')
@@ -762,11 +1056,23 @@ class Test(unittest.TestCase):
             os.remove('tmp.nml')
 
     def test_no_selfpatch(self):
+        """
+        Set the test test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         patch_nml = f90nml.read('types_patch.nml')
         self.assertRaises(ValueError, f90nml.patch,
                           'types.nml', patch_nml, 'types.nml')
 
     def test_comment_patch(self):
+        """
+        Patch the comment comment
+
+        Args:
+            self: (todo): write your description
+        """
         nml = {'comment_nml': {'v_cmt_inline': 456}}
         try:
             f90nml.patch('comment.nml', nml, 'tmp.nml')
@@ -775,6 +1081,12 @@ class Test(unittest.TestCase):
             os.remove('tmp.nml')
 
     def test_parser_default_index(self):
+        """
+        Default test index.
+
+        Args:
+            self: (todo): write your description
+        """
         parser = f90nml.Parser()
 
         parser.default_start_index = 1
@@ -786,17 +1098,35 @@ class Test(unittest.TestCase):
         self.assertEqual(self.default_zero_index_nml, test_nml)
 
     def test_global_index(self):
+        """
+        Set global global global global index.
+
+        Args:
+            self: (todo): write your description
+        """
         parser = f90nml.Parser()
         parser.global_start_index = 1
         test_nml = parser.read('global_index.nml')
         self.assertEqual(self.global_index_nml, test_nml)
 
     def test_namelist_default_index(self):
+        """
+        Return the default index
+
+        Args:
+            self: (todo): write your description
+        """
         d = {'x_nml': {'x': [1, 2, 3]}}
         test_nml = f90nml.Namelist(d, default_start_index=1)
         # TODO: Check value
 
     def test_index_syntax(self):
+        """
+        Test that the value of a symbolic link.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(ValueError, f90nml.read, 'index_empty.nml')
         self.assertRaises(ValueError, f90nml.read, 'index_bad.nml')
         self.assertRaises(ValueError, f90nml.read, 'index_bad_start.nml')
@@ -807,12 +1137,24 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.read, 'index_zero_stride.nml')
 
     def test_bad_start_index(self):
+        """
+        Test if namelist index.
+
+        Args:
+            self: (todo): write your description
+        """
         nml = Namelist()
         self.assertRaises(TypeError, setattr, nml, 'start_index', 'abc')
         self.assertRaises(TypeError, setattr, nml, 'default_start_index',
                           'abc')
 
     def test_iter_in_getitem(self):
+        """
+        Iterate test test test test test results.
+
+        Args:
+            self: (todo): write your description
+        """
         d = {'a': {'b': 1.}}
         nml = Namelist(d)
         self.assertEqual(nml[('a', 'b')], 1.)
@@ -820,6 +1162,12 @@ class Test(unittest.TestCase):
         self.assertEqual(nml['a']['b'], 1.)
 
     def test_groups(self):
+        """
+        Test if the groups exist.
+
+        Args:
+            self: (todo): write your description
+        """
         d = {'a': {'b': 1.}}
         nml = Namelist(d)
         key, value = next(nml.groups())
@@ -827,6 +1175,12 @@ class Test(unittest.TestCase):
         self.assertEqual(value, 1.)
 
     def test_f90repr(self):
+        """
+        Test for numpy. numpy.
+
+        Args:
+            self: (todo): write your description
+        """
         nml = Namelist()
         self.assertEqual(nml._f90repr(1), '1')
         self.assertEqual(nml._f90repr(1.), '1.0')
@@ -839,6 +1193,12 @@ class Test(unittest.TestCase):
             self.assertRaises(ValueError, nml._f90repr, ptype)
 
     def test_pybool(self):
+        """
+        Assert that fstr_true is true.
+
+        Args:
+            self: (todo): write your description
+        """
         for fstr_true in ('true', '.true.', 't', '.t.'):
             self.assertEqual(pybool(fstr_true), True)
 
@@ -858,12 +1218,24 @@ class Test(unittest.TestCase):
             self.assertRaises(ValueError, pybool, fstr, strict_logical=False)
 
     def test_close_patch_on_error(self):
+        """
+        Close test test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         patch = {'tmp_nml': {'tmp_val': 0}}
         self.assertRaises(ValueError, f90nml.patch, 'index_empty.nml', patch,
                                                     'tmp.nml')
         os.remove('tmp.nml')
 
     def test_indent(self):
+        """
+        Assigns the test to test.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('types.nml')
 
         test_nml.indent = 2
@@ -877,6 +1249,12 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, test_nml, 'indent', [1, 2, 3])
 
     def test_column_width(self):
+        """
+        Test if the column width.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('multiline.nml')
         test_nml.column_width = 40
         self.assert_write(test_nml, 'multiline_colwidth.nml')
@@ -885,6 +1263,12 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, test_nml, 'column_width', 'xyz')
 
     def test_end_comma(self):
+        """
+        Test that the test test data.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('types.nml')
         test_nml.end_comma = True
         self.assert_write(test_nml, 'types_end_comma.nml')
@@ -892,6 +1276,12 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, test_nml, 'end_comma', 'xyz')
 
     def test_uppercase(self):
+        """
+        Test if the test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('types.nml')
         test_nml.uppercase = True
         self.assert_write(test_nml, 'types_uppercase.nml')
@@ -899,6 +1289,12 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, test_nml, 'uppercase', 'xyz')
 
     def test_index_spacing(self):
+        """
+        Test if the test index is_nml.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('multidim.nml')
         test_nml.index_spacing = True
 
@@ -908,6 +1304,12 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, test_nml, 'index_spacing', 123)
 
     def test_float_format(self):
+        """
+        Test if the float format.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('float.nml')
         test_nml.float_format = '.3f'
         self.assert_write(test_nml, 'float_format.nml')
@@ -915,6 +1317,12 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, setattr, test_nml, 'float_format', 123)
 
     def test_logical_repr(self):
+        """
+        Dump a test test case.
+
+        Args:
+            self: (todo): write your description
+        """
         parser = f90nml.Parser()
         parser.strict_logical = False
         test_nml = parser.read('logical.nml')
@@ -936,6 +1344,12 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, setattr, test_nml, 'logical_repr', [])
 
     def test_findex_iteration(self):
+        """
+        Generate the test test index.
+
+        Args:
+            self: (todo): write your description
+        """
         rng = [(None, 5, None)]
         fidx = iter(FIndex(rng))
 
@@ -943,9 +1357,21 @@ class Test(unittest.TestCase):
             self.assertEqual(i, j[0])
 
     def test_dict_write(self):
+        """
+        Write dictionary to write to file.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assert_write(self.types_nml, 'types_dict.nml')
 
     def test_dict_assign(self):
+        """
+        Assign test_nml to a dict.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.Namelist()
         test_nml['dict_group'] = {'a': 1, 'b': 2}
         try:
@@ -954,14 +1380,32 @@ class Test(unittest.TestCase):
             os.remove('tmp.nml')
 
     def test_winfmt(self):
+        """
+        Assigns the test.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('winfmt.nml')
         self.assertEqual(self.winfmt_nml, test_nml)
 
     def test_eof_no_cr(self):
+        """
+        Èi̇·åıĸè½®
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('no_eol_in_eof.nml')
         # TODO: Test values
 
     def test_namelist_patch(self):
+        """
+        Test for namelist
+
+        Args:
+            self: (todo): write your description
+        """
         nml = f90nml.Namelist({
             'a_nml': {
                 'x': 1,
@@ -993,14 +1437,32 @@ class Test(unittest.TestCase):
         self.assertRaises(KeyError, nml['b_nml'].__getitem__, 'z')
 
     def test_sorted_output(self):
+        """
+        The test test test test results to test.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('types.nml')
         self.assert_write(test_nml, 'types_sorted.nml', sort=True)
 
     def test_extern_cmt(self):
+        """
+        Test if the test is a test.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.read('extern_cmt.nml')
         self.assertEqual(self.extern_cmt_nml, test_nml)
 
     def test_print_nml(self):
+        """
+        Prints the nml file
+
+        Args:
+            self: (todo): write your description
+        """
         nml = f90nml.read('types.nml')
 
         stdout = StringIO()
@@ -1015,6 +1477,12 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, target_str)
 
     def test_print_group(self):
+        """
+        Print the group
+
+        Args:
+            self: (todo): write your description
+        """
         nml = f90nml.read('types.nml')
 
         stdout = StringIO()
@@ -1028,6 +1496,12 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, target_str)
 
     def test_gen_dtype(self):
+        """
+        Generate namelist file
+
+        Args:
+            self: (todo): write your description
+        """
         d = {'dtype_nml': {'a': [{'b': 1, 'c': 2}, {'b': 3, 'c': 4}]}}
         nml = f90nml.Namelist(d)
         out = StringIO()
@@ -1036,6 +1510,12 @@ class Test(unittest.TestCase):
         out.close()
 
     def test_gen_multidim(self):
+        """
+        Generate gen_gen_gen_multidim
+
+        Args:
+            self: (todo): write your description
+        """
         d = {'md_nml': {'x': [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}}
         nml = f90nml.Namelist(d)
         out = StringIO()
@@ -1045,9 +1525,21 @@ class Test(unittest.TestCase):
 
     if has_numpy:
         def test_numpy_write(self):
+            """
+            Writes the numpy.
+
+            Args:
+                self: (todo): write your description
+            """
             self.assert_write(self.numpy_nml, 'numpy_types.nml')
 
     def test_read_string(self):
+        """
+        Test if the test string.
+
+        Args:
+            self: (todo): write your description
+        """
         test_nml = f90nml.reads(''
             '&types_nml'
             ' v_integer = 1'
@@ -1061,10 +1553,22 @@ class Test(unittest.TestCase):
 
     # CLI tests
     def test_cli_help(self):
+        """
+        Test if the cli cli.
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml']
         self.get_cli_output(cmd)
 
     def test_cli_read(self):
+        """
+        Read the test commands.
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', 'types.nml']
         source_str = self.get_cli_output(cmd)
 
@@ -1073,6 +1577,12 @@ class Test(unittest.TestCase):
             self.assertEqual(source_str, target_str)
 
     def test_cli_gen(self):
+        """
+        Generate genome command.
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', '-g', 'gen_nml', '-v', 'x=1']
         source_str = self.get_cli_output(cmd)
 
@@ -1082,6 +1592,12 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, target_str)
 
     def test_cli_replace(self):
+        """
+        Execute test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', '-g', 'types_nml', '-v', 'v_integer=5',
                '-v', 'v_logical=.false.', 'types.nml']
         source_str = self.get_cli_output(cmd)
@@ -1092,6 +1608,12 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, target_str)
 
     def test_cli_replace_no_group(self):
+        """
+        .. versionadded :: 2019. 2. 0
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', '-v', 'v_integer=5', '-v', 'v_logical=.false.',
                'types.nml']
         source_str = self.get_cli_output(cmd)
@@ -1105,6 +1627,12 @@ class Test(unittest.TestCase):
             self.assertEqual(source_str, target_str)
 
     def test_cli_replace_write(self):
+        """
+        Writes the test - write command.
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', '-g', 'types_nml', '-v', 'v_integer=5',
                '-v', 'v_logical=.false.', 'types.nml', 'tmp.nml']
         self.get_cli_output(cmd)
@@ -1117,6 +1645,12 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, target_str)
 
     def test_cli_patch(self):
+        """
+        Command line test test.
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', '-p', '-g', 'comment_nml', '-v', 'v_cmt_inline=456',
                'comment.nml']
         source_str = self.get_cli_output(cmd)
@@ -1127,6 +1661,12 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, target_str)
 
     def test_cli_bad_format(self):
+        """
+        Test for cli cli cli cli cli options.
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', '-f', 'blah', 'types.nml']
         source_str = self.get_cli_output(cmd, get_stderr=True)
         # TODO: Automate the format list
@@ -1136,6 +1676,12 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, target_str)
 
     def test_cli_json_write(self):
+        """
+        Write cli test test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', 'types.nml', 'tmp.json']
         out = self.get_cli_output(cmd)
 
@@ -1152,6 +1698,12 @@ class Test(unittest.TestCase):
         os.remove('tmp.json')
 
     def test_cli_json_fmt(self):
+        """
+        Convert json - test
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', '-f', 'json', 'types.nml']
         source_str = self.get_cli_output(cmd)
 
@@ -1161,6 +1713,12 @@ class Test(unittest.TestCase):
         self.assertEqual(source_str, target_str)
 
     def test_cli_json_read(self):
+        """
+        Command line test test test. cli.
+
+        Args:
+            self: (todo): write your description
+        """
         cmd = ['f90nml', 'types.json']
         source_str = self.get_cli_output(cmd)
         # TODO: Check output after resolving the ordering issue
@@ -1170,6 +1728,12 @@ class Test(unittest.TestCase):
         source_str = self.get_cli_output(cmd)
 
     def test_cli_json_patch_fail(self):
+        """
+        Test for test test test test test.
+
+        Args:
+            self: (todo): write your description
+        """
         error_str = 'f90nml: error: Only namelist files can be patched.\n'
 
         # JSON input patch
@@ -1184,6 +1748,12 @@ class Test(unittest.TestCase):
 
     if has_yaml:
         def test_cli_yaml_write(self):
+            """
+            Test if yaml file.
+
+            Args:
+                self: (todo): write your description
+            """
             cmd = ['f90nml', 'types.nml', 'tmp.yaml']
             out = self.get_cli_output(cmd)
 
@@ -1191,11 +1761,23 @@ class Test(unittest.TestCase):
             os.remove('tmp.yaml')
 
         def test_cli_yaml_read(self):
+            """
+            Read yaml file
+
+            Args:
+                self: (todo): write your description
+            """
             cmd = ['f90nml', 'types.yaml']
             source_str = self.get_cli_output(cmd)
             # TODO: Check output after resolving the ordering issue
 
     def test_cli_missing_yaml(self):
+        """
+        Command line test test yaml test.
+
+        Args:
+            self: (todo): write your description
+        """
         orig_has_yaml = f90nml.cli.has_yaml
         f90nml.cli.has_yaml = False
 
@@ -1212,18 +1794,48 @@ class Test(unittest.TestCase):
     # Failed namelist parsing
     # NOTE: This is a very weak test, since '& x=1' / will pass
     def test_grp_token_end(self):
+        """
+        Set the token token token.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(ValueError, f90nml.reads, '&')
 
     def test_no_group_name(self):
+        """
+        Create a group name to the group.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(ValueError, f90nml.reads, '& /')
 
     def test_empty_grp_no_end(self):
+        """
+        Test if there is empty.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(ValueError, f90nml.reads, '&end')
 
     def test_string_grp_no_end(self):
+        """
+        Test if the test string.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(ValueError, f90nml.reads, '&a_nml x = 1')
 
     def test_file_grp_no_end(self):
+        """
+        Test if the test file exists.
+
+        Args:
+            self: (todo): write your description
+        """
         self.assertRaises(ValueError, f90nml.read, 'grp_no_end.nml')
 
 if __name__ == '__main__':
