@@ -13,8 +13,8 @@ A Python module and command line tool for parsing Fortran namelist files
 .. image:: https://coveralls.io/repos/marshallward/f90nml/badge.svg?branch=master
    :target: https://coveralls.io/r/marshallward/f90nml?branch=master
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1112518.svg
-   :target: https://doi.org/10.5281/zenodo.1112518
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3245482.svg
+   :target: https://doi.org/10.5281/zenodo.3245482
 
 
 Documentation
