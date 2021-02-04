@@ -42,7 +42,7 @@ class Parser(object):
 
     @property
     def comment_tokens(self):
-        """String of single-character comment tokens in the namelist.
+        """Return a string of single-character comment tokens in the namelist.
 
         :type: ``str``
         :default: ``'!'``
@@ -866,7 +866,7 @@ class Parser(object):
 
 # Support functions
 def prepad_array(var, v_start_idx, new_start_idx):
-    # NOTE: May be some way to use `pop` to avoid copying of index arrays...
+    """Return a resized vector based on the new start index."""
     prior_var = var[:]
 
     # Read the outer values

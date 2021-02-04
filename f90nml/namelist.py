@@ -36,8 +36,12 @@ class Namelist(OrderedDict):
     In addition to the standard methods supported by `dict`, several additional
     methods and properties are provided for working with Fortran namelists.
     """
+
     class RepeatValue(object):
+        """Container class for output using repeat counters."""
+
         def __init__(self, n, value):
+            """Create the RepeatValue object."""
             self.repeats = n
             self.value = value
 
@@ -413,8 +417,10 @@ class Namelist(OrderedDict):
 
     @property
     def repeat_counter(self):
-        r"""Set whether the namelist should be written with repeats,
-        i.e. whether arrays should be written as 1, 2, 2 or as 1, 2*2
+        """Return whether the namelist uses repeat counters for arrays.
+
+        If True, then arrays with repeated values will use repeat tokens.  For
+        example, the array ``[1, 2, 2, 2]`` will be written as ``1, 3*2``.
 
         :type: ``bool``
         :default: ``False``
@@ -778,7 +784,7 @@ class Namelist(OrderedDict):
                              ' type.'.format(type(value), value))
 
     def _f90repeat(self, value):
-        """Return a Fortran 90 representation of a repeated value"""
+        """Return a Fortran 90 representation of a repeated value."""
         if value.repeats == 1:
             return self._f90repr(value.value)
         else:
