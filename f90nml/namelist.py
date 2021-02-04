@@ -7,7 +7,7 @@ a Python environment.
 :license: Apache License, Version 2.0, see LICENSE for details.
 """
 from __future__ import print_function
-
+import itertools
 import copy
 import numbers
 import os
@@ -36,6 +36,10 @@ class Namelist(OrderedDict):
     In addition to the standard methods supported by `dict`, several additional
     methods and properties are provided for working with Fortran namelists.
     """
+    class RepeatValue(object):
+        def __init__(self, n, value):
+            self.repeats = n
+            self.value = value
 
     def __init__(self, *args, **kwds):
         """Create the Namelist object."""
@@ -75,6 +79,7 @@ class Namelist(OrderedDict):
         self._float_format = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
         self._index_spacing = False
+        self._repeat_counter = False
 
         # Namelist group spacing flag
         self._newline = False
@@ -406,6 +411,24 @@ class Namelist(OrderedDict):
             raise TypeError('start_index attribute must be a dict.')
         self._start_index = value
 
+    @property
+    def repeat_counter(self):
+        r"""Set whether the namelist should be written with repeats,
+        i.e. whether arrays should be written as 1, 2, 2 or as 1, 2*2
+
+        :type: ``bool``
+        :default: ``False``
+        """
+        return self._repeat_counter
+
+    @repeat_counter.setter
+    def repeat_counter(self, value):
+        """Set whether array output should be done in repeat form."""
+        if isinstance(value, bool):
+            self._repeat_counter = value
+        else:
+            raise TypeError(r"repeat must be of type ``bool``")
+
     def write(self, nml_path, force=False, sort=False):
         """Write Namelist to a Fortran 90 namelist file.
 
@@ -614,6 +637,12 @@ class Namelist(OrderedDict):
             v_header = self.indent + v_name + v_idx_repr + ' = '
             val_strs = []
             val_line = v_header
+
+            if self._repeat_counter:
+                v_values = list(
+                    self.RepeatValue(len(list(x)), val)
+                    for val, x in itertools.groupby(v_values)
+                )
             for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
@@ -653,8 +682,11 @@ class Namelist(OrderedDict):
                         if i_val < len(v_values) - 1 or self.end_comma:
                             val_line += ', '
 
+                # Line break
                 if len(val_line) >= column_width:
+                    # Append current line to list of lines
                     val_strs.append(val_line.rstrip())
+                    # Start new line with space corresponding to header
                     val_line = ' ' * len(v_header)
 
             # Append any remaining values
@@ -727,7 +759,9 @@ class Namelist(OrderedDict):
 
     def _f90repr(self, value):
         """Convert primitive Python types to equivalent Fortran strings."""
-        if isinstance(value, bool):
+        if isinstance(value, self.RepeatValue):
+            return self._f90repeat(value)
+        elif isinstance(value, bool):
             return self._f90bool(value)
         elif isinstance(value, numbers.Integral):
             return self._f90int(value)
@@ -742,6 +776,14 @@ class Namelist(OrderedDict):
         else:
             raise ValueError('Type {0} of {1} cannot be converted to a Fortran'
                              ' type.'.format(type(value), value))
+
+    def _f90repeat(self, value):
+        """Return a Fortran 90 representation of a repeated value"""
+        if value.repeats == 1:
+            return self._f90repr(value.value)
+        else:
+            return "{0}*{1}".format(value.repeats,
+                                    self._f90repr(value.value))
 
     def _f90bool(self, value):
         """Return a Fortran 90 representation of a logical value."""
