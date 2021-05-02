@@ -297,7 +297,7 @@ class Parser(object):
         >>> data_nml = parser.reads('&data_nml x=1 y=2 /')
         """
         try:
-            return self._readstream(iter(nml_string.splitlines(keepends=True)))
+            return self._readstream(iter(nml_string.splitlines(True)))
         except StopIteration:
             raise ValueError('End-of-file reached before end of namelist.')
 
