@@ -368,7 +368,7 @@ class Parser(object):
             v_name = None
 
             # TODO: Edit `Namelist` to support case-insensitive `get` calls
-            grp_patch = nml_patch.get(g_name.lower(), Namelist())
+            grp_patch = nml_patch.pop(g_name.lower(), Namelist())
 
             # Populate the namelist group
             while g_name:
@@ -408,9 +408,7 @@ class Parser(object):
                         g_vars[v_name] = v_val
                         v_strs = nmls._var_strings(v_name, v_val)
                         for v_str in v_strs:
-                            self.pfile.write(
-                                '{0}{1}\n'.format(nml_patch.indent, v_str)
-                            )
+                            self.pfile.write(v_str + '\n')
 
                     # Append the grouplist to the namelist
                     if g_name in nmls:
@@ -434,6 +432,15 @@ class Parser(object):
                 self._update_tokens()
             except StopIteration:
                 break
+
+        if nml_patch:
+            # Append the contents to the namelist patch
+            print(file=self.pfile)
+            print(nml_patch, file=self.pfile)
+
+            # Now append the values to the output namelist
+            for grp in nml_patch:
+                nmls[grp] = nml_patch[grp]
 
         return nmls
 
