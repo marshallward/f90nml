@@ -1,17 +1,33 @@
+1.3:
+    - Strings which exceed the column limit are now split across multiple
+      lines.  Thanks to Xi Chen for reporting.
+    - We now raise ValueError if we reach and EOF before a namelist group has
+      been terminated.  It is also raised for various StopIteration scenarios.
+    - Namelist output with repeated values can now use repeat tokens if
+      enabled.  Thanks to Holger Wolff for contributing this feature.
+    - Bugfix: Preserve newlines in the reads() string parser.  This fixes a bug
+      in the handling of tokens outside of namelist groups.  Thanks to GitHub
+      user @coreur for reporting.
+    - Patching now supports the addition of new namelist groups.  Thanks to
+      Cory Kramer for reporting and suggesting this issue.
+
 1.2:
     - Bugfix: Repeated null arrays as final elements now parse correctly.
     - Bugfix: Preprossor comment token # now correctly disabled on default.
     - Bugfix: Several indexing issues with array patching have been fixed.
     - Improved "duck typing" tokenization of numerics and other data types,
     - Removal of Namelist constructor calls in __setitem__.
+
 1.1.2:
     - README update to remove `-e` flags for local installs.
+
 1.1.1:
     - YAML: Additional install support (f90nml[yaml]) package and additional
       documentation for supporting YAML conversion.
     - Bugfix: Removal of `-o` output flag.  The positional argument is now used
       exclusively to set the output file in the CLI.
     - Documentation changes and integration, thanks to the JOSS reviewers.
+
 1.1:
     - Bugfix: Out-of-order multidimensional support now works correctly.
     - Bugfix: Derived type list updates without an index now correctly apply
