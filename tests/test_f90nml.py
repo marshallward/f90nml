@@ -35,6 +35,7 @@ from f90nml.fpy import pybool
 from f90nml.namelist import Namelist
 from f90nml.findex import FIndex
 
+
 class Test(unittest.TestCase):
 
     def setUp(self):
@@ -391,7 +392,7 @@ class Test(unittest.TestCase):
         }
 
         self.long_string_nml = {
-            'long_string_nml' : {
+            'long_string_nml': {
                 's': ' '.join(12 * ['abcdefghijklmnopqrstuvwxyz'])
             }
         }
@@ -1051,7 +1052,7 @@ class Test(unittest.TestCase):
             self.assert_write(self.numpy_nml, 'numpy_types.nml')
 
     def test_read_string(self):
-        test_nml = f90nml.reads(''
+        test_nml = f90nml.reads(
             '&types_nml'
             ' v_integer = 1'
             ' v_float = 1.0'
@@ -1205,9 +1206,11 @@ class Test(unittest.TestCase):
         cmd = ['f90nml', 'types.yaml']
         source_str = self.get_cli_output(cmd, get_stderr=True)
 
-        target_str = ('f90nml: error: YAML module could not be found.\n'
+        target_str = (
+            'f90nml: error: YAML module could not be found.\n'
             '  To enable YAML support, install PyYAML or use the f90nml[yaml] '
-            'package.\n')
+            'package.\n'
+        )
         self.assertEqual(source_str, target_str)
 
         f90nml.cli.has_yaml = orig_has_yaml
@@ -1226,7 +1229,7 @@ class Test(unittest.TestCase):
         with self.assertRaises(TypeError):
             nml.repeat_counter = 'Hello'
 
-    # TODO fails in _var_strings 
+    # TODO fails in _var_strings
     # def test_repeat_empty(self):
         # nml_dict = {'a':{'b' : []}}
         # nml = f90nml.Namelist(nml_dict)
@@ -1238,9 +1241,8 @@ class Test(unittest.TestCase):
         # line2 = out.readline()
         # self.assertEqual(line2.lstrip(), 'b = 1, 2, 3\n')
 
-
     def test_repeat_scalar(self):
-        nml = f90nml.Namelist({'a':{'b':1}})
+        nml = f90nml.Namelist({'a': {'b': 1}})
         nml.repeat_counter = True
         out = StringIO()
         print(nml, file=out)
@@ -1248,10 +1250,9 @@ class Test(unittest.TestCase):
         line1 = out.readline()
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), 'b = 1\n')
-        
 
     def test_repeat_single(self):
-        nml_dict = {'a':{'b' : [1]}}
+        nml_dict = {'a': {'b': [1]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1262,7 +1263,7 @@ class Test(unittest.TestCase):
         self.assertEqual(line2.lstrip(), 'b = 1\n')
 
     def test_repeat_no_consecutive(self):
-        nml_dict = {'a':{'b' : [1, 2, 3]}}
+        nml_dict = {'a': {'b': [1, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1273,7 +1274,7 @@ class Test(unittest.TestCase):
         self.assertEqual(line2.lstrip(), 'b = 1, 2, 3\n')
 
     def test_repeat_middle_consecutive(self):
-        nml_dict = {'a':{'b' : [1, 2, 2, 3]}}
+        nml_dict = {'a': {'b': [1, 2, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1284,7 +1285,7 @@ class Test(unittest.TestCase):
         self.assertEqual(line2.lstrip(), 'b = 1, 2*2, 3\n')
 
     def test_repeat_beginning_consecutive(self):
-        nml_dict = {'a':{'b' : [1, 1, 2, 3]}}
+        nml_dict = {'a': {'b': [1, 1, 2, 3]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1295,7 +1296,7 @@ class Test(unittest.TestCase):
         self.assertEqual(line2.lstrip(), 'b = 2*1, 2, 3\n')
 
     def test_repeat_end_consecutive(self):
-        nml_dict = {'a':{'b' : [1, 2, 3, 3]}}
+        nml_dict = {'a': {'b': [1, 2, 3, 3]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1306,7 +1307,7 @@ class Test(unittest.TestCase):
         self.assertEqual(line2.lstrip(), 'b = 1, 2, 2*3\n')
 
     def test_repeat_consecutive_repeating(self):
-        nml_dict = {'a':{'b' : [1, 1, 2, 3, 1, 1, 1]}}
+        nml_dict = {'a': {'b': [1, 1, 2, 3, 1, 1, 1]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1317,7 +1318,7 @@ class Test(unittest.TestCase):
         self.assertEqual(line2.lstrip(), 'b = 2*1, 2, 3, 3*1\n')
 
     def test_repeat_all_repeating(self):
-        nml_dict = {'a':{'b' : [1, 1, 1, 1, 1]}}
+        nml_dict = {'a': {'b': [1, 1, 1, 1, 1]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1328,7 +1329,7 @@ class Test(unittest.TestCase):
         self.assertEqual(line2.lstrip(), 'b = 5*1\n')
 
     def test_repeat_repeating_float(self):
-        nml_dict = {'a':{'b' : [1.0, 1.0, 2.0, 0.3]}}
+        nml_dict = {'a': {'b': [1.0, 1.0, 2.0, 0.3]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1339,7 +1340,7 @@ class Test(unittest.TestCase):
         self.assertEqual(line2.lstrip(), 'b = 2*1.0, 2.0, 0.3\n')
 
     def test_repeat_repeating_complex(self):
-        nml_dict = {'a':{'b' : [1+2j, 1+2j, 3j]}}
+        nml_dict = {'a': {'b': [1+2j, 1+2j, 3j]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1350,7 +1351,7 @@ class Test(unittest.TestCase):
         self.assertEqual(line2.lstrip(), 'b = 2*(1.0, 2.0), (0.0, 3.0)\n')
 
     def test_repeat_repeating_logical(self):
-        nml_dict = {'a':{'b' : [True, True, False]}}
+        nml_dict = {'a': {'b': [True, True, False]}}
         nml = f90nml.Namelist(nml_dict)
         nml.repeat_counter = True
         out = StringIO()
@@ -1376,6 +1377,7 @@ class Test(unittest.TestCase):
 
     def test_file_grp_no_end(self):
         self.assertRaises(ValueError, f90nml.read, 'grp_no_end.nml')
+
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
