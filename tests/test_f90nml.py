@@ -408,6 +408,10 @@ class Test(unittest.TestCase):
             'repatch_nml': {
                 'x': [5, 6],
                 'y': {'z': 7}
+            },
+            'newgrp_nml': {
+                'a': 1,
+                'b': 2,
             }
         }
 
