@@ -649,6 +649,7 @@ class Namelist(OrderedDict):
                     self.RepeatValue(len(list(x)), val)
                     for val, x in itertools.groupby(v_values)
                 )
+
             for i_val, v_val in enumerate(v_values):
                 # Increase column width if the header exceeds this value
                 if len(v_header) >= self.column_width:
@@ -669,7 +670,8 @@ class Namelist(OrderedDict):
                             v_l, v_r = v_str[:idx], v_str[idx:]
                             val_line += v_l
 
-                            if i_val < len(v_values) - 1 or self.end_comma:
+                            if ((i_val < len(v_values) - 1 or self.end_comma)
+                                    and not v_r):
                                 val_line += ', '
 
                             if len(val_line) >= column_width:
