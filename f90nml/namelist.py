@@ -661,39 +661,47 @@ class Namelist(OrderedDict):
                     # NOTE: We allow non-strings to extend past the column
                     #   limit, but strings will be split as needed.
                     v_str = self._f90repr(v_val)
+
+                    # Set a comma placeholder if needed
+                    if i_val < len(v_values) - 1 or self.end_comma:
+                        v_comma = ', '
+                    else:
+                        v_comma = ''
+
                     if isinstance(v_val, str):
-                        idx = column_width - len(val_line)
+                        idx = column_width - len(val_line + v_comma.rstrip())
 
                         # Split the line along idx until we either exceed the
                         #   column width, or read the end of the string.
-                        while True:
-                            v_l, v_r = v_str[:idx], v_str[idx:]
-                            val_line += v_l
+                        v_l, v_r = v_str[:idx], v_str[idx:]
 
-                            if ((i_val < len(v_values) - 1 or self.end_comma)
-                                    and not v_r):
-                                val_line += ', '
-
-                            if len(val_line) >= column_width:
-                                val_strs.append(val_line.rstrip())
-                                val_line = ''
-
-                            if v_r:
-                                v_str = v_r
-
-                                # Subsequent segments start on column zero
-                                idx = column_width
+                        if v_r:
+                            # Check if string can fit on the next line
+                            new_val_line = (
+                                ' ' * len(v_header) + v_str + v_comma
+                            )
+                            if len(new_val_line.rstrip()) <= column_width:
+                                val_strs.append(val_line)
+                                val_line = ' ' * len(v_header)
                             else:
-                                break
-                    else:
-                        val_line += v_str
-                        if i_val < len(v_values) - 1 or self.end_comma:
-                            val_line += ', '
+                                # Split string across multiple lines
+                                while v_r:
+                                    val_line += v_l
+                                    val_strs.append(val_line)
+                                    val_line = ''
+
+                                    idx = column_width - len(v_comma.rstrip())
+                                    v_l, v_r = v_r[:idx], v_r[idx:]
+
+                                v_str = v_l
+
+                    val_line += v_str + v_comma
 
                 # Line break
                 if len(val_line) >= column_width:
                     # Append current line to list of lines
                     val_strs.append(val_line.rstrip())
+
                     # Start new line with space corresponding to header
                     val_line = ' ' * len(v_header)
 
