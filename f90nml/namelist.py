@@ -349,28 +349,24 @@ class Namelist(OrderedDict):
         self.true_repr = value[1]
 
     @property
-    def true_repr(self):
-        """Set the string representation of logical true values.
+    def repeat_counter(self):
+        """Return whether the namelist uses repeat counters for arrays.
 
-        :type: ``str``
-        :default: ``.true.``
+        If True, then arrays with repeated values will use repeat tokens.  For
+        example, the array ``[1, 2, 2, 2]`` will be written as ``1, 3*2``.
 
-        This is equivalent to the second element of ``logical_repr``.
+        :type: ``bool``
+        :default: ``False``
         """
-        return self._logical_repr[1]
+        return self._repeat_counter
 
-    @true_repr.setter
-    def true_repr(self, value):
-        """Validate and set the logical true representation."""
-        if isinstance(value, str):
-            if not (value.lower().startswith('t') or
-                    value.lower().startswith('.t')):
-                raise ValueError("Logical true representation must start with "
-                                 "'T' or '.T'.")
-            else:
-                self._logical_repr[1] = value
+    @repeat_counter.setter
+    def repeat_counter(self, value):
+        """Set whether array output should be done in repeat form."""
+        if isinstance(value, bool):
+            self._repeat_counter = value
         else:
-            raise TypeError('Logical true representation must be a string.')
+            raise TypeError(r"repeat must be of type ``bool``")
 
     @property
     def start_index(self):
@@ -416,24 +412,28 @@ class Namelist(OrderedDict):
         self._start_index = value
 
     @property
-    def repeat_counter(self):
-        """Return whether the namelist uses repeat counters for arrays.
+    def true_repr(self):
+        """Set the string representation of logical true values.
 
-        If True, then arrays with repeated values will use repeat tokens.  For
-        example, the array ``[1, 2, 2, 2]`` will be written as ``1, 3*2``.
+        :type: ``str``
+        :default: ``.true.``
 
-        :type: ``bool``
-        :default: ``False``
+        This is equivalent to the second element of ``logical_repr``.
         """
-        return self._repeat_counter
+        return self._logical_repr[1]
 
-    @repeat_counter.setter
-    def repeat_counter(self, value):
-        """Set whether array output should be done in repeat form."""
-        if isinstance(value, bool):
-            self._repeat_counter = value
+    @true_repr.setter
+    def true_repr(self, value):
+        """Validate and set the logical true representation."""
+        if isinstance(value, str):
+            if not (value.lower().startswith('t') or
+                    value.lower().startswith('.t')):
+                raise ValueError("Logical true representation must start with "
+                                 "'T' or '.T'.")
+            else:
+                self._logical_repr[1] = value
         else:
-            raise TypeError(r"repeat must be of type ``bool``")
+            raise TypeError('Logical true representation must be a string.')
 
     def write(self, nml_path, force=False, sort=False):
         """Write Namelist to a Fortran 90 namelist file.
