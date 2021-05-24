@@ -458,6 +458,8 @@ class Namelist(OrderedDict):
 
         :type: ``bool``
         :default: ``False``
+
+        This is equivalent to the second element of ``logical_repr``.
         """
         return self._uppercase
 
