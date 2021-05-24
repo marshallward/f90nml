@@ -1,0 +1,3 @@
+&str_array_nml
+    names = 'abcdefg', 'tuvwxyz', 'abc123', '123abc', 'abcdefg', 'abcdefghijklmnopqrstuvwxyz', 'xyz321'
+/

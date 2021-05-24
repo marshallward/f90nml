@@ -84,6 +84,7 @@ class Namelist(OrderedDict):
         self._logical_repr = {False: '.false.', True: '.true.'}
         self._index_spacing = False
         self._repeat_counter = False
+        self._split_strings = False
 
         # Namelist group spacing flag
         self._newline = False
@@ -367,6 +368,22 @@ class Namelist(OrderedDict):
             self._repeat_counter = value
         else:
             raise TypeError(r"repeat must be of type ``bool``")
+
+    @property
+    def split_strings(self):
+        """Split strings at the ``column_width`` over multiple lines.
+
+        :type: ``bool``
+        :default: ``False``
+        """
+        return self._split_strings
+
+    @split_strings.setter
+    def split_strings(self, value):
+        """Validate and set the split_strings flag."""
+        if not isinstance(value, bool):
+            raise TypeError('split_strings attribute must be a logical type.')
+        self._split_strings = value
 
     @property
     def start_index(self):
@@ -668,7 +685,7 @@ class Namelist(OrderedDict):
                     else:
                         v_comma = ''
 
-                    if isinstance(v_val, str):
+                    if self.split_strings and isinstance(v_val, str):
                         idx = column_width - len(val_line + v_comma.rstrip())
 
                         # Split the line along idx until we either exceed the

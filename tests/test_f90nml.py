@@ -100,6 +100,20 @@ class Test(unittest.TestCase):
             }
         }
 
+        self.str_array_nml = {
+            'str_array_nml': {
+                'names': [
+                    'abcdefg',
+                    'tuvwxyz',
+                    'abc123',
+                    '123abc',
+                    'abcdefg',
+                    'abcdefghijklmnopqrstuvwxyz',
+                    'xyz321',
+                ], 
+            }
+        }
+
         self.multidim_nml = {
             'multidim_nml': {
                 'v2d': [[1, 2], [3, 4]],
@@ -542,6 +556,12 @@ class Test(unittest.TestCase):
         self.assertEqual(self.vector_nml, test_nml)
         self.assert_write(test_nml, 'vector_default_idx.nml')
 
+    def test_string_array(self):
+        test_nml = f90nml.read('string_array.nml')
+        test_nml.split_strings = True
+        self.assertEqual(self.str_array_nml, test_nml)
+        self.assert_write(test_nml, 'string_array_target.nml')
+
     def test_multidim(self):
         test_nml = f90nml.read('multidim.nml')
         self.assertEqual(self.multidim_nml, test_nml)
@@ -676,7 +696,10 @@ class Test(unittest.TestCase):
     def test_long_string(self):
         test_nml = f90nml.read('long_string.nml')
         self.assertEqual(self.long_string_nml, test_nml)
+        test_nml.split_strings = True
         self.assert_write(test_nml, 'long_string_target.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'split_strings', 123)
 
     def test_ext_token(self):
         test_nml = f90nml.read('ext_token.nml')
