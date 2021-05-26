@@ -1,3 +1,9 @@
+1.3.1:
+    - String splitting is now an optional feature, enabled by the split_strings
+      property.  Default string array output again resembles v1.2 output.
+    - Bugfix: For arrays of strings, a split string element will no longer
+      insert erroneous commas.  Thanks to Jared Lewis for reporting.
+
 1.3:
     - Strings which exceed the column limit are now split across multiple
       lines.  Thanks to Xi Chen for reporting.
