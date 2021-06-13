@@ -421,18 +421,9 @@ class Parser(object):
 
                     # Append the grouplist to the namelist
                     if g_name in nmls:
-                        g_update = nmls[g_name]
-
-                        # Update to list of groups
-                        if not isinstance(g_update, list):
-                            g_update = [g_update]
-
-                        g_update.append(g_vars)
-
+                        nmls.add_cogroup(g_name, g_vars)
                     else:
-                        g_update = g_vars
-
-                    nmls[g_name] = g_update
+                        nmls[g_name] = g_vars
 
                     # Reset state
                     g_name, g_vars = None, None

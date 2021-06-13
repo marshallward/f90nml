@@ -64,6 +64,10 @@ class Namelist(OrderedDict):
 
         self.start_index = self.pop('_start_index', {})
 
+        # XXX: Testing a "co-group" feature, where a namelist group tracks
+        #   its other entries with the same name.
+        self._cogroups = []
+
         # Update the complex tuples as intrinsics
         # TODO: We are effectively setting these twice.  Instead, fetch these
         # from s_args rather than relying on Namelist to handle the content.
@@ -110,7 +114,11 @@ class Namelist(OrderedDict):
     def __getitem__(self, key):
         """Case-insensitive interface to OrderedDict."""
         if isinstance(key, basestring):
-            return super(Namelist, self).__getitem__(key.lower())
+            val = super(Namelist, self).__getitem__(key.lower())
+            if isinstance(val, Namelist) and val._cogroups:
+                return val._cogroups
+            else:
+                return val
         else:
             keyiter = iter(key)
             grp, var = next(keyiter).lower(), next(keyiter).lower()
@@ -498,6 +506,28 @@ class Namelist(OrderedDict):
                 self[sec] = Namelist()
             self[sec].update(nml_patch[sec])
 
+    # TODO: Find a simpler name
+    def add_cogroup(self, key, val):
+        """Append a duplicate group to the Namelist as a new group.
+
+        TODO: Detailed explanation
+        """
+        # TODO: What to do if it's a new group?  Add normally?
+        assert key in self
+        grps = self[key]
+
+        if not isinstance(grps, list):
+            grps._cogroups.append(grps)
+            grps = [grps]
+
+        cogrp_id = str(len(grps))
+        cogrp_key = '_'.join(['_grp', key, cogrp_id])
+        self[cogrp_key] = val
+
+        cogroups = grps[0]._cogroups
+        cogroups.append(self[cogrp_key])
+        self[cogrp_key]._cogroups = grps[0]._cogroups
+
     def groups(self):
         """Return an iterator that spans values with group and variable names.
 
@@ -533,6 +563,10 @@ class Namelist(OrderedDict):
         if self._newline:
             print(file=nml_file)
         self._newline = True
+
+        # Strip metadata label for repeat groups
+        if grp_name.startswith('_grp_'):
+            grp_name = grp_name.lstrip('_grp_').rsplit('_', 1)[0]
 
         if self.uppercase:
             grp_name = grp_name.upper()
