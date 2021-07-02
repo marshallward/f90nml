@@ -396,6 +396,15 @@ class Parser(object):
 
                     g_vars[v_name] = v_values
 
+                    # Squeeze 1d list due to repeated variables
+                    for v_name, v_values in g_vars.items():
+                        if (
+                            isinstance(v_values, list)
+                            and len(v_values) == 1
+                            and v_name not in g_vars.start_index
+                        ):
+                            g_vars[v_name] = v_values[0]
+
                     # Deselect variable
                     v_name = None
                     v_values = []
