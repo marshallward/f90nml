@@ -387,6 +387,10 @@ class Test(unittest.TestCase):
             'case_check_nml': [{'y': 1}, {'y': 2}],
         }
 
+        self.key_repeat_nml = {
+            'key_repeat_nml': {'a': 3}
+        }
+
         self.f77_nml = {
             'f77_nml': {'x': 123},
             'next_f77_nml': {'y': 'abc'},
@@ -667,6 +671,10 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('grp_repeat.nml')
         self.assertEqual(self.grp_repeat_nml, test_nml)
         self.assert_write(test_nml, 'grp_repeat_target.nml')
+
+    def test_key_repeat(self):
+        test_nml = f90nml.read('key_repeat.nml')
+        self.assertEqual(test_nml, self.key_repeat_nml)
 
     def test_f77(self):
         test_nml = f90nml.read('f77.nml')
