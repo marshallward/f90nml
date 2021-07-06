@@ -114,9 +114,12 @@ class Namelist(OrderedDict):
     def __getitem__(self, key):
         """Case-insensitive interface to OrderedDict."""
         if isinstance(key, basestring):
-            val = super(Namelist, self).__getitem__(key.lower())
-            if isinstance(val, Namelist) and val._cogroups:
-                return val._cogroups
+            lkey = key.lower()
+            val = super(Namelist, self).__getitem__(lkey)
+
+            if lkey in self._cogroups:
+                cogrp_keys = [k for k in self if k.startswith('_grp_{}'.format(lkey))]
+                return [val] + [self[k] for k in cogrp_keys]
             else:
                 return val
         else:
@@ -506,7 +509,6 @@ class Namelist(OrderedDict):
                 self[sec] = Namelist()
             self[sec].update(nml_patch[sec])
 
-    # TODO: Find a simpler name
     def add_cogroup(self, key, val):
         """Append a duplicate group to the Namelist as a new group.
 
@@ -516,17 +518,17 @@ class Namelist(OrderedDict):
         assert key in self
         grps = self[key]
 
-        if not isinstance(grps, list):
-            grps._cogroups.append(grps)
+        # Set up the cogroup if it does not yet exist
+        if isinstance(grps, Namelist):
+            # NOTE: We retain the key to preserve the original order.
+            #   But accessing it should now yield the cogroup list.
+            self._cogroups.append(key)
             grps = [grps]
 
+        # Generate the cogroup label and add to the Namelist
         cogrp_id = str(len(grps))
-        cogrp_key = '_'.join(['_grp', key, cogrp_id])
+        cogrp_key = '_'.join(['_grp', key.lower(), cogrp_id])
         self[cogrp_key] = val
-
-        cogroups = grps[0]._cogroups
-        cogroups.append(self[cogrp_key])
-        self[cogrp_key]._cogroups = grps[0]._cogroups
 
     def groups(self):
         """Return an iterator that spans values with group and variable names.
