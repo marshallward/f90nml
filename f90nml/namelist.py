@@ -63,8 +63,8 @@ class Namelist(OrderedDict):
 
         super(Namelist, self).__init__(*s_args, **kwds)
 
-        # XXX: Testing a "co-group" feature, where a namelist group tracks
-        #   its other entries with the same name.
+        # We internally track the list of cogroups (groups of the same name),
+        #   although this could be replaced with a per-access search.
         self._cogroups = []
 
         self.start_index = self.pop('_start_index', {})
@@ -110,18 +110,25 @@ class Namelist(OrderedDict):
 
     def __delitem__(self, key):
         """Case-insensitive interface to OrderedDict."""
-        return super(Namelist, self).__delitem__(key.lower())
+        lkey = key.lower()
+
+        # Remove cogroup values
+        if lkey in self._cogroups:
+            cogrp = Cogroup(self, lkey)
+            for grp in cogrp.keys:
+                super(Namelist, self).__delitem__(grp)
+        else:
+            super(Namelist, self).__delitem__(key)
 
     def __getitem__(self, key):
         """Case-insensitive interface to OrderedDict."""
         if isinstance(key, basestring):
             lkey = key.lower()
-            val = super(Namelist, self).__getitem__(lkey)
 
             if lkey in self._cogroups:
                 return Cogroup(self, lkey)
             else:
-                return val
+                return super(Namelist, self).__getitem__(lkey)
         else:
             keyiter = iter(key)
             grp, var = next(keyiter).lower(), next(keyiter).lower()
@@ -516,11 +523,7 @@ class Namelist(OrderedDict):
             self[sec].update(nml_patch[sec])
 
     def add_cogroup(self, key, val):
-        """Append a duplicate group to the Namelist as a new group.
-
-        TODO: Detailed explanation
-        TODO: Integrate into __setitem__?
-        """
+        """Append a duplicate group to the Namelist as a new group."""
         # TODO: What to do if it's a new group?  Add normally?
         lkey = key.lower()
 
@@ -910,12 +913,17 @@ class Cogroup(list):
         self.nml = nml
         self.key = key
 
-        grps = [super(Namelist, self.nml).__getitem__(k) for k in self.keys]
+        grps = [dict.__getitem__(self.nml, k) for k in self.keys]
         super(Cogroup, self).__init__(grps, **kwds)
 
     def __setitem__(self, index, value):
         key = self.keys[index]
-        super(Namelist, self.nml).__setitem__(key, value)
+        dict.__setitem__(self.nml, key, value)
+
+    def __delitem__(self, index):
+        key = self.keys[index]
+        dict.__delitem__(self.nml, key)
+        super(Cogroup, self).__delitem__(index)
 
     @property
     def keys(self):
