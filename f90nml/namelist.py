@@ -112,11 +112,13 @@ class Namelist(OrderedDict):
         """Case-insensitive interface to OrderedDict."""
         lkey = key.lower()
 
-        # Remove cogroup values
         if lkey in self._cogroups:
+            # Remove all cogroup values
             cogrp = Cogroup(self, lkey)
-            for grp in cogrp.keys:
-                super(Namelist, self).__delitem__(grp)
+            for gkey in cogrp.keys:
+                super(Namelist, self).__delitem__(gkey)
+
+            self._cogroups.remove(lkey)
         else:
             super(Namelist, self).__delitem__(key)
 
@@ -527,7 +529,7 @@ class Namelist(OrderedDict):
         # TODO: What to do if it's a new group?  Add normally?
         lkey = key.lower()
 
-        assert lkey in self
+        assert lkey in self or lkey in self._cogroups
         grps = self[lkey]
 
         # Set up the cogroup if it does not yet exist
@@ -537,8 +539,19 @@ class Namelist(OrderedDict):
             grps = [grps]
 
         # Generate the cogroup label and add to the Namelist
-        cogrp_id = str(len(grps))
-        cogrp_key = '_'.join(['_grp', lkey, cogrp_id])
+        # NOTE: In order to preserve ordering, we cannot reuse a key which may
+        #   have been removed.  So we always generate a new key based on the
+        #   largest index.  If no key is present, initialize with 1.
+
+        # Gather the list of existing IDs
+        hdr = '_grp_{0}_'.format(key)
+        idx = [int(k.split(hdr)[1]) for k in self if k.startswith(hdr)]
+        try:
+            cogrp_id = 1 + max(idx)
+        except ValueError:
+            cogrp_id = 1
+
+        cogrp_key = '_'.join(['_grp', lkey, str(cogrp_id)])
         self[cogrp_key] = val
 
     def groups(self):
@@ -910,20 +923,26 @@ class Cogroup(list):
     is also updated.
     """
     def __init__(self, nml, key, *args, **kwds):
+        """Generate list of Namelist cogroups linked to parent namelist."""
         self.nml = nml
         self.key = key
 
-        grps = [dict.__getitem__(self.nml, k) for k in self.keys]
+        grps = [OrderedDict.__getitem__(self.nml, k) for k in self.keys]
         super(Cogroup, self).__init__(grps, **kwds)
 
     def __setitem__(self, index, value):
+        """Update cogroup list and parent namelist."""
         key = self.keys[index]
-        dict.__setitem__(self.nml, key, value)
+        OrderedDict.__setitem__(self.nml, key, value)
 
     def __delitem__(self, index):
-        key = self.keys[index]
-        dict.__delitem__(self.nml, key)
+        gkey = self.keys[index]
+        OrderedDict.__delitem__(self.nml, gkey)
         super(Cogroup, self).__delitem__(index)
+
+        # Remove the cogroup status if keys are depleted
+        if len(self) == 0:
+            self.nml._cogroups.remove(self.key)
 
     @property
     def keys(self):
