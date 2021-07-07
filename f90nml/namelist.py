@@ -62,11 +62,11 @@ class Namelist(OrderedDict):
 
         super(Namelist, self).__init__(*s_args, **kwds)
 
-        self.start_index = self.pop('_start_index', {})
-
         # XXX: Testing a "co-group" feature, where a namelist group tracks
         #   its other entries with the same name.
         self._cogroups = []
+
+        self.start_index = self.pop('_start_index', {})
 
         # Update the complex tuples as intrinsics
         # TODO: We are effectively setting these twice.  Instead, fetch these
@@ -118,8 +118,9 @@ class Namelist(OrderedDict):
             val = super(Namelist, self).__getitem__(lkey)
 
             if lkey in self._cogroups:
-                cogrp_keys = [k for k in self if k.startswith('_grp_{}'.format(lkey))]
-                return [val] + [self[k] for k in cogrp_keys]
+                # TODO: Move to Cogroup?
+                cogrp_keys = [k for k in self if k.startswith('_grp_{}'.format(lkey)) or k == lkey]
+                return Cogroup(self, lkey, [super(Namelist, self).__getitem__(k) for k in cogrp_keys])
             else:
                 return val
         else:
@@ -133,10 +134,15 @@ class Namelist(OrderedDict):
         Python dict inputs to the Namelist, such as derived types, are also
         converted into Namelists.
         """
+        # Promote dicts to Namelists
         if isinstance(value, dict) and not isinstance(value, Namelist):
-            value = Namelist(value,
-                             default_start_index=self.default_start_index)
+            value = Namelist(
+                value,
+                default_start_index=self.default_start_index
+            )
 
+        # Convert list of dicts to list of namelists
+        # (NOTE: This may be for legacy cogroup support?  Can it be dropped?)
         elif is_nullable_list(value, dict):
             for i, v in enumerate(value):
                 if isinstance(v, Namelist) or v is None:
@@ -148,7 +154,8 @@ class Namelist(OrderedDict):
                         default_start_index=self.default_start_index
                     )
 
-        super(Namelist, self).__setitem__(key.lower(), value)
+        lkey = key.lower()
+        super(Namelist, self).__setitem__(lkey, value)
 
     def __str__(self):
         """Print the Fortran representation of the namelist.
@@ -513,21 +520,24 @@ class Namelist(OrderedDict):
         """Append a duplicate group to the Namelist as a new group.
 
         TODO: Detailed explanation
+        TODO: Integrate into __setitem__?
         """
         # TODO: What to do if it's a new group?  Add normally?
-        assert key in self
-        grps = self[key]
+        lkey = key.lower()
+
+        assert lkey in self
+        grps = self[lkey]
 
         # Set up the cogroup if it does not yet exist
         if isinstance(grps, Namelist):
             # NOTE: We retain the key to preserve the original order.
             #   But accessing it should now yield the cogroup list.
-            self._cogroups.append(key)
+            self._cogroups.append(lkey)
             grps = [grps]
 
         # Generate the cogroup label and add to the Namelist
         cogrp_id = str(len(grps))
-        cogrp_key = '_'.join(['_grp', key.lower(), cogrp_id])
+        cogrp_key = '_'.join(['_grp', lkey, cogrp_id])
         self[cogrp_key] = val
 
     def groups(self):
@@ -882,6 +892,33 @@ class Namelist(OrderedDict):
         result = result.replace('\\\\', '\\')
 
         return result
+
+
+# TODO: Move to separate file?  What about ref to Namelist?
+class Cogroup(list):
+    """List of Namelist groups which share a common key.
+
+    Although Namelists are structured as associative arrays, access is
+    typically serial, based on IO data streams.  One consequence is that a
+    namelist may contain multiple keys for different values.
+
+    A namelist read in a Fortran program will often return the first instance
+    of a key; subsequent reads of the same key will return values in the order
+    presented within the file.
+
+    TODO: Explain
+    """
+    def __init__(self, nml, key, *args, **kwds):
+        self.nml = nml
+        self.key = key
+        super(Cogroup, self).__init__(*args, **kwds)
+
+    def __setitem__(self, index, value):
+        # TODO: Convert index to key
+        # TODO: property!
+        cogrp_keys = [k for k in self.nml if k.startswith('_grp_{}'.format(self.key)) or k == self.key]
+        key = cogrp_keys[index]
+        super(Namelist, self.nml).__setitem__(key, value)
 
 
 def is_nullable_list(val, vtype):
