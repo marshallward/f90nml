@@ -50,6 +50,7 @@ class Namelist(OrderedDict):
         s_args = list(args)
 
         # If using (unordered) dict, then resort the keys for reproducibility
+        # NOTE: Python 3.7+ dicts are order-preserving.
         if (args and not isinstance(args[0], OrderedDict) and
                 isinstance(args[0], dict)):
             s_args[0] = sorted(args[0].items())
@@ -118,9 +119,7 @@ class Namelist(OrderedDict):
             val = super(Namelist, self).__getitem__(lkey)
 
             if lkey in self._cogroups:
-                # TODO: Move to Cogroup?
-                cogrp_keys = [k for k in self if k.startswith('_grp_{}'.format(lkey)) or k == lkey]
-                return Cogroup(self, lkey, [super(Namelist, self).__getitem__(k) for k in cogrp_keys])
+                return Cogroup(self, lkey)
             else:
                 return val
         else:
@@ -530,8 +529,7 @@ class Namelist(OrderedDict):
 
         # Set up the cogroup if it does not yet exist
         if isinstance(grps, Namelist):
-            # NOTE: We retain the key to preserve the original order.
-            #   But accessing it should now yield the cogroup list.
+            # NOTE: We re-use the key to preserve the original order.
             self._cogroups.append(lkey)
             grps = [grps]
 
@@ -898,27 +896,36 @@ class Namelist(OrderedDict):
 class Cogroup(list):
     """List of Namelist groups which share a common key.
 
-    Although Namelists are structured as associative arrays, access is
-    typically serial, based on IO data streams.  One consequence is that a
+    Although Namelists are organized as associative arrays, access is
+    typically through a serial I/O data stream.  One consequence is that a
     namelist may contain multiple keys for different values.
 
-    A namelist read in a Fortran program will often return the first instance
-    of a key; subsequent reads of the same key will return values in the order
-    presented within the file.
+    This object returns a list of namelist groups which use the same key.
+    Internal keys correspond to the original ordering in the namelist.
 
-    TODO: Explain
+    When an element of the list is updated, the corresponding namelist element
+    is also updated.
     """
     def __init__(self, nml, key, *args, **kwds):
         self.nml = nml
         self.key = key
-        super(Cogroup, self).__init__(*args, **kwds)
+
+        grps = [super(Namelist, self.nml).__getitem__(k) for k in self.keys]
+        super(Cogroup, self).__init__(grps, **kwds)
 
     def __setitem__(self, index, value):
-        # TODO: Convert index to key
-        # TODO: property!
-        cogrp_keys = [k for k in self.nml if k.startswith('_grp_{}'.format(self.key)) or k == self.key]
-        key = cogrp_keys[index]
+        key = self.keys[index]
         super(Namelist, self.nml).__setitem__(key, value)
+
+    @property
+    def keys(self):
+        """Return the namelist keys in the cogroup."""
+        cogrp_keys = [
+            k for k in self.nml
+            if k.startswith('_grp_{}'.format(self.key))
+            or k == self.key
+        ]
+        return cogrp_keys
 
 
 def is_nullable_list(val, vtype):
