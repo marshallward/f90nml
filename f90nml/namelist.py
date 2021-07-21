@@ -55,17 +55,24 @@ class Namelist(OrderedDict):
                 isinstance(args[0], dict)):
             s_args[0] = sorted(args[0].items())
 
+        # Passing a Namelist through Namelist() will convert cogroup keyed
+        #   values to lists.  To prevent this, we convert back to dicts.
+        if args and isinstance(args[0], Namelist):
+            s_args[0] = s_args[0].todict()
+
         # Assign the default start index
         try:
             self._default_start_index = kwds.pop('default_start_index')
         except KeyError:
             self._default_start_index = None
 
+        # Initialize via OrderedDict
         super(Namelist, self).__init__(*s_args, **kwds)
 
-        # We internally track the list of cogroups (groups of the same name),
-        #   although this could be replaced with a per-access search.
-        self._cogroups = []
+        # Construct the cogroups based on the internal key values
+        self._cogroups = set(
+            k[5:].rsplit('_')[0] for k in self if k.startswith('_grp_')
+        )
 
         self.start_index = self.pop('_start_index', {})
 
@@ -534,8 +541,7 @@ class Namelist(OrderedDict):
 
         # Set up the cogroup if it does not yet exist
         if isinstance(grps, Namelist):
-            # NOTE: We re-use the key to preserve the original order.
-            self._cogroups.append(lkey)
+            self._cogroups.add(lkey)
             grps = [grps]
 
         # Generate the cogroup label and add to the Namelist
@@ -908,7 +914,6 @@ class Namelist(OrderedDict):
         return result
 
 
-# TODO: Move to separate file?  What about ref to Namelist?
 class Cogroup(list):
     """List of Namelist groups which share a common key.
 
