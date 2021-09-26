@@ -143,6 +143,12 @@ class Namelist(OrderedDict):
             grp, var = next(keyiter).lower(), next(keyiter).lower()
             return super(Namelist, self).__getitem__(grp).__getitem__(var)
 
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
     def __setitem__(self, key, value):
         """Case-insensitive interface to OrderedDict.
 
