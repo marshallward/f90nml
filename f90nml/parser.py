@@ -649,12 +649,11 @@ class Parser(object):
                     #       rather than prepending it to the iterator.
                     self.tokens, pre_lookahead = itertools.tee(self.tokens)
                     lookahead = itertools.chain([self.token], pre_lookahead)
-                    n_vals_remain = count_values(lookahead)
 
                     if patch_values:
                         # TODO: Patch indices that are not set in the namelist
                         if (p_idx < len(patch_values)
-                                and n_vals_remain > 0
+                                and check_for_value(lookahead)
                                 and self.token != ','):
                             p_val = patch_values[p_idx]
                             p_repr = patch_nml._f90repr(patch_values[p_idx])
@@ -976,17 +975,19 @@ def delist(values):
     return values
 
 
-def count_values(tokens):
-    """Identify the number of values ahead of the current token."""
+def check_for_value(tokens):
+    """Return True if the next token is a value to be assigned."""
     ntoks = 0
     for tok in tokens:
         if tok.isspace() or tok == ',':
             continue
         elif tok in ('=', '/', '$', '&'):
-            if ntoks > 0 and tok == '=':
-                ntoks -= 1
             break
         else:
             ntoks += 1
 
-    return ntoks
+        # If ntoks reaches 2, then there must be at least one value.
+        if ntoks > 1:
+            break
+
+    return ntoks > 0
