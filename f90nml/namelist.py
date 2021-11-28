@@ -7,8 +7,9 @@ a Python environment.
 :license: Apache License, Version 2.0, see LICENSE for details.
 """
 from __future__ import print_function
-import itertools
+
 import copy
+import itertools
 import numbers
 import os
 import platform
@@ -36,7 +37,6 @@ class Namelist(OrderedDict):
     In addition to the standard methods supported by `dict`, several additional
     methods and properties are provided for working with Fortran namelists.
     """
-
     class RepeatValue(object):
         """Container class for output using repeat counters."""
 
@@ -61,18 +61,20 @@ class Namelist(OrderedDict):
             s_args[0] = s_args[0].todict()
 
         # Assign the default start index
-        try:
-            self._default_start_index = kwds.pop('default_start_index')
-        except KeyError:
-            self._default_start_index = None
+        self._default_start_index = kwds.pop('default_start_index', None)
 
         # Initialize via OrderedDict
         super(Namelist, self).__init__(*s_args, **kwds)
 
         # Construct the cogroups based on the internal key values
-        self._cogroups = set(
-            k[5:].rsplit('_')[0] for k in self if k.startswith('_grp_')
-        )
+        self._cogroups = {}
+        for key in self:
+            if key.startswith('_grp_'):
+                grp = key[5:].rsplit('_', 1)[0]
+                try:
+                    self._cogroups[grp].append(key)
+                except KeyError:
+                    self._cogroups[grp] = [key]
 
         self.start_index = self.pop('_start_index', {})
 
@@ -163,7 +165,6 @@ class Namelist(OrderedDict):
             )
 
         # Convert list of dicts to list of namelists
-        # (NOTE: This may be for legacy cogroup support?  Can it be dropped?)
         elif is_nullable_list(value, dict):
             for i, v in enumerate(value):
                 if isinstance(v, Namelist) or v is None:
@@ -526,6 +527,66 @@ class Namelist(OrderedDict):
             if not nml_is_file:
                 nml_file.close()
 
+    def create_cogroup(self, group_name):
+        """Convert an existing namelist group to a cogroup."""
+        grp_key = group_name.lower()
+
+        if grp_key in self._cogroups:
+            return
+
+        if grp_key in self:
+            # Move existing group to an internal cogroup key
+
+            # NOTE: Since OrderedDict does not permit a renaming of keys, we
+            # are forced to remove and replace the entry with the new internal
+            # key - which moves it to the end - and then remove/reappend all
+            # keys after this key.
+
+            nml_groups = list(self.keys())
+            grp_idx = nml_groups.index(grp_key)
+
+            # Remove the existing value and add to the end.
+            grp_val = self.pop(grp_key)
+
+            cogrp_key = ''.join(['_grp_', grp_key, '_0'])
+            self[cogrp_key] = grp_val
+
+            # Remove and replace existing keys after the new cogroup key.
+            for key in nml_groups[grp_idx+1:]:
+                grp = self.pop(key)
+                self[key] = grp
+
+            cogroup_keys = [cogrp_key]
+        else:
+            cogroup_keys = []
+
+        self._cogroups[grp_key] = cogroup_keys
+
+    def add_cogroup(self, key, val):
+        """Append a duplicate group to the Namelist as a new group."""
+        lkey = key.lower()
+
+        if lkey in self and not lkey in self._cogroups:
+            self.create_cogroup(lkey)
+
+        # Generate the cogroup label and add to the Namelist
+        # NOTE: In order to preserve ordering, we cannot reuse a key which may
+        # have been removed.  So we always generate a new key based on the
+        # largest index.
+
+        # Gather the list of existing IDs
+        hdr = '_grp_{0}_'.format(lkey)
+        idx = [int(k.split(hdr)[1]) for k in self._cogroups[lkey]]
+        try:
+            cogrp_id = 1 + max(idx)
+        except ValueError:
+            # If an empty cogroup was set up, use '0' for the label.
+            cogrp_id = 0
+
+        cogrp_key = '_'.join(['_grp', lkey, str(cogrp_id)])
+        self[cogrp_key] = val
+        self._cogroups[lkey].append(cogrp_key)
+
     def patch(self, nml_patch):
         """Update the namelist from another partial or full namelist.
 
@@ -536,35 +597,6 @@ class Namelist(OrderedDict):
             if sec not in self:
                 self[sec] = Namelist()
             self[sec].update(nml_patch[sec])
-
-    def add_cogroup(self, key, val):
-        """Append a duplicate group to the Namelist as a new group."""
-        # TODO: What to do if it's a new group?  Add normally?
-        lkey = key.lower()
-
-        assert lkey in self or lkey in self._cogroups
-        grps = self[lkey]
-
-        # Set up the cogroup if it does not yet exist
-        if isinstance(grps, Namelist):
-            self._cogroups.add(lkey)
-            grps = [grps]
-
-        # Generate the cogroup label and add to the Namelist
-        # NOTE: In order to preserve ordering, we cannot reuse a key which may
-        #   have been removed.  So we always generate a new key based on the
-        #   largest index.  If no key is present, initialize with 1.
-
-        # Gather the list of existing IDs
-        hdr = '_grp_{0}_'.format(key)
-        idx = [int(k.split(hdr)[1]) for k in self if k.startswith(hdr)]
-        try:
-            cogrp_id = 1 + max(idx)
-        except ValueError:
-            cogrp_id = 1
-
-        cogrp_key = '_'.join(['_grp', lkey, str(cogrp_id)])
-        self[cogrp_key] = val
 
     def groups(self):
         """Return an iterator that spans values with group and variable names.
@@ -942,7 +974,6 @@ class Cogroup(list):
         super(Cogroup, self).__init__(grps, **kwds)
 
     def __setitem__(self, index, value):
-        """Update cogroup list and parent namelist."""
         key = self.keys[index]
         OrderedDict.__setitem__(self.nml, key, value)
 
@@ -961,9 +992,13 @@ class Cogroup(list):
         cogrp_keys = [
             k for k in self.nml
             if k.startswith('_grp_{}'.format(self.key))
-            or k == self.key
         ]
         return cogrp_keys
+
+
+def _cogroup_basename(grp):
+    """Return the cogroup name from the internal key."""
+    return grp[5:].rsplit('_', 1)[0] if grp.startswith('_grp_') else grp
 
 
 def is_nullable_list(val, vtype):
