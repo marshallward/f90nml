@@ -25,6 +25,30 @@ try:
     basestring          # Python 2.x
 except NameError:
     basestring = str    # Python 3.x
+try:
+    from collections.abc import KeysView    # Python 3.4+
+    from collections.abc import ItemsView    # Python 3.4+
+except ImportError:
+    from collections import KeysView        # Python 2.7 - 3.3
+    from collections import ItemsView        # Python 2.7 - 3.3
+
+
+class _NamelistKeysView(KeysView):
+    """Return the namelist's KeysView based on the Namelist iterator."""
+    def __iter__(self):
+        # This is faster, but requires Python 3.x
+        # yield from self._mapping
+
+        # This is slower but works in 2.7
+        for key in self._mapping:
+            yield key
+
+
+class _NamelistItemsView(ItemsView):
+    """Return the namelist's ItemsView based on the Namelist iterator."""
+    def __iter__(self):
+        for key in self._mapping:
+            yield (key, self._mapping[key])
 
 
 class Namelist(OrderedDict):
@@ -51,6 +75,7 @@ class Namelist(OrderedDict):
 
         # If using (unordered) dict, then resort the keys for reproducibility
         # NOTE: Python 3.7+ dicts are order-preserving.
+        # FIXME: I need to drop this, no longer relevant.
         if (args and not isinstance(args[0], OrderedDict) and
                 isinstance(args[0], dict)):
             s_args[0] = sorted(args[0].items())
@@ -121,7 +146,9 @@ class Namelist(OrderedDict):
         """Case-insensitive interface to OrderedDict."""
         lkey = key.lower()
 
-        if lkey in self._cogroups:
+        if isinstance(key, NmlKey):
+            super(Namelist, self).__delitem__(key._key)
+        elif lkey in self._cogroups:
             # Remove all cogroup values
             cogrp = Cogroup(self, lkey)
             for gkey in cogrp.keys:
@@ -133,7 +160,9 @@ class Namelist(OrderedDict):
 
     def __getitem__(self, key):
         """Case-insensitive interface to OrderedDict."""
-        if isinstance(key, basestring):
+        if isinstance(key, NmlKey):
+            return super(Namelist, self).__getitem__(key._key)
+        elif isinstance(key, basestring):
             lkey = key.lower()
 
             if lkey in self._cogroups:
@@ -145,11 +174,24 @@ class Namelist(OrderedDict):
             grp, var = next(keyiter).lower(), next(keyiter).lower()
             return super(Namelist, self).__getitem__(grp).__getitem__(var)
 
+    def __iter__(self):
+        for key in super(Namelist, self).__iter__():
+            yield NmlKey(key)
+
+    # NOTE: Since we override __getitem__, we must also override get()
     def get(self, key, default=None):
         try:
             return self[key]
         except KeyError:
             return default
+
+    def keys(self):
+        """Return the namelist keys as a KeysView."""
+        return _NamelistKeysView(self)
+
+    def items(self):
+        """Return the namelist keys as an ItemsView."""
+        return _NamelistItemsView(self)
 
     def __setitem__(self, key, value):
         """Case-insensitive interface to OrderedDict.
@@ -176,8 +218,11 @@ class Namelist(OrderedDict):
                         default_start_index=self.default_start_index
                     )
 
-        lkey = key.lower()
-        super(Namelist, self).__setitem__(lkey, value)
+        if isinstance(key, NmlKey):
+            super(Namelist, self).__setitem__(key._key, value)
+        else:
+            lkey = key.lower()
+            super(Namelist, self).__setitem__(lkey, value)
 
     def __str__(self):
         """Print the Fortran representation of the namelist.
@@ -566,7 +611,7 @@ class Namelist(OrderedDict):
         """Append a duplicate group to the Namelist as a new group."""
         lkey = key.lower()
 
-        if lkey in self and not lkey in self._cogroups:
+        if lkey in self and lkey not in self._cogroups:
             self.create_cogroup(lkey)
 
         # Generate the cogroup label and add to the Namelist
@@ -856,12 +901,16 @@ class Namelist(OrderedDict):
         namelist into an equivalent format which does not support complex
         numbers, such as JSON or YAML.
         """
-        # TODO: Preserve ordering
-        nmldict = OrderedDict(self)
+        # Copy Namelist to OrderedDict, converting NmlKeys back to strings
+        nmldict = OrderedDict()
+        for key, value in self.items():
+            nmldict[str(key)] = value
 
         # Search for namelists within the namelist
         # TODO: Move repeated stuff to new functions
-        for key, value in self.items():
+        for nkey, value in self.items():
+            key = str(nkey)
+
             if isinstance(value, Namelist):
                 nml = copy.deepcopy(value)
                 nmldict[key] = nml.todict(complex_tuple)
@@ -970,30 +1019,37 @@ class Cogroup(list):
         self.nml = nml
         self.key = key
 
-        grps = [OrderedDict.__getitem__(self.nml, k) for k in self.keys]
+        grps = [self.nml[k] for k in self.keys]
         super(Cogroup, self).__init__(grps, **kwds)
 
     def __setitem__(self, index, value):
         key = self.keys[index]
-        OrderedDict.__setitem__(self.nml, key, value)
+        self.nml[key] = value
 
+    # TODO: I probably don't want to go to OrderedDict.<method> anymore...
     def __delitem__(self, index):
-        gkey = self.keys[index]
-        OrderedDict.__delitem__(self.nml, gkey)
+        key = self.keys[index]
+        del self.nml[key]
         super(Cogroup, self).__delitem__(index)
 
         # Remove the cogroup status if keys are depleted
         if len(self) == 0:
             self.nml._cogroups.remove(self.key)
 
+    # NOTE: Maybe this function is no longer useful...
     @property
     def keys(self):
         """Return the namelist keys in the cogroup."""
-        cogrp_keys = [
-            k for k in self.nml
-            if k.startswith('_grp_{}'.format(self.key))
-        ]
-        return cogrp_keys
+        return [k for k in self.nml if k == self.key]
+
+
+class NmlKey(str):
+    def __new__(cls, value='', *args, **kwargs):
+        name = _cogroup_basename(value)
+        tok = str.__new__(cls, name, *args)
+        tok._key = value
+
+        return tok
 
 
 def _cogroup_basename(grp):

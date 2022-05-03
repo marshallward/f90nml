@@ -32,7 +32,6 @@ sys.path.insert(1, '../')
 import f90nml
 import f90nml.cli
 from f90nml.fpy import pybool
-from f90nml.namelist import Namelist
 from f90nml.findex import FIndex
 
 
@@ -110,7 +109,7 @@ class Test(unittest.TestCase):
                     'abcdefg',
                     'abcdefghijklmnopqrstuvwxyz',
                     'xyz321',
-                ], 
+                ],
             }
         }
 
@@ -382,10 +381,23 @@ class Test(unittest.TestCase):
                 'z': 3}
         }
 
-        self.grp_repeat_nml = {
-            'grp_repeat_nml': [{'x': 1}, {'x': 2}],
-            'case_check_nml': [{'y': 1}, {'y': 2}],
-        }
+        # NOTE: Methods for setting up namelists with repeated groups is still
+        #   a work in progress.  This is a temporary solution to get past the
+        #   issue and focus on other related matters.
+
+        # Old repeat group method
+        #
+        # self.grp_repeat_nml = {
+        #     'grp_repeat_nml': [{'x': 1}, {'x': 2}],
+        #     'case_check_nml': [{'y': 1}, {'y': 2}],
+        # }
+
+        # Possibly temporary construction of repeated group
+        self.grp_repeat_nml = f90nml.Namelist()
+        self.grp_repeat_nml['grp_repeat_nml'] = {'x': 1}
+        self.grp_repeat_nml.add_cogroup('grp_repeat_nml', {'x': 2})
+        self.grp_repeat_nml['case_check_nml'] = {'y': 1}
+        self.grp_repeat_nml.add_cogroup('case_check_nml', {'y': 2})
 
         self.key_repeat_nml = {
             'key_repeat_nml': {'a': 3}
@@ -842,27 +854,27 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, f90nml.read, 'index_zero_stride.nml')
 
     def test_bad_start_index(self):
-        nml = Namelist()
+        nml = f90nml.Namelist()
         self.assertRaises(TypeError, setattr, nml, 'start_index', 'abc')
         self.assertRaises(TypeError, setattr, nml, 'default_start_index',
                           'abc')
 
     def test_iter_in_getitem(self):
         d = {'a': {'b': 1.}}
-        nml = Namelist(d)
+        nml = f90nml.Namelist(d)
         self.assertEqual(nml[('a', 'b')], 1.)
         self.assertEqual(nml[['a', 'b']], 1.)
         self.assertEqual(nml['a']['b'], 1.)
 
     def test_groups(self):
         d = {'a': {'b': 1.}}
-        nml = Namelist(d)
+        nml = f90nml.Namelist(d)
         key, value = next(nml.groups())
         self.assertEqual(key, ('a', 'b'))
         self.assertEqual(value, 1.)
 
     def test_f90repr(self):
-        nml = Namelist()
+        nml = f90nml.Namelist()
         self.assertEqual(nml._f90repr(1), '1')
         self.assertEqual(nml._f90repr(1.), '1.0')
         self.assertEqual(nml._f90repr(1+2j), '(1.0, 2.0)')
