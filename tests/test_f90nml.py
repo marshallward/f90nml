@@ -683,6 +683,10 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('grp_repeat.nml')
         self.assertEqual(self.grp_repeat_nml, test_nml)
         self.assert_write(test_nml, 'grp_repeat_target.nml')
+        # Test str() output
+        with open('grp_repeat_target.nml') as nml_file:
+            grp_repeat_str = ''.join(nml_file.readlines()).rstrip('\n')
+        self.assertEqual(str(test_nml), grp_repeat_str)
 
     def test_key_repeat(self):
         test_nml = f90nml.read('key_repeat.nml')
