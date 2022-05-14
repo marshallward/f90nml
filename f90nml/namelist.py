@@ -35,6 +35,7 @@ except ImportError:
 
 class _NamelistKeysView(KeysView):
     """Return the namelist's KeysView based on the Namelist iterator."""
+
     def __iter__(self):
         # This is faster, but requires Python 3.x
         # yield from self._mapping
@@ -46,6 +47,7 @@ class _NamelistKeysView(KeysView):
 
 class _NamelistItemsView(ItemsView):
     """Return the namelist's ItemsView based on the Namelist iterator."""
+
     def __iter__(self):
         for key in self._mapping:
             yield (key, self._mapping[key])
@@ -61,6 +63,7 @@ class Namelist(OrderedDict):
     In addition to the standard methods supported by `dict`, several additional
     methods and properties are provided for working with Fortran namelists.
     """
+
     class RepeatValue(object):
         """Container class for output using repeat counters."""
 
@@ -175,11 +178,13 @@ class Namelist(OrderedDict):
             return super(Namelist, self).__getitem__(grp).__getitem__(var)
 
     def __iter__(self):
+        """Implement iter(self)."""
         for key in super(Namelist, self).__iter__():
             yield NmlKey(key)
 
     # NOTE: Since we override __getitem__, we must also override get()
     def get(self, key, default=None):
+        """Return the value for key if key is in the Namelist, else default."""
         try:
             return self[key]
         except KeyError:
@@ -1014,6 +1019,7 @@ class Cogroup(list):
     When an element of the list is updated, the corresponding namelist element
     is also updated.
     """
+
     def __init__(self, nml, key, *args, **kwds):
         """Generate list of Namelist cogroups linked to parent namelist."""
         self.nml = nml
@@ -1023,11 +1029,21 @@ class Cogroup(list):
         super(Cogroup, self).__init__(grps, **kwds)
 
     def __setitem__(self, index, value):
+        """Set the namelist key at position index in the Cogroup to value.
+
+        The Cogroup list contains references to its associated namelist.  When
+        this Cogroup element value is assigned, it is also set in the namelist.
+        """
         key = self.keys[index]
         self.nml[key] = value
 
-    # TODO: I probably don't want to go to OrderedDict.<method> anymore...
     def __delitem__(self, index):
+        """Delete the namelist key at position index in the Cogroup.
+
+        The Cogroup list contains references to its associated namelist.  When
+        an element is deleted from the Cogroup, it is passed to the namelist
+        and deleted.
+        """
         key = self.keys[index]
         del self.nml[key]
         super(Cogroup, self).__delitem__(index)
@@ -1044,7 +1060,14 @@ class Cogroup(list):
 
 
 class NmlKey(str):
+    """Create a new NmlKey object.
+
+    An NmlKey is a str containing an internal key used to distinguish between
+    duplicate keys in the namelist.
+    """
+
     def __new__(cls, value='', *args, **kwargs):
+        """Create and return a new NmlKey."""
         name = _cogroup_basename(value)
         tok = str.__new__(cls, name, *args)
         tok._key = value
