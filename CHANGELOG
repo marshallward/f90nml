@@ -1,3 +1,14 @@
+1.4:
+    - Ordering of duplicate keys is now preserved, through the introduction of
+      two new classes.  The Cogroup extends the list previously associated with
+      the values of a duplicate key.  The NmlKey extends str and externally
+      holds the namelist key, but also contains an internal key to distinguish
+      between duplicates.
+    - A repeated key is no longer initialized with a list, and must now be
+      explicitly declared as a cogroup with the `add_cogroup` function.
+    - A performance issue related to the detection of values in a line has been
+      fixed.  Thanks to Stephen LeDoux for reporting and Philip Cross for
+      fixing this issue.
 1.3.1:
     - String splitting is now an optional feature, enabled by the split_strings
       property.  Default string array output again resembles v1.2 output.
