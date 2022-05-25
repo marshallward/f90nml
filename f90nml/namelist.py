@@ -143,7 +143,13 @@ class Namelist(OrderedDict):
 
     def __contains__(self, key):
         """Case-insensitive interface to OrderedDict."""
-        return super(Namelist, self).__contains__(key.lower())
+        lkey = key.lower()
+        # NOTE: Only Python 2.7 requires the hasattr() test.
+        #   I do not know why.  This needs more investigation.
+        return (
+            super(Namelist, self).__contains__(lkey)
+            or (hasattr(self, '_cogroups') and lkey in self._cogroups)
+        )
 
     def __delitem__(self, key):
         """Case-insensitive interface to OrderedDict."""
@@ -152,12 +158,10 @@ class Namelist(OrderedDict):
         if isinstance(key, NmlKey):
             super(Namelist, self).__delitem__(key._key)
         elif lkey in self._cogroups:
-            # Remove all cogroup values
-            cogrp = Cogroup(self, lkey)
-            for gkey in cogrp.keys:
+            for gkey in self._cogroups[lkey]:
                 super(Namelist, self).__delitem__(gkey)
 
-            self._cogroups.remove(lkey)
+            self._cogroups.pop(lkey)
         else:
             super(Namelist, self).__delitem__(key)
 
