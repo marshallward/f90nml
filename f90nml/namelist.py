@@ -887,7 +887,7 @@ class Namelist(OrderedDict):
                 val_strs.append(val_line.rstrip())
 
             # Final null values must always precede a comma
-            if val_strs and v_values[-1] is None:
+            if val_strs and (len(v_values) == 0 or v_values[-1] is None):
                 # NOTE: val_strs has been rstrip-ed so lead with a space
                 val_strs[-1] += ' ,'
 
