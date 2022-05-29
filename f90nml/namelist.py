@@ -1048,15 +1048,18 @@ class Cogroup(list):
         an element is deleted from the Cogroup, it is passed to the namelist
         and deleted.
         """
-        key = self.keys[index]
-        del self.nml[key]
+        # First remove the actual key from the namelist
+        nmlkey = self.keys[index]
+        del self.nml[nmlkey]
+
+        # Next update the namelist's internal cogroup record
+        self.nml._cogroups[self.key].remove(nmlkey._key)
+        if not self.nml._cogroups[self.key]:
+            del self.nml._cogroups[self.key]
+
+        # Finally, remove from this list
         super(Cogroup, self).__delitem__(index)
 
-        # Remove the cogroup status if keys are depleted
-        if len(self) == 0:
-            self.nml._cogroups.remove(self.key)
-
-    # NOTE: Maybe this function is no longer useful...
     @property
     def keys(self):
         """Return the namelist keys in the cogroup."""
