@@ -688,10 +688,6 @@ class Namelist(OrderedDict):
             print(file=nml_file)
         self._newline = True
 
-        # Strip metadata label for repeat groups
-        if grp_name.startswith('_grp_'):
-            grp_name = grp_name[5:].rsplit('_', 1)[0]
-
         if self.uppercase:
             grp_name = grp_name.upper()
 
