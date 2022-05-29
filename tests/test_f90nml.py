@@ -387,17 +387,33 @@ class Test(unittest.TestCase):
 
         # Old repeat group method
         #
-        # self.grp_repeat_nml = {
-        #     'grp_repeat_nml': [{'x': 1}, {'x': 2}],
+        # self.cogroup_nml = {
+        #     'cogroup_nml': [{'x': 1}, {'x': 2}],
         #     'case_check_nml': [{'y': 1}, {'y': 2}],
         # }
 
         # Possibly temporary construction of repeated group
-        self.grp_repeat_nml = f90nml.Namelist()
-        self.grp_repeat_nml['grp_repeat_nml'] = {'x': 1}
-        self.grp_repeat_nml.add_cogroup('grp_repeat_nml', {'x': 2})
-        self.grp_repeat_nml['case_check_nml'] = {'y': 1}
-        self.grp_repeat_nml.add_cogroup('case_check_nml', {'y': 2})
+        self.cogroup_nml = f90nml.Namelist()
+        self.cogroup_nml['cogroup_nml'] = {'x': 1}
+        self.cogroup_nml.add_cogroup('cogroup_nml', {'x': 2})
+        self.cogroup_nml['case_check_nml'] = {'y': 1}
+        self.cogroup_nml.add_cogroup('case_check_nml', {'y': 2})
+
+        self.cogroup_ord_nml = f90nml.Namelist()
+        self.cogroup_ord_nml['cogroup_nml'] = {'x': 1}
+        self.cogroup_ord_nml['case_check_nml'] = {'y': 1}
+        self.cogroup_ord_nml.add_cogroup('cogroup_nml', {'x': 2})
+        self.cogroup_ord_nml.add_cogroup('case_check_nml', {'y': 2})
+
+        self.cogroup_set_nml = f90nml.Namelist()
+        self.cogroup_set_nml['cogroup_nml'] = {'z': 3}
+        self.cogroup_set_nml.add_cogroup('cogroup_nml', {'x': 2})
+        self.cogroup_set_nml['case_check_nml'] = {'y': 1}
+        self.cogroup_set_nml.add_cogroup('case_check_nml', {'y': 2})
+
+        self.cogroup_del_nml = f90nml.Namelist()
+        self.cogroup_del_nml['case_check_nml'] = {'y': 1}
+        self.cogroup_del_nml.add_cogroup('case_check_nml', {'y': 2})
 
         self.key_repeat_nml = {
             'key_repeat_nml': {'a': 3}
@@ -679,14 +695,72 @@ class Test(unittest.TestCase):
         test_nml = parser.read('comment_alt.nml')
         self.assertEqual(self.comment_alt_nml, test_nml)
 
-    def test_grp_repeat(self):
-        test_nml = f90nml.read('grp_repeat.nml')
-        self.assertEqual(self.grp_repeat_nml, test_nml)
-        self.assert_write(test_nml, 'grp_repeat_target.nml')
+    def test_cogroup(self):
+        test_nml = f90nml.read('cogroup.nml')
+        self.assertEqual(self.cogroup_nml, test_nml)
+        self.assert_write(test_nml, 'cogroup_target.nml')
         # Test str() output
-        with open('grp_repeat_target.nml') as nml_file:
-            grp_repeat_str = ''.join(nml_file.readlines()).rstrip('\n')
-        self.assertEqual(str(test_nml), grp_repeat_str)
+        with open('cogroup_target.nml') as nml_file:
+            cogroup_str = ''.join(nml_file.readlines()).rstrip('\n')
+        self.assertEqual(str(test_nml), cogroup_str)
+
+    def test_cogroup_keys(self):
+        test_nml = f90nml.read('cogroup.nml')
+        keys = [
+            'cogroup_nml',
+            'cogroup_nml',
+            'case_check_nml',
+            'case_check_nml',
+        ]
+        nml_keys = [
+            '_grp_cogroup_nml_0',
+            '_grp_cogroup_nml_1',
+            '_grp_case_check_nml_0',
+            '_grp_case_check_nml_1',
+        ]
+        self.assertEqual(list(test_nml.keys()), keys)
+        self.assertEqual(list(k._key for k in test_nml.keys()), nml_keys)
+
+    def test_cogroup_ord(self):
+        test_nml = f90nml.read('cogroup_ord.nml')
+        self.assertEqual(self.cogroup_ord_nml, test_nml)
+        self.assert_write(test_nml, 'cogroup_ord.nml')
+
+    def test_cogroup_grp_set(self):
+        test_nml = f90nml.read('cogroup.nml')
+        test_nml['cogroup_nml'][0] = {'z': 3}
+        self.assertEqual(self.cogroup_set_nml, test_nml)
+
+    def test_cogroup_del(self):
+        test_nml = f90nml.read('cogroup.nml')
+        del test_nml['cogroup_nml']
+        self.assertEqual(self.cogroup_del_nml, test_nml)
+
+    def test_cogroup_grp_del(self):
+        test_nml = f90nml.read('cogroup.nml')
+
+        # Delete one cogroup
+        del test_nml['cogroup_nml'][0]
+        # NOTE: Cogroup equivalence still broken, this is a weaker test.
+        self.assertEqual([{'x': 2}], test_nml['cogroup_nml'])
+
+        # Delete all cogroups
+        del test_nml['cogroup_nml'][0]
+        self.assertEqual(self.cogroup_del_nml, test_nml)
+
+    def test_cogroup_create(self):
+        test_nml = f90nml.Namelist()
+        test_nml.create_cogroup('foo')
+        self.assertEqual(test_nml._cogroups, {'foo': []})
+
+        # Attempt to re-add the existing test
+        test_nml.create_cogroup('foo')
+        self.assertEqual(test_nml._cogroups, {'foo': []})
+
+        # Now try adding to a pre-existing cogroup
+        test_nml.add_cogroup('foo', {'x': 1})
+        # NOTE: Cogroup equivalence still broken, this is a weaker test.
+        self.assertEqual([{'x': 1}], test_nml['foo'])
 
     def test_key_repeat(self):
         test_nml = f90nml.read('key_repeat.nml')
@@ -1245,6 +1319,21 @@ class Test(unittest.TestCase):
             cmd = ['f90nml', 'types.yaml']
             source_str = self.get_cli_output(cmd)
             # TODO: Check output after resolving the ordering issue
+
+        def test_cli_yaml_cogroup_write(self):
+            cmd = ['f90nml', 'cogroup.nml', 'tmp.yaml']
+            out = self.get_cli_output(cmd)
+
+            self.assert_file_equal('cogroup.yaml', 'tmp.yaml')
+            os.remove('tmp.yaml')
+
+        def test_yaml_cogroup_read(self):
+            with open('cogroup.yaml') as yaml_file:
+                nml_dict = yaml.safe_load(yaml_file)
+
+            test_nml = f90nml.Namelist(nml_dict)
+            # TODO: Check output after resolving the ordering issue
+            # self.assertEqual(test_nml, self.cogroup_nml)
 
     def test_cli_missing_yaml(self):
         orig_has_yaml = f90nml.cli.has_yaml

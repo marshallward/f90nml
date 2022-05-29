@@ -1,0 +1,15 @@
+&cogroup_nml
+    x = 1
+/
+
+&case_check_nml
+    y = 1
+/
+
+&cogroup_nml
+    x = 2
+/
+
+&case_check_nml
+    y = 2
+/

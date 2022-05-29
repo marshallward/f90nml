@@ -1,7 +1,7 @@
-&grp_repeat_nml
+&cogroup_nml
     x = 1
 /
-&grp_repeat_nml
+&cogroup_nml
     x = 2
 /
 &CASE_CHECK_nml
