@@ -904,12 +904,12 @@ class Namelist(OrderedDict):
         # Copy Namelist to OrderedDict, converting NmlKeys back to strings
         nmldict = OrderedDict()
         for key, value in self.items():
-            nmldict[str(key)] = value
+            nmldict[str(key._key)] = value
 
         # Search for namelists within the namelist
         # TODO: Move repeated stuff to new functions
         for nkey, value in self.items():
-            key = str(nkey)
+            key = str(nkey._key)
 
             if isinstance(value, Namelist):
                 nml = copy.deepcopy(value)
