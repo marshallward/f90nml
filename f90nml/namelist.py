@@ -620,7 +620,7 @@ class Namelist(OrderedDict):
         """Append a duplicate group to the Namelist as a new group."""
         lkey = key.lower()
 
-        if lkey in self and lkey not in self._cogroups:
+        if lkey not in self._cogroups:
             self.create_cogroup(lkey)
 
         # Generate the cogroup label and add to the Namelist
@@ -675,12 +675,7 @@ class Namelist(OrderedDict):
             sel = self
 
         for grp_name, grp_vars in sel.items():
-            # Check for repeated namelist records (saved as lists)
-            if isinstance(grp_vars, list):
-                for g_vars in grp_vars:
-                    self._write_nmlgrp(grp_name, g_vars, nml_file, sort)
-            else:
-                self._write_nmlgrp(grp_name, grp_vars, nml_file, sort)
+            self._write_nmlgrp(grp_name, grp_vars, nml_file, sort)
 
     def _write_nmlgrp(self, grp_name, grp_vars, nml_file, sort=False):
         """Write namelist group to target file."""
