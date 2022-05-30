@@ -25,7 +25,7 @@ Any errors or general problems can be reported on GitHub's Issue tracker:
 
 The quickest way resolve a problem is to go through the following steps:
 
-* Have I tested this on the latest GitHub (``master``) version?
+* Have I tested this on the latest GitHub (``main``) version?
 
 * Have I provided a sample code block which reproduces the error?  Have I
   tested the code block?
@@ -33,7 +33,7 @@ The quickest way resolve a problem is to go through the following steps:
 * Have I included the necessary input or output files?
 
   Sometimes a file attachment is required, since uncommon whitespace or
-  Unicode characters may be missing from a standard cut-and-paste of the file.
+  Unicode characters may be missing from a cut-and-paste of the file.
 
 * Have I provided a backtrace from the error?
 
@@ -77,7 +77,7 @@ When preparing a feature request, consider providing the following information:
 * Is it solvable using Python intrinsics?  How is it currently handled in
   similar modules?
 
-* Does the feature current exist in similar modules (`JSON`_, `YAML`_, etc.)?
+* Does the feature currently exist in similar modules (`JSON`_, `YAML`_, etc.)?
 
 * Can you provide an example code block demonstrating the feature?
 
@@ -101,13 +101,12 @@ either requested or contributed by other users.
 
 If you are concerned that a project may not be suitable or may conflict with
 ongoing work, then feel free to submit a feature request with comment noting
-that you are happy to provide the feature.
+that you are willing to provide the feature.
 
 Feature should be sent as pull requests via GitHub, specifically to the
-``master`` branch, which acts as the main development branch.
+``main`` branch, which acts as the main development branch.
 
-Explicit patches via email are also welcome, although they are a bit more work
-to process.
+Explicit patches via email are also welcome.
 
 When preparing a pull request, consider the following advice:
 
