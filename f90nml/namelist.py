@@ -606,7 +606,7 @@ class Namelist(OrderedDict):
 
             # Remove and replace existing keys after the new cogroup key.
             for key in nml_groups[grp_idx+1:]:
-                grp = self.pop(key)
+                grp = self.pop(key._key)
                 self[key] = grp
 
             cogroup_keys = [cogrp_key]
