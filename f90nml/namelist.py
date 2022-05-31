@@ -35,7 +35,6 @@ except ImportError:
 
 class _NamelistKeysView(KeysView):
     """Return the namelist's KeysView based on the Namelist iterator."""
-
     def __iter__(self):
         # This is faster, but requires Python 3.x
         # yield from self._mapping
@@ -47,7 +46,6 @@ class _NamelistKeysView(KeysView):
 
 class _NamelistItemsView(ItemsView):
     """Return the namelist's ItemsView based on the Namelist iterator."""
-
     def __iter__(self):
         for key in self._mapping:
             yield (key, self._mapping[key])
@@ -96,7 +94,8 @@ class Namelist(OrderedDict):
 
         # Construct the cogroups based on the internal key values
         self._cogroups = {}
-        for key in self:
+        for nmlkey in self:
+            key = nmlkey._key
             if key.startswith('_grp_'):
                 grp = key[5:].rsplit('_', 1)[0]
                 try:
