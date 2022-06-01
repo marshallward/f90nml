@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import copy
 import math
 import os
 import sys
@@ -1077,6 +1078,20 @@ class Test(unittest.TestCase):
             test_nml.write('tmp.nml')
         finally:
             os.remove('tmp.nml')
+
+    def test_del_item(self):
+        test_nml = f90nml.read('types.nml')
+        del1 = copy.deepcopy(self.types_nml)
+        del del1['types_nml']['v_integer']
+        del2 = copy.deepcopy(del1)
+        del del2['types_nml']['v_float']
+
+        del test_nml['types_nml']['v_integer']
+        self.assertEqual(del1, test_nml)
+
+        # Case-insensitive del
+        del test_nml['types_nml']['V_Float']
+        self.assertEqual(del2, test_nml)
 
     def test_winfmt(self):
         test_nml = f90nml.read('winfmt.nml')

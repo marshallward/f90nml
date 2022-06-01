@@ -162,7 +162,7 @@ class Namelist(OrderedDict):
 
             self._cogroups.pop(lkey)
         else:
-            super(Namelist, self).__delitem__(key)
+            super(Namelist, self).__delitem__(lkey)
 
     def __getitem__(self, key):
         """Case-insensitive interface to OrderedDict."""
