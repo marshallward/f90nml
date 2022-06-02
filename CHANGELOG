@@ -1,3 +1,7 @@
+1.4.2:
+    - Bugfix: Case-insensitive del now works as intended.
+      Thanks to GitHub user @mandresm for reporting.
+
 1.4.1:
     - Bugfix: Several cogroup issues related to management of internal keys and
       todict() output were fixed.  Thanks to GitHub user @poluhh and Rasmus H.
