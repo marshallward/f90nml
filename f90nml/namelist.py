@@ -89,11 +89,14 @@ class Namelist(OrderedDict):
         # Assign the default start index
         self._default_start_index = kwds.pop('default_start_index', None)
 
+        # Cogroup initialization
+        # NOTE: Python 2.7 requires this happen before OrdereDict.__init__
+        self._cogroups = {}
+
         # Initialize via OrderedDict
         super(Namelist, self).__init__(*s_args, **kwds)
 
         # Construct the cogroups based on the internal key values
-        self._cogroups = {}
         for nmlkey in self:
             key = nmlkey._key
             if key.startswith('_grp_'):
@@ -226,7 +229,10 @@ class Namelist(OrderedDict):
                         default_start_index=self.default_start_index
                     )
 
-        if isinstance(key, NmlKey):
+        if isinstance(value, Cogroup):
+            for nml in value:
+                self.add_cogroup(key, nml)
+        elif isinstance(key, NmlKey):
             super(Namelist, self).__setitem__(key._key, value)
         else:
             lkey = key.lower()
