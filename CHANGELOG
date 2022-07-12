@@ -1,3 +1,7 @@
+1.4.4:
+    - Bugfix: Cogroup namelist initialization from a cogroup was fixed.
+      Thanks to Rasmus Fogh for reporting.
+
 1.4.2:
     - Bugfix: Case-insensitive del now works as intended.
       Thanks to GitHub user @mandresm for reporting.
