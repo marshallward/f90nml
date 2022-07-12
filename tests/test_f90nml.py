@@ -763,6 +763,13 @@ class Test(unittest.TestCase):
         # NOTE: Cogroup equivalence still broken, this is a weaker test.
         self.assertEqual([{'x': 1}], test_nml['foo'])
 
+    def test_cogroup_set_from_cogrp(self):
+        cogrp_nml = f90nml.read('cogroup.nml')
+        test_nml = f90nml.Namelist()
+        test_nml['cogroup_nml'] = cogrp_nml['cogroup_nml']
+        test_nml['CASE_CHECK_nml'] = cogrp_nml['CASE_CHECK_nml']
+        # NOTE: Cogroup equivalence still broken, this just checks usage.
+
     def test_key_repeat(self):
         test_nml = f90nml.read('key_repeat.nml')
         self.assertEqual(test_nml, self.key_repeat_nml)

@@ -27,10 +27,10 @@ except NameError:
     basestring = str    # Python 3.x
 try:
     from collections.abc import KeysView    # Python 3.4+
-    from collections.abc import ItemsView    # Python 3.4+
+    from collections.abc import ItemsView   # Python 3.4+
 except ImportError:
     from collections import KeysView        # Python 2.7 - 3.3
-    from collections import ItemsView        # Python 2.7 - 3.3
+    from collections import ItemsView       # Python 2.7 - 3.3
 
 
 class _NamelistKeysView(KeysView):
