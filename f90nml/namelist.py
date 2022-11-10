@@ -235,6 +235,16 @@ class Namelist(OrderedDict):
                         default_start_index=self.default_start_index
                     )
 
+        # Convert NumPy 0D arrays to underlying type
+        if has_numpy and isinstance(value, np.ndarray) and np.ndim(value) == 0:
+            if value.dtype == bool:
+                value = bool(value[()])
+            elif value.dtype == str:
+                value = str(value[()])
+            else:
+                value = value[()]
+            self[key] = value
+
         if isinstance(value, Cogroup):
             for nml in value:
                 self.add_cogroup(key, nml)
@@ -972,16 +982,6 @@ class Namelist(OrderedDict):
             return self._f90str(value)
         elif value is None:
             return ''
-        elif has_numpy and isinstance(value, np.ndarray) and np.ndim(value) == 0:
-            # If receiving a 0D Numpy array, convert to underlying type
-            # Special case to handle numpy.bool_ and string types
-            if value.dtype == bool:
-                value = bool(value[()])
-            elif value.dtype == str:
-                value = str(value[()])
-            else:
-                value = value[()]
-            return self._f90repr(value)
         else:
             raise ValueError('Type {0} of {1} cannot be converted to a Fortran'
                              ' type.'.format(type(value), value))

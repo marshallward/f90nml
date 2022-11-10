@@ -491,6 +491,16 @@ class Test(unittest.TestCase):
                     )
                 )
             }
+            self.numpy_0d_nml = {
+                'numpy_0d_nml': OrderedDict((
+                        ('np_0d_integer', numpy.array(1)),
+                        ('np_0d_float', numpy.array(1.0)),
+                        ('np_0d_complex', numpy.array(1+2j)),
+                        ('np_0d_logical', numpy.array(True)),
+                        ('np_0d_string', numpy.array("abc")),
+                    )
+                )
+            }
 
         if os.path.isfile('tmp.nml'):
             os.remove('tmp.nml')
@@ -971,21 +981,6 @@ class Test(unittest.TestCase):
         for ptype in ({}, [], set()):
             self.assertRaises(ValueError, nml._f90repr, ptype)
 
-    def test_f90repr_numpy_0d(self):
-        # If we don't have numpy installed, skip this test
-        if not has_numpy:
-            return
-        nml = f90nml.Namelist()
-        self.assertEqual(nml._f90repr(numpy.array(1)), '1')
-        self.assertEqual(nml._f90repr(numpy.array(1.)), '1.0')
-        self.assertEqual(nml._f90repr(numpy.array(1+2j)), '(1.0, 2.0)')
-        self.assertEqual(nml._f90repr(numpy.array(True)), '.true.')
-        self.assertEqual(nml._f90repr(numpy.array(False)), '.false.')
-        self.assertEqual(nml._f90repr(numpy.array('abc')), "'abc'")
-        # Test ValueError raised for non-scalar arrays, even with shape (1,)
-        self.assertRaises(ValueError, nml._f90repr, numpy.array([1, 2, 3]))
-        self.assertRaises(ValueError, nml._f90repr, numpy.array([1]))
-
     def test_pybool(self):
         for fstr_true in ('true', '.true.', 't', '.t.'):
             self.assertEqual(pybool(fstr_true), True)
@@ -1208,6 +1203,9 @@ class Test(unittest.TestCase):
     if has_numpy:
         def test_numpy_write(self):
             self.assert_write(self.numpy_nml, 'numpy_types.nml')
+
+        def test_numpy_0d_write(self):
+            self.assert_write(self.numpy_0d_nml, 'numpy_0d.nml')
 
     def test_read_string(self):
         test_nml = f90nml.reads(
