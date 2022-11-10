@@ -32,6 +32,12 @@ except ImportError:
     from collections import KeysView        # Python 2.7 - 3.3
     from collections import ItemsView       # Python 2.7 - 3.3
 
+try:
+    import numpy as np
+    has_numpy = True
+except ImportError:
+    has_numpy = False
+
 
 class _NamelistKeysView(KeysView):
     """Return the namelist's KeysView based on the Namelist iterator."""
@@ -966,6 +972,16 @@ class Namelist(OrderedDict):
             return self._f90str(value)
         elif value is None:
             return ''
+        elif has_numpy and isinstance(value, np.ndarray) and np.ndim(value) == 0:
+            # If receiving a 0D Numpy array, convert to underlying type
+            # Special case to handle numpy.bool_ and string types
+            if value.dtype == bool:
+                value = bool(value[()])
+            elif value.dtype == str:
+                value = str(value[()])
+            else:
+                value = value[()]
+            return self._f90repr(value)
         else:
             raise ValueError('Type {0} of {1} cannot be converted to a Fortran'
                              ' type.'.format(type(value), value))

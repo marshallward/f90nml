@@ -971,6 +971,21 @@ class Test(unittest.TestCase):
         for ptype in ({}, [], set()):
             self.assertRaises(ValueError, nml._f90repr, ptype)
 
+    def test_f90repr_numpy_0d(self):
+        # If we don't have numpy installed, skip this test
+        if not has_numpy:
+            return
+        nml = f90nml.Namelist()
+        self.assertEqual(nml._f90repr(numpy.array(1)), '1')
+        self.assertEqual(nml._f90repr(numpy.array(1.)), '1.0')
+        self.assertEqual(nml._f90repr(numpy.array(1+2j)), '(1.0, 2.0)')
+        self.assertEqual(nml._f90repr(numpy.array(True)), '.true.')
+        self.assertEqual(nml._f90repr(numpy.array(False)), '.false.')
+        self.assertEqual(nml._f90repr(numpy.array('abc')), "'abc'")
+        # Test ValueError raised for non-scalar arrays, even with shape (1,)
+        self.assertRaises(ValueError, nml._f90repr, numpy.array([1, 2, 3]))
+        self.assertRaises(ValueError, nml._f90repr, numpy.array([1]))
+
     def test_pybool(self):
         for fstr_true in ('true', '.true.', 't', '.t.'):
             self.assertEqual(pybool(fstr_true), True)
