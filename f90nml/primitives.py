@@ -48,7 +48,7 @@ def to_primitive(value):
     # implements the __array_ufunc__ protocol.
     # This catches Pandas Series, Xarray DataArray, pint Quantity, etc.
     # See https://numpy.org/neps/nep-0013-ufunc-overrides.html
-    if hasattr(value, "__array_ufunc__"):
+    if hasattr(value, "__array_ufunc__") and value.__array_ufunc__ is not None:
         # If receiving a 0D array, convert to scalar and return.
         # This accounts for dimensionless but non-empty quantities such as the results
         # of numpy.array(5.0) or xarray.DataArray(5.0).
