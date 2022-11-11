@@ -32,12 +32,7 @@ except ImportError:
     from collections import KeysView        # Python 2.7 - 3.3
     from collections import ItemsView       # Python 2.7 - 3.3
 
-try:
-    import numpy as np
-    has_numpy = True
-except ImportError:
-    has_numpy = False
-
+from f90nml.primitives import to_primitive
 
 class _NamelistKeysView(KeysView):
     """Return the namelist's KeysView based on the Namelist iterator."""
@@ -235,15 +230,9 @@ class Namelist(OrderedDict):
                         default_start_index=self.default_start_index
                     )
 
-        # Convert NumPy 0D arrays to underlying type
-        if has_numpy and isinstance(value, np.ndarray) and np.ndim(value) == 0:
-            if value.dtype == bool:
-                value = bool(value[()])
-            elif value.dtype == str:
-                value = str(value[()])
-            else:
-                value = value[()]
-            self[key] = value
+        # Convert scalar-like types from the NumPy+ ecosystem into built-in types.
+        # Does not affect other objects.
+        value = to_primitive(value)
 
         if isinstance(value, Cogroup):
             for nml in value:
