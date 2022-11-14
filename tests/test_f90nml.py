@@ -502,6 +502,19 @@ class Test(unittest.TestCase):
                     )
                 )
             }
+            arr_2d = numpy.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+            arr_3d = numpy.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+            self.numpy_nd_nml = {
+                'numpy_nd_nml': OrderedDict((
+                        ('np_1d_integer', numpy.array([1, 2, 3])),
+                        ('np_1d_float', numpy.array([4.0, 5.0, 6.0])),
+                        ('np_1d_complex', numpy.array([7 + 1j, 8 + 1j, 9 + 1j])),
+                        ('np_2d_integer', numpy.array([[1, 2, 3], [4, 5, 6]])),
+                        ('np_2d_float', arr_2d),
+                        ('np_3d_integer', arr_3d),
+                    )
+                )
+            }
 
         if os.path.isfile('tmp.nml'):
             os.remove('tmp.nml')
@@ -615,6 +628,12 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('multidim_ooo.nml')
         self.assertEqual(self.multidim_ooo_nml, test_nml)
         self.assert_write(test_nml, 'multidim_ooo_target.nml')
+
+    def test_numpy_multidim(self):
+        if not has_numpy:
+            return
+        test_nml = f90nml.read('numpy_nd.nml')
+        self.assertEqual(f90nml.Namelist(self.numpy_nd_nml), test_nml)
 
     def test_rowmaj_multidim(self):
         parser = f90nml.Parser()
@@ -1575,15 +1594,42 @@ class Test(unittest.TestCase):
         self.assertTrue(isinstance(to_primitive(numpy.array(True)), bool))
         self.assertTrue(isinstance(to_primitive(numpy.array("abc")), str))
 
-        # test numpy empty arrays are converted
-        self.assertEqual(to_primitive(numpy.array([])), [])
+        # test numpy 1D arrays
+        np_1d = numpy.array([1.0, 2.0, 3.0])
+        np_1d_to_primitive = to_primitive(np_1d)
+        self.assertTrue(isinstance(np_1d_to_primitive, list))
+        self.assertTrue(isinstance(np_1d_to_primitive[0], float))
+        for x, y in zip(np_1d, np_1d_to_primitive):
+            self.assertEqual(x, y)
+
+        # test numpy 2D arrays
+        np_2d = numpy.array([[1, 2, 3], [4, 5, 6]])
+        np_2d_to_primitive = to_primitive(np_2d)
+        self.assertTrue(isinstance(np_2d_to_primitive, list))
+        self.assertTrue(isinstance(np_2d_to_primitive[0], list))
+        self.assertTrue(isinstance(np_2d_to_primitive[0][0], int))
+        for x_row, y_row in zip(np_2d, np_2d_to_primitive):
+            for x, y in zip(x_row, y_row):
+                self.assertEqual(x, y)
+
+        # test numpy 3D arrays
+        np_3d = numpy.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]], dtype=complex)
+        np_3d_to_primitive = to_primitive(np_3d)
+        self.assertTrue(isinstance(np_3d_to_primitive, list))
+        self.assertTrue(isinstance(np_3d_to_primitive[0], list))
+        self.assertTrue(isinstance(np_3d_to_primitive[0][0], list))
+        self.assertTrue(isinstance(np_3d_to_primitive[0][0][0], complex))
+        for x_slice, y_slice in zip(np_3d, np_3d_to_primitive):
+            for x_row, y_row in zip(x_slice, y_slice):
+                for x, y in zip(x_row, y_row):
+                    self.assertEqual(x, y)
 
         # test that lists, dicts and non-empty non-0D numpy arrays pass through
         # unchanged.
         test_list = [1, 2, 3]
         list_to_primitive = to_primitive(test_list)
         self.assertTrue(isinstance(list_to_primitive, list))
-        for x,y in zip(list_to_primitive, test_list):
+        for x, y in zip(list_to_primitive, test_list):
             self.assertEqual(x, y)
 
         test_dict = {"a": 1, "b": 2}
@@ -1593,10 +1639,9 @@ class Test(unittest.TestCase):
             self.assertEqual(kx, ky)
             self.assertEqual(vx, vy)
 
-        test_array = numpy.array(test_list)
-        array_to_primitive = to_primitive(test_array)
-        self.assertTrue(isinstance(array_to_primitive, numpy.ndarray))
-        self.assertTrue(numpy.array_equal(test_array, array_to_primitive))
+        # test numpy empty arrays raise an error
+        self.assertRaises(ValueError, to_primitive, numpy.array([]))
+        self.assertRaises(ValueError, to_primitive, numpy.array([[], []]))
 
 
 if __name__ == '__main__':

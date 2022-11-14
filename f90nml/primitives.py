@@ -49,16 +49,23 @@ def to_primitive(value):
     # This catches Pandas Series, Xarray DataArray, pint Quantity, etc.
     # See https://numpy.org/neps/nep-0013-ufunc-overrides.html
     if hasattr(value, "__array_ufunc__") and value.__array_ufunc__ is not None:
-        # If receiving a 0D array, convert to scalar and return.
-        # This accounts for dimensionless but non-empty quantities such as the results
-        # of numpy.array(5.0) or xarray.DataArray(5.0).
-        # TODO include support for Pint/AstroPy Quantity
         if np.ndim(value) == 0:
+            # If receiving a 0D array, convert to scalar and return.
+            # This accounts for dimensionless but non-empty quantities such as the
+            # results of numpy.array(5.0) or xarray.DataArray(5.0).
+            # TODO include support for Pint/AstroPy Quantity
             return value.item()
-
-        # If receiving an empty array, return an empty list
-        if len(value) == 0:
-            return []
+        else:
+            # If receiving an ND array, convert to list
+            value = list(value)
+            # If empty, raise error
+            if not value:
+                raise ValueError("Namelists cannot contain an empty array.")
+            # Recursively convert each element to primitive.
+            # - If value is 1D, converts each element from NumPy scalars to built-ins.
+            # - If value is ND, for N > 1, list(value) produces a list of (N - 1)D
+            #   arrays.
+            return [to_primitive(x) for x in value]
 
     # Pass through anything that didn't match the tests above
     return value
