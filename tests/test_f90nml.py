@@ -34,7 +34,6 @@ import f90nml
 import f90nml.cli
 from f90nml.fpy import pybool
 from f90nml.findex import FIndex
-from f90nml.primitives import to_primitive
 
 
 class Test(unittest.TestCase):
@@ -1568,80 +1567,6 @@ class Test(unittest.TestCase):
 
     def test_file_grp_no_end(self):
         self.assertRaises(ValueError, f90nml.read, 'grp_no_end.nml')
-
-    def test_to_primitive(self):
-        if not has_numpy:
-            return
-
-        # test built-in types are unaffected
-        self.assertTrue(isinstance(to_primitive(1.0), float))
-        self.assertTrue(isinstance(to_primitive(1), int))
-        self.assertTrue(isinstance(to_primitive(1 + 1j), complex))
-        self.assertTrue(isinstance(to_primitive(True), bool))
-        self.assertTrue(isinstance(to_primitive("abc"), str))
-
-        # test numpy scalar types are converted
-        self.assertTrue(isinstance(to_primitive(numpy.float64(1.0)), float))
-        self.assertTrue(isinstance(to_primitive(numpy.int32(1)), int))
-        self.assertTrue(isinstance(to_primitive(numpy.complex128(1 + 1j)), complex))
-        self.assertTrue(isinstance(to_primitive(numpy.bool_(True)), bool))
-        self.assertTrue(isinstance(to_primitive(numpy.str_("abc")), str))
-
-        # test numpy 0D arrays are converted
-        self.assertTrue(isinstance(to_primitive(numpy.array(1.0)), float))
-        self.assertTrue(isinstance(to_primitive(numpy.array(1)), int))
-        self.assertTrue(isinstance(to_primitive(numpy.array(1 + 1j)), complex))
-        self.assertTrue(isinstance(to_primitive(numpy.array(True)), bool))
-        self.assertTrue(isinstance(to_primitive(numpy.array("abc")), str))
-
-        # test numpy 1D arrays
-        np_1d = numpy.array([1.0, 2.0, 3.0])
-        np_1d_to_primitive = to_primitive(np_1d)
-        self.assertTrue(isinstance(np_1d_to_primitive, list))
-        self.assertTrue(isinstance(np_1d_to_primitive[0], float))
-        for x, y in zip(np_1d, np_1d_to_primitive):
-            self.assertEqual(x, y)
-
-        # test numpy 2D arrays
-        np_2d = numpy.array([[1, 2, 3], [4, 5, 6]])
-        np_2d_to_primitive = to_primitive(np_2d)
-        self.assertTrue(isinstance(np_2d_to_primitive, list))
-        self.assertTrue(isinstance(np_2d_to_primitive[0], list))
-        self.assertTrue(isinstance(np_2d_to_primitive[0][0], int))
-        for x_row, y_row in zip(np_2d, np_2d_to_primitive):
-            for x, y in zip(x_row, y_row):
-                self.assertEqual(x, y)
-
-        # test numpy 3D arrays
-        np_3d = numpy.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]], dtype=complex)
-        np_3d_to_primitive = to_primitive(np_3d)
-        self.assertTrue(isinstance(np_3d_to_primitive, list))
-        self.assertTrue(isinstance(np_3d_to_primitive[0], list))
-        self.assertTrue(isinstance(np_3d_to_primitive[0][0], list))
-        self.assertTrue(isinstance(np_3d_to_primitive[0][0][0], complex))
-        for x_slice, y_slice in zip(np_3d, np_3d_to_primitive):
-            for x_row, y_row in zip(x_slice, y_slice):
-                for x, y in zip(x_row, y_row):
-                    self.assertEqual(x, y)
-
-        # test that lists, dicts and non-empty non-0D numpy arrays pass through
-        # unchanged.
-        test_list = [1, 2, 3]
-        list_to_primitive = to_primitive(test_list)
-        self.assertTrue(isinstance(list_to_primitive, list))
-        for x, y in zip(list_to_primitive, test_list):
-            self.assertEqual(x, y)
-
-        test_dict = {"a": 1, "b": 2}
-        dict_to_primitive = to_primitive(test_dict)
-        self.assertTrue(isinstance(dict_to_primitive, dict))
-        for (kx, vx), (ky, vy) in zip(dict_to_primitive.items(), test_dict.items()):
-            self.assertEqual(kx, ky)
-            self.assertEqual(vx, vy)
-
-        # test numpy empty arrays raise an error
-        self.assertRaises(ValueError, to_primitive, numpy.array([]))
-        self.assertRaises(ValueError, to_primitive, numpy.array([[], []]))
 
 
 if __name__ == '__main__':

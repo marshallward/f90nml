@@ -32,7 +32,6 @@ except ImportError:
     from collections import KeysView        # Python 2.7 - 3.3
     from collections import ItemsView       # Python 2.7 - 3.3
 
-from f90nml.primitives import to_primitive
 
 class _NamelistKeysView(KeysView):
     """Return the namelist's KeysView based on the Namelist iterator."""
@@ -230,9 +229,10 @@ class Namelist(OrderedDict):
                         default_start_index=self.default_start_index
                     )
 
-        # Convert scalar-like types from the NumPy+ ecosystem into built-in types.
-        # Does not affect other objects.
-        value = to_primitive(value)
+        # Convert objects such as numpy.ndarray and pandas.Series to intrinsic
+        # Python types. Also converts scalars, such as np.float64.
+        if hasattr(value, "tolist"):
+            value = value.tolist()
 
         if isinstance(value, Cogroup):
             for nml in value:
