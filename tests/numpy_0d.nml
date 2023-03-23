@@ -1,0 +1,7 @@
+&numpy_0d_nml
+    np_0d_integer = 1
+    np_0d_float = 1.0
+    np_0d_complex = (1.0, 2.0)
+    np_0d_logical = .true.
+    np_0d_string = 'abc'
+/

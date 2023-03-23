@@ -229,6 +229,11 @@ class Namelist(OrderedDict):
                         default_start_index=self.default_start_index
                     )
 
+        # Convert objects such as numpy.ndarray and pandas.Series to intrinsic
+        # Python types. Also converts scalars, such as np.float64.
+        if hasattr(value, "tolist"):
+            value = value.tolist()
+
         if isinstance(value, Cogroup):
             for nml in value:
                 self.add_cogroup(key, nml)

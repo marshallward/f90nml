@@ -491,6 +491,29 @@ class Test(unittest.TestCase):
                     )
                 )
             }
+            self.numpy_0d_nml = {
+                'numpy_0d_nml': OrderedDict((
+                        ('np_0d_integer', numpy.array(1)),
+                        ('np_0d_float', numpy.array(1.0)),
+                        ('np_0d_complex', numpy.array(1+2j)),
+                        ('np_0d_logical', numpy.array(True)),
+                        ('np_0d_string', numpy.array("abc")),
+                    )
+                )
+            }
+            arr_2d = numpy.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+            arr_3d = numpy.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+            self.numpy_nd_nml = {
+                'numpy_nd_nml': OrderedDict((
+                        ('np_1d_integer', numpy.array([1, 2, 3])),
+                        ('np_1d_float', numpy.array([4.0, 5.0, 6.0])),
+                        ('np_1d_complex', numpy.array([7 + 1j, 8 + 1j, 9 + 1j])),
+                        ('np_2d_integer', numpy.array([[1, 2, 3], [4, 5, 6]])),
+                        ('np_2d_float', arr_2d),
+                        ('np_3d_integer', arr_3d),
+                    )
+                )
+            }
 
         if os.path.isfile('tmp.nml'):
             os.remove('tmp.nml')
@@ -604,6 +627,12 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('multidim_ooo.nml')
         self.assertEqual(self.multidim_ooo_nml, test_nml)
         self.assert_write(test_nml, 'multidim_ooo_target.nml')
+
+    def test_numpy_multidim(self):
+        if not has_numpy:
+            return
+        test_nml = f90nml.read('numpy_nd.nml')
+        self.assertEqual(f90nml.Namelist(self.numpy_nd_nml), test_nml)
 
     def test_rowmaj_multidim(self):
         parser = f90nml.Parser()
@@ -1193,6 +1222,9 @@ class Test(unittest.TestCase):
     if has_numpy:
         def test_numpy_write(self):
             self.assert_write(self.numpy_nml, 'numpy_types.nml')
+
+        def test_numpy_0d_write(self):
+            self.assert_write(self.numpy_0d_nml, 'numpy_0d.nml')
 
     def test_read_string(self):
         test_nml = f90nml.reads(
