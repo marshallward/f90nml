@@ -526,7 +526,7 @@ class Parser(object):
             # Check for value in patch
             v_patch_nml = None
             if v_name in patch_nml:
-                v_patch_nml = patch_nml.pop(v_name.lower())
+                v_patch_nml = patch_nml.get(v_name.lower())
 
             if parent:
                 vpar = parent.get(v_name.lower())
