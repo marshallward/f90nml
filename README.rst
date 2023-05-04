@@ -4,9 +4,6 @@ f90nml - A Fortran namelist parser, generator, and editor
 
 A Python module and command line tool for parsing Fortran namelist files
 
-.. image:: https://travis-ci.org/marshallward/f90nml.svg?branch=master
-    :target: https://travis-ci.org/marshallward/f90nml
-
 .. image:: https://ci.appveyor.com/api/projects/status/bcugyoqxiyyvemy8?svg=true
    :target: https://ci.appveyor.com/project/marshallward/f90nml
 
