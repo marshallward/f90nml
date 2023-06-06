@@ -131,6 +131,12 @@ class Test(unittest.TestCase):
             }
         }
 
+        self.multidim_neg_index_nml = {
+            'multidim_neg_index_nml': {
+                'a': [[0, 4, 8], [1, 5, 9], [2, 6, 10], [3, 7, 11]]
+            }
+        }
+
         self.multidim_ooo_nml = {
             'multidim_ooo_nml': {
                 'a': [[1], [None, 2]],
@@ -622,6 +628,11 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('multidim.nml')
         self.assertEqual(self.multidim_nml, test_nml)
         self.assert_write(test_nml, 'multidim_target.nml')
+
+    def test_multidim_neg_index(self):
+        test_nml = f90nml.read('multidim_neg_index.nml')
+        self.assertEqual(self.multidim_neg_index_nml, test_nml)
+        self.assert_write(test_nml, 'multidim_neg_index_target.nml')
 
     def test_multidim_ooo(self):
         test_nml = f90nml.read('multidim_ooo.nml')
