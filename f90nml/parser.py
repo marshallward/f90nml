@@ -669,7 +669,6 @@ class Parser(object):
 
         if not v_idx:
             v_values = delist(v_values)
-
         return v_name, v_values
 
     def _parse_indices(self):
@@ -711,7 +710,7 @@ class Parser(object):
                     raise
         elif self.token in (',', ')'):
             # Replace index with single-index range
-            if i_start:
+            if i_start is not None:
                 i_end = 1 + i_start
 
         # Stride index
