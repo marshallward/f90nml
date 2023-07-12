@@ -1061,6 +1061,13 @@ class Cogroup(list):
         # Finally, remove from this list
         super(Cogroup, self).__delitem__(index)
 
+    def update(self, args):
+        if isinstance(args, dict):
+            for key in self.keys:
+                self.nml[key].update(args)
+        else:
+            raise NotImplementedError
+
     @property
     def keys(self):
         """Return the namelist keys in the cogroup."""
