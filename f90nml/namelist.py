@@ -660,7 +660,12 @@ class Namelist(OrderedDict):
         for sec in nml_patch:
             if sec not in self:
                 self[sec] = Namelist()
-            self[sec].update(nml_patch[sec])
+
+            if '_index' in nml_patch[sec]:
+                index = int(nml_patch[sec].pop('_index'))
+                self[sec][index].update(nml_patch[sec])
+            else:
+                self[sec].update(nml_patch[sec])
 
     def groups(self):
         """Return an iterator that spans values with group and variable names.
