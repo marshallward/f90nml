@@ -1,4 +1,16 @@
 1.4.4:
+    - Bugfix: patch() and update() now work with Cogroups.  To specify a
+      particular cogroup, use the `_index` meta key in the patch.  Otherwise,
+      the patch is applied to all members of the cogroup.
+      Thanks to @mandresm and @seb-wahl for reporting and collaborating on the
+      design.
+    - Multidimensional negative index support
+    - patch no longer pops off values applied to the namelist
+      Thanks to Armin Corbin and Claire Carouge for reporting.
+    - Improved NumPy (and xarray) compatibility through introduction
+      Thanks to Liam Pattinson for contributing this fix.
+
+1.4.3:
     - Bugfix: Cogroup namelist initialization from a cogroup was fixed.
       Thanks to Rasmus Fogh for reporting.
 
