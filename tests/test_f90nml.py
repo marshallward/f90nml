@@ -810,6 +810,26 @@ class Test(unittest.TestCase):
         test_nml['CASE_CHECK_nml'] = cogrp_nml['CASE_CHECK_nml']
         # NOTE: Cogroup equivalence still broken, this just checks usage.
 
+    def test_cogroup_patch(self):
+        cogrp_nml = f90nml.read('cogroup.nml')
+        cg_patch = {'cogroup_nml': {'x': 3, '_index': 1}}
+        cogrp_nml.patch(cg_patch)
+        # NOTE: Cogroup equivalence still broken, this is a weaker test.
+        self.assertEqual({'x': 3}, cogrp_nml['cogroup_nml'][1])
+
+    def test_cogroup_update(self):
+        cogrp_nml = f90nml.read('cogroup.nml')
+        cg_patch = {'cogroup_nml': {'x': 3}}
+        cogrp_nml.patch(cg_patch)
+        # NOTE: Cogroup equivalence still broken, this is a weaker test.
+        self.assertEqual({'x': 3}, cogrp_nml['cogroup_nml'][1])
+
+    def test_cogroup_update_error(self):
+        cogrp_nml = f90nml.read('cogroup.nml')
+        cg_patch = [1, 2, 3]
+        self.assertRaises(NotImplementedError,
+                cogrp_nml['cogroup_nml'].update, cg_patch)
+
     def test_key_repeat(self):
         test_nml = f90nml.read('key_repeat.nml')
         self.assertEqual(test_nml, self.key_repeat_nml)
