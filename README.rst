@@ -140,6 +140,20 @@ The latest version of ``f90nml`` can be installed from source::
    $ cd f90nml
    $ pip install .
 
+conda
+-----
+
+There is a conda-forge feedstock (not maintained, no supported by, the Author). 
+
+Information on supported versions and platforms, and detailed installation instructions
+using ``conda`` and ``conda-forge`` is available here:
+
+   https://github.com/conda-forge/f90nml-feedstock
+
+but TL;DR::
+
+    $ conda install -c conda-forge f90nml
+
 
 Package distribution
 --------------------
