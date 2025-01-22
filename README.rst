@@ -17,7 +17,7 @@ A Python module and command line tool for parsing Fortran namelist files
 Documentation
 =============
 
-The complete documentation for ``f90nml`` is available from Read The Docs.
+The documentation for ``f90nml`` is available from Read The Docs.
 
    http://f90nml.readthedocs.org/en/latest/
 
@@ -28,9 +28,9 @@ About f90nml
 ``f90nml`` is a Python module and command line tool that provides a simple
 interface for the reading, writing, and modifying Fortran namelist files.
 
-A namelist file is parsed and converted into an ``Namelist`` object, which
-behaves like a standard Python ``dict``.  Values are converted from Fortran
-data types to equivalent primitive Python types.
+A namelist file is parsed and converted into a ``Namelist`` object, which
+behaves like a Python ``dict``.  Values are converted from Fortran data types
+to equivalent primitive Python types.
 
 The command line tool ``f90nml`` can be used to modify individual values inside
 of a shell environment.  It can also be used to convert the data between
@@ -81,8 +81,8 @@ File objects can also be used as inputs:
    with open('sample.nml') as nml_file:
        nml = f90nml.read(nml_file)
 
-To modify one of the values, say ``steps``, and save the output, just
-manipulate the ``nml`` contents and write to disk using the ``write`` function:
+To modify one of the values, say ``steps``, and save the output, manipulate the
+``nml`` contents and write to disk using the ``write`` function:
 
 .. code:: python
 

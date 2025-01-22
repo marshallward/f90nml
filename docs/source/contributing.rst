@@ -6,6 +6,10 @@ Contributing to ``f90nml``
 to find bugs, add features, and improve performance.  This is a small guide to
 help those who wish to contribute.
 
+It is more important to contribute than to follow the rules and not
+contribute.  Issues can be sorted out in real time, and everything can be
+amended in the world of software.
+
 
 Development Portal
 ==================
@@ -92,6 +96,7 @@ help to prioritize feature development.
 .. _JSON: https://docs.python.org/3/library/json.html
 .. _YAML: https://pyyaml.org/
 
+
 Contributing to f90nml
 ======================
 
@@ -141,11 +146,3 @@ When preparing a pull request, consider the following advice:
 
 In practice, contributions are rare and it's not difficult to sort out these
 issues inside of the pull request.
-
-
-Have Fun
-========
-
-Most importantly, remember that it is more important to contribute than to
-follow the rules and never contribute.  Issues can be sorted out in real time,
-and everything can be amended in the world of software.
