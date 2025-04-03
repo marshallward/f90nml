@@ -127,6 +127,7 @@ class Namelist(OrderedDict):
         self._float_format = ''
         self._logical_repr = {False: '.false.', True: '.true.'}
         self._index_spacing = False
+        self._assign_spacing = True
         self._repeat_counter = False
         self._split_strings = False
 
@@ -423,6 +424,22 @@ class Namelist(OrderedDict):
         if not isinstance(value, bool):
             raise TypeError('index_spacing attribute must be a logical type.')
         self._index_spacing = value
+
+    @property
+    def assign_spacing(self):
+        """Apply a space before and after the `=` in an assignment.
+
+        :type: ``bool``
+        :default: ``True``
+        """
+        return self._assign_spacing
+
+    @assign_spacing.setter
+    def assign_spacing(self, value):
+        """Validate and set the assign_spacing flag."""
+        if not isinstance(value, bool):
+            raise TypeError('assign_spacing attribute must be a logical type.')
+        self._assign_spacing = value
 
     # NOTE: This presumes that bools and ints are identical as dict keys
     @property
@@ -823,7 +840,11 @@ class Namelist(OrderedDict):
                 v_idx_repr = ''
 
             # Split output across multiple lines (if necessary)
-            v_header = self.indent + v_name + v_idx_repr + ' = '
+            v_header = self.indent + v_name + v_idx_repr
+            if self._assign_spacing:
+                v_header += ' = '
+            else:
+                v_header += '='
             val_strs = []
             val_line = v_header
 
