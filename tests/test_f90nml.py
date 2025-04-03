@@ -1100,6 +1100,13 @@ class Test(unittest.TestCase):
 
         self.assertRaises(TypeError, setattr, test_nml, 'index_spacing', 123)
 
+    def test_assign_spacing(self):
+        test_nml = f90nml.read('types.nml')
+        test_nml.assign_spacing = False
+        self.assert_write(test_nml, 'types_assign_spacing.nml')
+
+        self.assertRaises(TypeError, setattr, test_nml, 'assign_spacing', 'xyz')
+
     def test_float_format(self):
         test_nml = f90nml.read('float.nml')
         test_nml.float_format = '.3f'
