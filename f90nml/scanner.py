@@ -45,13 +45,17 @@ def add_str_states(M, state, delim):
 
 # DFA scanner
 M = {}
+# TODO: Pull out dash (minus) and handle separately.
+#   It *must* precede a number!
 M['start'] = (
     #{c: 'blank' for c in blank}
     {c: 'name' for c in alpha + '_'}
-    | {c: 'num' for c in digit + '-'}
-    | {'.': 'dec'}
+    | {c: 'num' for c in digit}
     | {"'": 'str_a'}
     | {'"': 'str_q'}
+    | {'.': 'dec'}
+    | {'+': 'op_plus'}
+    | {'-': 'op_minus'}
     #| {'!': 'cmt'}
     #| {'#': 'cmt'}
     | {':': 'op_colon'}
@@ -60,7 +64,7 @@ M['start'] = (
     | {'/': 'op_slash'}
     | {'<': 'op_lt_gt'}
     | {'>': 'op_lt_gt'}
-    | {c: 'op' for c in notchar('-."\'!#:=*/<>', special)}
+    | {c: 'op' for c in notchar('+-."\'!#:=*/<>', special)}
 )
 
 # Identifiers (keywords, functions, variables, ...)
@@ -162,6 +166,22 @@ M['dec'] = (
     | {c: 'end' for c in notchar(digit + alpha + '_')}
 )
 
+# TODO: These permit "+." and "-." which are not valid!
+# TODO: "name" is only handled for +-inf and +-nan.  It could be tightened but
+#   the DFA will be unpretty.
+
+M['op_plus'] = (
+    {c: 'num' for c in digit}
+    | {'.': 'num_frac'}
+    | {c: 'name' for c in alpha}
+)
+
+M['op_minus'] = (
+    {c: 'num' for c in digit}
+    | {'.': 'num_frac'}
+    | {c: 'name' for c in alpha}
+)
+
 M['op_kw_test'] = (
     {c: 'op_keyword' for c in alpha}
     | {c: 'num_float_sign' for c in '+-'}
@@ -177,6 +197,8 @@ M['op_kw_test'] = (
 M['op'] = (
     {c: 'end' for c in charset}
 )
+
+# Unlikely that any of these exist in the namelist
 
 # Two-character tokens
 M['op_colon'] = (
