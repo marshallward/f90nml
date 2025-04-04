@@ -18,6 +18,9 @@ from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import Namelist
 from f90nml.tokenizer import Tokenizer
 
+# ???
+from f90nml.scanner import scan
+
 
 class Parser(object):
     """Fortran namelist parser."""
@@ -305,33 +308,45 @@ class Parser(object):
         """Parse an input stream containing a Fortran namelist."""
         nml_patch = nml_patch_in if nml_patch_in is not None else Namelist()
 
-        tokenizer = Tokenizer()
-        tokenizer.comment_tokens = self.comment_tokens
-        f90lex = []
-        for line in nml_file:
-            toks = tokenizer.parse(line)
-            while tokenizer.prior_delim:
-                new_toks = tokenizer.parse(next(nml_file))
+        #tokenizer = Tokenizer()
+        #tokenizer.comment_tokens = self.comment_tokens
+        #f90lex = []
+        #for line in nml_file:
+        #    toks = tokenizer.parse(line)
+        #    while tokenizer.prior_delim:
+        #        new_toks = tokenizer.parse(next(nml_file))
 
-                # Skip empty lines
-                if not new_toks:
-                    continue
+        #        # Skip empty lines
+        #        if not new_toks:
+        #            continue
 
-                # The tokenizer always pre-tokenizes the whitespace (leftover
-                # behaviour from Fortran source parsing) so this must be added
-                # manually.
-                if new_toks[0].isspace():
-                    toks[-1] += new_toks.pop(0)
+        #        # The tokenizer always pre-tokenizes the whitespace (leftover
+        #        # behaviour from Fortran source parsing) so this must be added
+        #        # manually.
+        #        if new_toks[0].isspace():
+        #            toks[-1] += new_toks.pop(0)
 
-                # Append the rest of the string (if present)
-                if new_toks:
-                    toks[-1] += new_toks[0]
+        #        # Append the rest of the string (if present)
+        #        if new_toks:
+        #            toks[-1] += new_toks[0]
 
-                    # Attach the rest of the tokens
-                    toks.extend(new_toks[1:])
+        #            # Attach the rest of the tokens
+        #            toks.extend(new_toks[1:])
 
-            toks.append('\n')
-            f90lex.extend(toks)
+        #    toks.append('\n')
+        #    f90lex.extend(toks)
+
+        #f90lex = []
+        #for line in nml_file:
+        #    # debug
+        #    print('to scan()', repr(line))
+        #    toks = scan(line)
+        #    f90lex.extend(toks)
+        f90lex = scan(nml_file)
+
+        ## Not yet ready for whitespace handling
+        #f90lex = [tok for tok in f90lex if not tok.isspace()]
+        #print(f90lex)
 
         self.tokens = iter(f90lex)
 
