@@ -48,7 +48,7 @@ M = {}
 M['start'] = (
     #{c: 'blank' for c in blank}
     {c: 'name' for c in alpha + '_'}
-    | {c: 'num' for c in digit}
+    | {c: 'num' for c in digit + '-'}
     | {'.': 'dec'}
     | {"'": 'str_a'}
     | {'"': 'str_q'}
@@ -60,7 +60,7 @@ M['start'] = (
     | {'/': 'op_slash'}
     | {'<': 'op_lt_gt'}
     | {'>': 'op_lt_gt'}
-    | {c: 'op' for c in notchar('."\'!#:=*/<>', special)}
+    | {c: 'op' for c in notchar('-."\'!#:=*/<>', special)}
 )
 
 # Identifiers (keywords, functions, variables, ...)
