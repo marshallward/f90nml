@@ -102,15 +102,17 @@ M['num'] = (
     {c: 'num' for c in digit}
     | {c: 'num_float_e' for c in 'eEdD'}
     | {'.': 'num_frac'}
+    | {c: 'num_float_sign' for c in '+-'}
     | {'_': 'num_kind'}
-    | {c: 'end' for c in notchar(digit + '._eEdD')}
+    | {c: 'end' for c in notchar(digit + '+-._eEdD')}
 )
 
 M['num_frac'] = (
     {c: 'num_frac' for c in digit}
     | {c: 'num_float_e' for c in 'eEdD'}
+    | {c: 'num_float_sign' for c in '+-'}
     | {'_': 'num_kind'}
-    | {c: 'end' for c in notchar(digit + '_eEdD')}
+    | {c: 'end' for c in notchar(digit + '+-_eEdD')}
 )
 
 # Numeric E notation token
@@ -316,25 +318,3 @@ def scan(file):
     #    lexemes.append(char)
 
     return lexemes
-
-
-def main(*dirs):
-    tokens = {}
-    for srcdir in dirs:
-        for root, dirs, files in os.walk(sys.argv[1]):
-            for fname in files:
-                # debug
-                print('-> ', fname)
-                if not os.path.splitext(fname)[1] in ('.f90', '.F90'):
-                    continue
-
-                tokens[fname] = []
-                delim = None
-                with open(os.path.join(root, fname)) as f:
-                    tokens[fname] = scan(f)
-
-    return tokens
-
-
-if __name__ == '__main__':
-    tokens = main(sys.argv[1:])
