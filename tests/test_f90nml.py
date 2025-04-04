@@ -240,8 +240,8 @@ class Test(unittest.TestCase):
 
         self.string_multiline_nml = {
             'string_multiline_nml': {
-                'empty': '',
-                'trailing_whitespace': '  '
+                'empty': '\n\n',
+                'trailing_whitespace': ' \n \n'
             }
         }
 

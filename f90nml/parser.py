@@ -16,7 +16,7 @@ import itertools
 from f90nml.findex import FIndex
 from f90nml.fpy import pyfloat, pycomplex, pybool, pystr
 from f90nml.namelist import Namelist
-from f90nml.tokenizer import Tokenizer
+from f90nml.scanner import scan
 
 
 class Parser(object):
@@ -304,37 +304,9 @@ class Parser(object):
     def _readstream(self, nml_file, nml_patch_in=None):
         """Parse an input stream containing a Fortran namelist."""
         nml_patch = nml_patch_in if nml_patch_in is not None else Namelist()
-
-        tokenizer = Tokenizer()
-        tokenizer.comment_tokens = self.comment_tokens
-        f90lex = []
-        for line in nml_file:
-            toks = tokenizer.parse(line)
-            while tokenizer.prior_delim:
-                new_toks = tokenizer.parse(next(nml_file))
-
-                # Skip empty lines
-                if not new_toks:
-                    continue
-
-                # The tokenizer always pre-tokenizes the whitespace (leftover
-                # behaviour from Fortran source parsing) so this must be added
-                # manually.
-                if new_toks[0].isspace():
-                    toks[-1] += new_toks.pop(0)
-
-                # Append the rest of the string (if present)
-                if new_toks:
-                    toks[-1] += new_toks[0]
-
-                    # Attach the rest of the tokens
-                    toks.extend(new_toks[1:])
-
-            toks.append('\n')
-            f90lex.extend(toks)
+        f90lex = scan(nml_file)
 
         self.tokens = iter(f90lex)
-
         nmls = Namelist()
 
         # Attempt to get first token; abort on empty file
@@ -785,10 +757,6 @@ class Parser(object):
 
         while next_token[0] in self.comment_tokens + whitespace:
             if self.pfile:
-                if next_token[0] in self.comment_tokens:
-                    while not next_token == '\n':
-                        patch_tokens += next_token
-                        next_token = next(self.tokens)
                 patch_tokens += next_token
 
             # Several sections rely on StopIteration to terminate token search
