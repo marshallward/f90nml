@@ -230,9 +230,11 @@ M['op_lt_gt'] = (
     | {c: 'end' for c in notchar('=')}
 )
 
+# TODO: We don't have keyword operators, just .true. and .false. values.
 M['op_keyword'] = (
     {c: 'op_keyword' for c in alpha}
     | {'.': 'op'}
+    | {c: 'end' for c in notchar(alpha + '.')}
 )
 
 
