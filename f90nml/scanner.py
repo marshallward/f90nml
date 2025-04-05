@@ -71,8 +71,17 @@ M['start'] = (
 # NOTE: We permit identifiers to start with _ for preprocessor support
 M['name'] = (
     {c: 'name' for c in alnum}
-    | {c: 'end' for c in notchar(alnum)}
+    | {"'": 'str_nodelim_esc_a'}
+    | {'"': 'str_nodelim_esc_q'}
+    | {c: 'end' for c in notchar(alnum + '\'"')}
 )
+
+# Escape characters for non-delimited strings
+# TODO: This supports *both* delim types in a non-delimited string, is this
+#   correct?
+M['str_nodelim_esc_a'] = {"'": 'name'}
+M['str_nodelim_esc_q'] = {'"': 'name'}
+
 # Blanks
 # TODO: This is huge, perhaps move into a separate function
 M['start'] |= {c: 'blank' for c in blank}
