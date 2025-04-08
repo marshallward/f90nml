@@ -3,20 +3,24 @@ import sys
 import operator
 import os
 
-
-# The Fortran Alphabet
+# The Fortran character set
 alpha = string.ascii_letters
 digit = string.digits
 alnum = alpha + digit + '_'
 
 blank = ' '
-# NOTE: Many compilers assert that \t and friends are not in the "Fortran
-# Character Set" and may raise warnings.  But AFAIK, "blank" is never defined.
+# NOTE: Not all of these can act as token separators, but for now we interpret
+#   them as blanks.
 blank += '\t\f\r\n'
 
-special = '=+-*/\\()[]{},.:;!"%&~<>?\'`^|$#@'  # Special characters
+# Special characters, as defined in the language standard
+special = '=+-*/\\()[]{},.:;!"%&~<>?\'`^|$#@'
 
 charset = alnum + blank + special
+
+
+# Control flags
+non_delimited_strings = True
 
 
 def notchar(chars, ref=charset):
@@ -62,22 +66,6 @@ M['start'] = (
 )
 
 
-# Identifiers (keywords, functions, variables, ...)
-# NOTE: We permit identifiers to start with _ for preprocessor support
-M['name'] = (
-    {c: 'name' for c in alnum}
-    | {"'": 'str_nodelim_esc_a'}
-    | {'"': 'str_nodelim_esc_q'}
-    | {c: 'end' for c in notchar(alnum + '\'"')}
-)
-
-# Escape characters for non-delimited strings
-# TODO: This supports *both* delim types in a non-delimited string, is this
-#   correct?
-M['str_nodelim_esc_a'] = {"'": 'name'}
-M['str_nodelim_esc_q'] = {'"': 'name'}
-
-
 # Blanks
 # TODO: This is huge, perhaps move into a separate function
 M['start'] |= {c: 'blank' for c in blank}
@@ -96,14 +84,24 @@ M['cmt'] = (
 )
 
 
+# Identifiers (keywords, functions, variables, ...)
+# NOTE: We permit identifiers to start with _ for preprocessor support
+M['name'] = {c: 'name' for c in alnum}
+M['name'] = {c: 'end' for c in notchar(alnum)}
+if non_delimited_strings:
+    M['name']["'"] = 'name'
+    M['name']['"'] = 'name'
+
+
 # Apostrophe-delimited strings
 add_str_states(M, 'str_a', "'")
 
 # Quote-delimited strings
 add_str_states(M, 'str_q', '"')
 
+
 # Literal numeric
-# NOTE: Decimals must be separate due to keyword operators (.eq.)
+# NOTE: Decimals must be separate due to logicals (.true./.false.)
 M['num'] = (
     {c: 'num' for c in digit}
     | {c: 'num_float_e' for c in 'eEdD'}
