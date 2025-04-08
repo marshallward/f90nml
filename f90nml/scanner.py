@@ -46,11 +46,11 @@ def add_str_states(M, state, delim):
 
 
 # DFA scanner
+
 M = {}
 # TODO: Pull out dash (minus) and handle separately.
 #   It *must* precede a number!
 M['start'] = (
-    #{c: 'blank' for c in blank}
     {c: 'name' for c in alpha + '_'}
     | {c: 'num' for c in digit}
     | {"'": 'str_a'}
@@ -58,16 +58,9 @@ M['start'] = (
     | {'.': 'dec'}
     | {'+': 'op_plus'}
     | {'-': 'op_minus'}
-    #| {'!': 'cmt'}
-    #| {'#': 'cmt'}
-    | {':': 'op_colon'}
-    | {'=': 'op_equal'}
-    | {'*': 'op_star'}
-    | {'/': 'op_slash'}
-    | {'<': 'op_lt_gt'}
-    | {'>': 'op_lt_gt'}
-    | {c: 'op' for c in notchar('+-."\'!#:=*/<>', special)}
+    | {c: 'op' for c in notchar('+-."\'!#', special)}
 )
+
 
 # Identifiers (keywords, functions, variables, ...)
 # NOTE: We permit identifiers to start with _ for preprocessor support
@@ -84,6 +77,7 @@ M['name'] = (
 M['str_nodelim_esc_a'] = {"'": 'name'}
 M['str_nodelim_esc_q'] = {'"': 'name'}
 
+
 # Blanks
 # TODO: This is huge, perhaps move into a separate function
 M['start'] |= {c: 'blank' for c in blank}
@@ -93,7 +87,6 @@ M['start'] |= {'#': 'cmt'}  # TODO: Handle separately?
 M['blank'] = {}
 M['blank'] |= {c: 'blank' for c in blank}
 M['blank'] |= {'!': 'cmt'}
-#M['blank'] |= {c: 'end' for c in notchar(blank + '&!')}
 M['blank'] |= {c: 'end' for c in notchar(blank + '!')}
 
 # This doesn't actually get used more than once, but it is correct.
@@ -101,6 +94,7 @@ M['cmt'] = (
     {c: 'cmt' for c in notchar('\n')}
     | {'\n': 'end'}
 )
+
 
 # Apostrophe-delimited strings
 add_str_states(M, 'str_a', "'")
@@ -212,35 +206,6 @@ M['op'] = (
     {c: 'end' for c in charset}
 )
 
-# Unlikely that any of these exist in the namelist
-
-# Two-character tokens
-M['op_colon'] = (
-    {':': 'op'}
-    | {c: 'end' for c in notchar(':')}
-)
-
-M['op_equal'] = (
-    {'>': 'op'}
-    | {'=': 'op'}
-    | {c: 'end' for c in notchar('>=')}
-)
-
-M['op_star'] = (
-    {'*': 'op'}
-    | {c: 'end' for c in notchar('*')}
-)
-
-M['op_slash'] = (
-    {'/': 'op'}
-    | {'=': 'op'}
-    | {c: 'end' for c in notchar('/=')}
-)
-
-M['op_lt_gt'] = (
-    {'=': 'op'}
-    | {c: 'end' for c in notchar('=')}
-)
 
 # TODO: We don't have keyword operators, just .true. and .false. values.
 M['op_keyword'] = (
