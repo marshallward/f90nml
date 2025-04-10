@@ -1,3 +1,8 @@
+1.4.5:
+    - Property: assign_spacing.  If False, remove spacing around assignment
+      operator.  Thanks to Balthasar Reuter (@reuterbal).
+    - Documentation update
+
 1.4.4:
     - Bugfix: patch() and update() now work with Cogroups.  To specify a
       particular cogroup, use the `_index` meta key in the patch.  Otherwise,
