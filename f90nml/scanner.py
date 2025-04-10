@@ -4,6 +4,7 @@ import operator
 import os
 
 # The Fortran character set
+
 alpha = string.ascii_letters
 digit = string.digits
 alnum = alpha + digit + '_'
@@ -21,6 +22,7 @@ charset = alnum + blank + special
 
 # Control flags
 non_delimited_strings = True
+comment_tokens = '!#'
 
 
 def notchar(chars, ref=charset):
@@ -31,51 +33,29 @@ def notchar(chars, ref=charset):
     return base
 
 
-def add_str_states(M, state, delim):
-    assert delim in ("'", '"')
-
-    state_esc = state + '_esc'
-
-    # String delimiter (" or ')
-    M[state] = (
-        {c: state for c in notchar(delim)}
-        | {delim: state_esc}
-    )
-
-    # Escaped delimiter
-    M[state_esc] = (
-        {delim: state}
-        | {c: 'end' for c in notchar(delim)}
-    )
-
-
 # DFA scanner
 
 M = {}
-# TODO: Pull out dash (minus) and handle separately.
-#   It *must* precede a number!
 M['start'] = (
-    {c: 'name' for c in alpha + '_'}
+    {c: 'blank' for c in blank}
+    | {c: 'cmt' for c in comment_tokens}
+    | {c: 'name' for c in alpha + '_'}
     | {c: 'num' for c in digit}
     | {"'": 'str_a'}
     | {'"': 'str_q'}
     | {'.': 'dec'}
     | {'+': 'op_plus'}
     | {'-': 'op_minus'}
-    | {c: 'op' for c in notchar('+-."\'!#', special)}
+    | {c: 'op' for c in notchar('+-."\'' + comment_tokens, special)}
 )
 
+# Blank (whitespace) tokens
 
-# Blanks
-# TODO: This is huge, perhaps move into a separate function
-M['start'] |= {c: 'blank' for c in blank}
-M['start'] |= {'!': 'cmt'}
-M['start'] |= {'#': 'cmt'}  # TODO: Handle separately?
-
-M['blank'] = {}
-M['blank'] |= {c: 'blank' for c in blank}
-M['blank'] |= {'!': 'cmt'}
-M['blank'] |= {c: 'end' for c in notchar(blank + '!')}
+M['blank'] = (
+    {c: 'blank' for c in blank}
+    | {c: 'cmt' for c in comment_tokens}
+    | {c: 'end' for c in notchar(blank + comment_tokens)}
+)
 
 # This doesn't actually get used more than once, but it is correct.
 M['cmt'] = (
@@ -87,17 +67,26 @@ M['cmt'] = (
 # Identifiers (keywords, functions, variables, ...)
 # NOTE: We permit identifiers to start with _ for preprocessor support
 M['name'] = {c: 'name' for c in alnum}
-M['name'] = {c: 'end' for c in notchar(alnum)}
+M['name'] |= {c: 'end' for c in notchar(alnum)}
 if non_delimited_strings:
     M['name']["'"] = 'name'
     M['name']['"'] = 'name'
 
 
 # Apostrophe-delimited strings
-add_str_states(M, 'str_a', "'")
+M['str_a'] = {c: 'str_a' for c in notchar("'")}
+M['str_a']["'"] = 'str_a_esc'
+
+M['str_a_esc'] = {c: 'end' for c in notchar("'")}
+M['str_a_esc']["'"] = 'str_a'
+
 
 # Quote-delimited strings
-add_str_states(M, 'str_q', '"')
+M['str_q'] = {c: 'str_q' for c in notchar('"')}
+M['str_q']['"'] = 'str_q_esc'
+
+M['str_q_esc'] = {c: 'end' for c in notchar('"')}
+M['str_q_esc']['"'] = 'str_q'
 
 
 # Literal numeric
@@ -153,6 +142,7 @@ M['num_kind_name'] = (
 )
 
 # Numeric kind as coded integer
+# XXX: Why is this alnum?  Shouldn't it be digit?
 M['num_kind_int'] = (
     {c: 'num_kind_int' for c in alnum}
     | {c: 'end' for c in notchar(alnum)}
@@ -218,11 +208,10 @@ def scan(file):
 
     lex = ''
     state = 'start'
-    for line in file:
-        ## debug
-        #print('start line:', repr(line))
 
+    for line in file:
         linelx = []
+
         for char in line:
             try:
                 state = M[state][char]
@@ -233,63 +222,28 @@ def scan(file):
                     # However, non-closed strings are an error
                     raise
 
-            ## Debug mode?
-            #print(
-            #    'char:', repr(char),
-            #    'state:', state,
-            #)
-
             if state not in ('end', 'cmt'):
                 lex += char
 
             elif (state == 'end'):
                 linelx.append(lex)
-                ## debug
-                #print('lexemes: ', linelx)
 
-                # "Lookback" by re-evaluating char
+                # Re-evaluate the current token (as a lookback)
                 lex = char
                 state = M['start'][char]
-                ## Debug mode?
-                #print(
-                #    '(lookback) char:', repr(char),
-                #    ' state:', state,
-                #)
 
-            # Not a backreference but prevents redundant character iteration
             elif (state == 'cmt'):
-                #print('cmt:  linelx:', linelx)
-                #print('cmt:     len:', len(''.join(linelx)))
-
-                #idx = max(len(''.join(linelx)), 0)
+                # Find the index of the first comment character.
                 buf = ''.join(linelx) + lex
                 idx = len(buf[buf.rfind('\n') + 1:])
 
-                #print('cmt:    line:', repr(line))
-                #print('cmt:     idx:', idx)
-
-                #linelx.append(line[idx:])
-                #print('cmt:  prelex:', repr(lex))
+                # Skip per-character iteration and append the comment as blank.
                 lex += line[idx:]
-                #print('cmt: postlex:', repr(lex))
-
-                #if line[-1] == '\n':
-                #    lex = '\n'
-                #    #state = 'op'
-                #else:
-                #    lex = ''
-                #    #state = 'start'
                 state = 'blank'
 
                 break
 
-        ## debug mode
-        #print('lexemes: ', linelx)
-        #print(repr('·'.join(linelx)))
-
         lexemes.extend(linelx)
-
-        #print('--------')
 
     # Append any trailing lexeme
     if lex:
