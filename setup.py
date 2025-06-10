@@ -39,11 +39,8 @@ with open(os.path.join(project_name, 'version.py'), 'rb') as version_py:
             project_version = eval(next_str)
             break
 
-project_readme_fname = 'README.rst'
-project_scripts = [os.path.join('bin', f) for f in os.listdir('bin')]
-
-
 # README
+project_readme_fname = 'README.rst'
 with open(project_readme_fname) as f:
     project_readme = f.read()
 
@@ -59,7 +56,12 @@ setup(
     url='http://github.com/marshallward/f90nml',
 
     packages=['f90nml'],
-    scripts=project_scripts,
+
+    entry_points={
+        'console_scripts': [
+            'f90nml = f90nml.cli:parse'
+        ]
+    },
 
     extras_require={
         'yaml': ['PyYAML'],
