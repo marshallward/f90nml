@@ -7,6 +7,7 @@ Additional configuration settings are in ``setup.cfg``.
 """
 import os
 import sys
+import tokenize
 
 try:
     from setuptools import setup
@@ -15,31 +16,31 @@ except ImportError:
     from distutils.core import setup
     from distutils.core import Command
 
-import tests.test_f90nml
-
 # Project details
+
 project_name = 'f90nml'
-project_version = __import__(project_name).__version__
+
+# Parse version.py and get version number
+with open(os.path.join(project_name, 'version.py'), 'rb') as version_py:
+    tokens = tokenize.tokenize(version_py.readline)
+
+    for tok_type, tok_str, _, _, _ in tokens:
+        if tok_type == tokenize.NAME and tok_str == '__version__':
+            next_type, next_str, _, _, _ = next(tokens)
+
+            if next_type != tokenize.OP or next_str != '=':
+                raise RuntimeError("Expected '=' after __version__.")
+
+            next_type, next_str, _, _, _ = next(tokens)
+
+            if next_type != tokenize.STRING:
+                raise RuntimeError("__version__ is not a string.")
+
+            project_version = eval(next_str)
+            break
+
 project_readme_fname = 'README.rst'
 project_scripts = [os.path.join('bin', f) for f in os.listdir('bin')]
-
-
-# Test suite
-class ProjectTest(Command):
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        unittest = tests.test_f90nml.unittest
-        testcase = tests.test_f90nml.Test
-        suite = unittest.TestLoader().loadTestsFromTestCase(testcase)
-        result = unittest.TextTestRunner(verbosity=2).run(suite)
-        sys.exit(not result.wasSuccessful())
 
 
 # README
@@ -49,24 +50,22 @@ with open(project_readme_fname) as f:
 
 # Project setup
 setup(
-    name = project_name,
-    version = project_version,
-    description = 'Fortran 90 namelist parser',
-    long_description = project_readme,
-    author = 'Marshall Ward',
-    author_email = 'f90nml@marshallward.org',
-    url = 'http://github.com/marshallward/f90nml',
+    name=project_name,
+    version=project_version,
+    description='Fortran 90 namelist parser',
+    long_description=project_readme,
+    author='Marshall Ward',
+    author_email='f90nml@marshallward.org',
+    url='http://github.com/marshallward/f90nml',
 
-    packages = ['f90nml'],
+    packages=['f90nml'],
     scripts=project_scripts,
 
-    extras_require = {
+    extras_require={
         'yaml': ['PyYAML'],
     },
 
-    cmdclass = {'test': ProjectTest},
-
-    classifiers = [
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
