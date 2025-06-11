@@ -186,7 +186,7 @@ M['op_kw_test'] = (
 )
 
 # End decimal
-#---
+# ---
 
 
 # Single-character tokens (operators, declaration, etc)
@@ -204,15 +204,11 @@ M['op_keyword'] = (
 
 
 def scan(file):
-    lexemes = []
-
     lex = ''
     state = 'start'
 
     for line in file:
-        linelx = []
-
-        for char in line:
+        for idx, char in enumerate(line):
             try:
                 state = M[state][char]
             except KeyError:
@@ -226,24 +222,18 @@ def scan(file):
                 lex += char
 
             elif (state == 'end'):
-                linelx.append(lex)
+                yield lex
 
                 # Re-evaluate the current token (as a lookback)
                 lex = char
                 state = M['start'][char]
 
             elif (state == 'cmt'):
-                # Find the index of the first comment character.
-                buf = ''.join(linelx) + lex
-                idx = len(buf[buf.rfind('\n') + 1:])
-
                 # Skip per-character iteration and append the comment as blank.
                 lex += line[idx:]
                 state = 'blank'
 
                 break
-
-        lexemes.extend(linelx)
 
     # Append any trailing lexeme
     if lex:
@@ -253,6 +243,4 @@ def scan(file):
             print(M[state])
             raise
 
-        lexemes.append(lex)
-
-    return lexemes
+        yield lex

@@ -304,9 +304,8 @@ class Parser(object):
     def _readstream(self, nml_file, nml_patch_in=None):
         """Parse an input stream containing a Fortran namelist."""
         nml_patch = nml_patch_in if nml_patch_in is not None else Namelist()
-        f90lex = scan(nml_file)
 
-        self.tokens = iter(f90lex)
+        self.tokens = scan(nml_file)
         nmls = Namelist()
 
         # Attempt to get first token; abort on empty file
