@@ -12,7 +12,7 @@ jobs:
           - windows-latest
           - ubuntu-18.04
           - ubuntu-20.04
-        python:
+        python-version:
           - "2.7"
           - "3.5"
           - "3.6"
