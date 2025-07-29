@@ -1,22 +1,52 @@
 name: f90nml
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  legacy:
     strategy:
       matrix:
-        os:
-          - macos-latest
-          - windows-latest
-          - ubuntu-18.04
-          - ubuntu-20.04
-        python:
-          - "2.7"
-          - "3.5"
-          - "3.6"
-          - "3.7"
+        python: ["2.7", "3.5", "3.6", "3.7"]
+    runs-on: ubuntu-latest
+    container:
+      image: python:${{ matrix.python }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          python --version
+          pip --version
+          pip install --upgrade pip
+          pip install -r tests/requirements_test.txt
+          pip install pytest pytest-cov
+
+      - name: Run tests
+        run: pytest --cov --cov-branch --cov-report=xml
+
+      - name: Upload coverage to Codecov (bash uploader fallback)
+        if: matrix.python == '2.7' || matrix.python == '3.5'
+        run: |
+          curl -s https://codecov.io/bash | bash -s -- \
+            -t ${{ secrets.CODECOV_TOKEN }} \
+            -f coverage.xml \
+            -F python${{ matrix.python }} \
+            -Z
+
+      - name: Upload coverage to Codecov
+        if: matrix.python != '2.7' && matrix.python != '3.5'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: marshallward/f90nml
+
+  modern:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version:
           - "3.8"
           - "3.9"
           - "3.10"
@@ -26,26 +56,24 @@ jobs:
           - "pypy-3.9"
           - "pypy-3.10"
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r tests/requirements_test.txt
-        pip install pytest pytest-cov
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements_test.txt
+          pip install pytest pytest-cov
 
-    - name: Main test
-      shell: bash
-      run: |
-        pytest --cov --cov-branch --cov-report=xml
+      - name: Run tests
+        run: pytest --cov --cov-branch --cov-report=xml
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        slug: marshallward/f90nml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: marshallward/f90nml
