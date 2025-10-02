@@ -1,7 +1,4 @@
 import string
-import sys
-import operator
-import os
 
 # The Fortran character set
 
