@@ -597,6 +597,12 @@ class Test(unittest.TestCase):
         self.assertEqual(self.null_nml, test_nml)
         self.assert_write(test_nml, 'null_target.nml')
 
+    def test_null_end_comma(self):
+        test_nml = f90nml.read('null.nml')
+        test_nml.end_comma = True
+        self.assertEqual(self.null_nml, test_nml)
+        self.assert_write(test_nml, 'null_target_end_comma.nml')
+
     def test_unset(self):
         test_nml = f90nml.read('unset.nml')
         self.assertEqual(self.unset_nml, test_nml)
