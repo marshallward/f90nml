@@ -1,3 +1,29 @@
+1.5:
+    - The scanner is now a more formally constructed DFA.  This has led to
+      several internal changes.
+      - Whitespace is now tokenized, rather than discarded.
+      - Endlines are no longer syntactically significant, and are treated as
+        whitespace.
+      - Comments are also handled as whitespace.
+
+      Some tokenization bugs have now been fixed:
+      - Multline strings now correctly store endline characters.
+      - Non-delimited string support is overall improved.
+        (However, it will always be volatile and not recommended!)
+
+    - setup.py has been partially modernized
+      - legacy `/bin` scripts have been replaced with `entry_points`
+      - Most content in `setup.py` has been moved to `setup.cfg`
+      - `pyproject.toml` has been added, but is fairly minimal.
+      We are still a long way from modern PEP621 compliance, but would need to
+      drop Pyhton 3.6 support, which is still active on many HPC systems.
+
+    - Several serious GitHub Actions errors have been fixed.  Thanks to Robert
+      Clément (@neutrinoceros).
+
+    - Bugfix: Redundant commas for tail null values are now disabled when
+      `end_commas` is set.  Thanks to Paul Leopardi for reporting (@penguian).
+
 1.4.5:
     - Property: assign_spacing.  If False, remove spacing around assignment
       operator.  Thanks to Balthasar Reuter (@reuterbal).
