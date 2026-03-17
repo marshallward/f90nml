@@ -427,8 +427,10 @@ class Test(unittest.TestCase):
         }
 
         self.f77_nml = {
+            'f77_nml_dollar': {'x': 123},
             'f77_nml': {'x': 123},
             'next_f77_nml': {'y': 'abc'},
+            'another_f77_nml': {'z': 99},
         }
 
         self.dollar_nml = {'dollar_nml': {'v': 1.}}
