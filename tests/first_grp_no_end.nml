@@ -1,0 +1,6 @@
+&open_group
+a = 1
+
+&closed_group
+b = 2
+/

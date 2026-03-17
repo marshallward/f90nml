@@ -1612,6 +1612,9 @@ class Test(unittest.TestCase):
     def test_file_grp_no_end(self):
         self.assertRaises(ValueError, f90nml.read, 'grp_no_end.nml')
 
+    def test_file_first_grp_no_end(self):
+        self.assertRaises(ValueError, f90nml.read, 'first_grp_no_end.nml')
+
 
 if __name__ == '__main__':
     if os.path.isfile('tmp.nml'):
