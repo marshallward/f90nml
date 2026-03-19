@@ -329,6 +329,9 @@ class Parser(object):
             except StopIteration:
                 break
 
+            # save whether & or $ is opening this group
+            opening_token = self.token
+
             # Create the next namelist
             try:
                 self._update_tokens()
@@ -384,20 +387,22 @@ class Parser(object):
                 # Finalise namelist group
                 if self.token in ('/', '&', '$'):
 
-                    if self.token == '&':
+                    if self.token in ('&', '$'):
                         # Peek at the next non-whitespace token without
                         # consuming it, to distinguish F77-style terminators
-                        # (&end or standalone &) from an unclosed group.
+                        # (&end or standalone &, or same with $) from
+                        # an unclosed group.
                         self.tokens, peek_iter = itertools.tee(self.tokens)
                         skip = self.comment_tokens + whitespace
                         next_tok = next(
-                            (t for t in peek_iter if t[0] not in skip), None
+                            (t for t in peek_iter if t[0] not in skip),
+                            None
                         )
-                        if next_tok not in ('end', '&', '$', None):
+                        if next_tok and next_tok.lower() not in ('end', '&', '$'):
                             raise ValueError(
-                                "f90nml: error: Namelist group '&{}' was not "
-                                "closed before the start of a new group."
-                                .format(g_name)
+                                "f90nml: error: Namelist group '{}{}' was not "
+                                "closed before the start of a new group or EOF."
+                                .format(opening_token, g_name)
                             )
 
                     # Append any remaining patched variables
