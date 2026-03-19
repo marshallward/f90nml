@@ -1597,6 +1597,11 @@ class Test(unittest.TestCase):
         line2 = out.readline()
         self.assertEqual(line2.lstrip(), "b = 2*.true., .false.\n")
 
+    def test_end_uppercase(self):
+        test_nml = f90nml.read('end_uppercase.nml')
+        self.assertEqual(test_nml, {'end_token_uppercase': {'a': 1},
+                                    'last_grp': {'a': 1}})
+
     # Failed namelist parsing
     # NOTE: This is a very weak test, since '& x=1' / will pass
     def test_grp_token_end(self):
@@ -1616,6 +1621,9 @@ class Test(unittest.TestCase):
 
     def test_file_first_grp_no_end(self):
         self.assertRaises(ValueError, f90nml.read, 'first_grp_no_end.nml')
+
+    def test_file_first_grp_no_end_dollar(self):
+        self.assertRaises(ValueError, f90nml.read, 'first_grp_no_end_dollar.nml')
 
 
 if __name__ == '__main__':

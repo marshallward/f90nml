@@ -1,0 +1,7 @@
+&END_TOKEN_UPPERCASE
+  a = 1
+&END
+
+&last_grp
+  a = 1
+&
