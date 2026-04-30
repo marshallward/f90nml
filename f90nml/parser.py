@@ -437,7 +437,7 @@ class Parser(object):
 
         return nmls
 
-    def _parse_variable(self, parent, patch_nml=None):
+    def _parse_variable(self, parent, patch_nml=None, parent_idx_bounds=None):
         """Parse a variable and return its name and values."""
         if not patch_nml:
             patch_nml = Namelist()
@@ -451,35 +451,18 @@ class Parser(object):
         # Derived type parent index (see notes below)
         dt_idx = None
 
+        # Index bounds to associate with the next derived-type child
+        child_idx_bounds = None
+
+        # Saved multidimensional index for single-element indexed assignment
+        single_idx_v_idx = None  # type: FIndex | None
+
+        v_idx_bounds = None
+
         if self.token == '(':
 
             v_idx_bounds = self._parse_indices()
-            v_idx = FIndex(v_idx_bounds, self.global_start_index)
-
-            # Update starting index against namelist record
-            if v_name.lower() in parent.start_index:
-                p_idx = parent.start_index[v_name.lower()]
-
-                for idx, pv in enumerate(zip(p_idx, v_idx.first)):
-                    if all(i is None for i in pv):
-                        i_first = None
-                    else:
-                        i_first = min(i for i in pv if i is not None)
-
-                    v_idx.first[idx] = i_first
-
-                # Resize vector based on starting index
-                parent[v_name] = prepad_array(parent[v_name], p_idx,
-                                              v_idx.first)
-            else:
-                # If variable already existed without an index, then assume a
-                #   1-based index
-                # FIXME: Need to respect undefined `None` starting indexes?
-                if v_name in parent:
-                    v_idx.first = [self.default_start_index
-                                   for _ in v_idx.first]
-
-            parent.start_index[v_name.lower()] = v_idx.first
+            v_idx = self._record_indexed_var(parent, v_name, v_idx_bounds)
 
             self._update_tokens()
 
@@ -487,12 +470,39 @@ class Parser(object):
             # NOTE: This assumes single-dimension derived type vectors
             #       (which I think is the only case supported in Fortran)
             if self.token == '%':
-                assert v_idx_bounds[0][1] - v_idx_bounds[0][0] == 1
-                dt_idx = v_idx_bounds[0][0] - v_idx.first[0]
+                i_start, i_end, _ = v_idx_bounds[0]
+                is_single_elem = (
+                    i_start is not None
+                    and i_end is not None
+                    and i_end - i_start == 1
+                )
+                parent_is_dict = isinstance(
+                    parent.get(v_name.lower()), Namelist
+                )
+                if is_single_elem and not parent_is_dict:
+                    dt_idx = i_start - v_idx.first[0]
+                else:
+                    # Other cases:
+                    # * single element, parent dict
+                    # * multi element, parent dict
+                    # * multi element, not parent dict
+                    child_idx_bounds = v_idx_bounds
+
+                    # `arr(s:e)%foo` -> `arr%foo(s:e)`
+                    # Parent becomes a dict of arrays, start index moves to child.
+                    parent.start_index.pop(v_name.lower(), None)
+                    v_idx = None
+                    v_idx_bounds = None
 
                 # NOTE: This is the sensible play to call `parse_variable`
                 # but not yet sure how to implement it, so we currently pass
                 # along `dt_idx` to the `%` handler.
+
+        elif parent_idx_bounds is not None:
+            # Index from parent derived type; treat as if the source
+            # were `<v_name>(start:end) = ...`.
+            v_idx_bounds = parent_idx_bounds
+            v_idx = self._record_indexed_var(parent, v_name, v_idx_bounds)
 
         else:
             v_idx = None
@@ -546,12 +556,23 @@ class Parser(object):
 
             v_att, v_att_vals = self._parse_variable(
                 v_parent,
-                patch_nml=v_patch_nml
+                patch_nml=v_patch_nml,
+                parent_idx_bounds=child_idx_bounds
             )
 
-            next_value = Namelist()
-            next_value[v_att] = v_att_vals
-            self._append_value(v_values, next_value, v_idx)
+            if child_idx_bounds is not None:
+                # Parent-indexed attribute - merge any data existing in the
+                # parent and then mark it as such.
+                if v_att in v_parent:
+                    v_att_vals = merge_values(v_parent[v_att], v_att_vals)
+                v_parent[v_att] = v_att_vals
+                v_parent.parent_indexed.add(v_att.lower())
+                self._append_value(v_values, v_parent, v_idx)
+            else:
+                # Normal, child-indexed attribute
+                next_value = Namelist()
+                next_value[v_att] = v_att_vals
+                self._append_value(v_values, next_value, v_idx)
 
         else:
             # Construct the variable array
@@ -571,6 +592,13 @@ class Parser(object):
                     patch_values = [patch_values]
 
                 p_idx = 0
+
+            # `var(N) = v1, v2, ..., vK`: collect values flat and decide
+            # later whether to store as scalar (K=1) or as a Fortran
+            # positional derived-type row (K>1).
+            if v_idx is not None and _is_single_element_bound(v_idx_bounds):
+                single_idx_v_idx = v_idx
+                v_idx = None
 
             # Add variables until next variable trigger
             while (self.token not in ('=', '(', '%') or
@@ -660,9 +688,50 @@ class Parser(object):
         if patch_values:
             v_values = patch_values
 
+        # Single-element indexed assignment
+        if single_idx_v_idx is not None:
+            collected = v_values
+            v_values = []
+            if len(collected) > 1 and v_name is not None:
+                # Positional struct row (K>1)
+                parent.positional.add(v_name.lower())
+                self._append_value(v_values, list(collected), single_idx_v_idx)
+            else:
+                # Scalar at the index (K=1)
+                scalar = collected[0] if collected else None
+                self._append_value(v_values, scalar, single_idx_v_idx)
+            v_idx = single_idx_v_idx
+
         if not v_idx:
             v_values = delist(v_values)
         return v_name, v_values
+
+    def _record_indexed_var(self, parent, v_name, v_idx_bounds):
+        """Build the FIndex for an indexed assignment and update the parent."""
+        v_idx = FIndex(bounds=v_idx_bounds, first=self.global_start_index)
+
+        if v_name.lower() in parent.start_index:
+            p_idx = parent.start_index[v_name.lower()]
+
+            for idx, pv in enumerate(zip(p_idx, v_idx.first)):
+                if all(i is None for i in pv):
+                    i_first = None
+                else:
+                    i_first = min(i for i in pv if i is not None)
+
+                v_idx.first[idx] = i_first
+
+            parent[v_name] = prepad_array(parent[v_name], p_idx,
+                                          v_idx.first)
+        elif v_name in parent:
+            # If variable already existed without an index, then assume a
+            # 1-based index
+            # FIXME: Need to respect undefined `None` starting indexes?
+            # ^^ carried forward fixme from Parser._parse_variable
+            v_idx.first = [self.default_start_index for _ in v_idx.first]
+
+        parent.start_index[v_name.lower()] = v_idx.first
+        return v_idx
 
     def _parse_indices(self):
         """Parse a sequence of Fortran vector indices as a list of tuples."""
@@ -875,7 +944,7 @@ def prepad_array(var, v_start_idx, new_start_idx):
 
     # Apply prepad rules to interior arrays
     for i, v in enumerate(var):
-        if isinstance(v, list):
+        if isinstance(v, list) and len(v_start_idx) > 1:
             prior_var[i] = prepad_array(v, v_start_idx[:-1],
                                         new_start_idx[:-1])
     return pad + prior_var
@@ -952,6 +1021,14 @@ def delist(values):
         return values[0]
 
     return values
+
+
+def _is_single_element_bound(v_idx_bounds):
+    """Return True if `v_idx_bounds` describes a single fully-known index."""
+    if not v_idx_bounds or len(v_idx_bounds) != 1:
+        return False
+    start, end, _ = v_idx_bounds[0]
+    return start is not None and end is not None and end - start == 1
 
 
 def check_for_value(tokens):

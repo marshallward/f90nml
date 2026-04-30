@@ -108,6 +108,20 @@ class Namelist(OrderedDict):
 
         self.start_index = self.pop('_start_index', {})
 
+        # _positional: set of lowercase names that use positional assignment
+        # in the namelist
+        self._positional = set(self.pop('_positional', ()))
+
+        # _parent_indexed: set of lowercase names that come from a parent-indexed
+        # derived-type assignment
+        #
+        # Compare `ele_name` in these two cases:
+        #  1. `var(1:6)%ele_name = ...`.
+        #  2. `var%ele_name(1:6) = ...`.
+        #
+        #  (1) is parent-indexed, whereas (2) is not.
+        self._parent_indexed = set(self.pop('_parent_indexed', ()))
+
         # Update the complex tuples as intrinsics
         # TODO: We are effectively setting these twice.  Instead, fetch these
         # from s_args rather than relying on Namelist to handle the content.
@@ -550,6 +564,26 @@ class Namelist(OrderedDict):
         self._start_index = value
 
     @property
+    def positional(self):
+        """
+        Set of variable names stored as Fortran positional derived types.
+
+        :type: ``set[str]``
+        :default: ``set()``
+        """
+        return self._positional
+
+    @property
+    def parent_indexed(self):
+        """
+        Child names that should round-trip as ``parent(s:e)%child``.
+
+        :type: ``set[str]``
+        :default: ``set()``
+        """
+        return self._parent_indexed
+
+    @property
     def true_repr(self):
         """Set the string representation of logical true values.
 
@@ -726,21 +760,35 @@ class Namelist(OrderedDict):
         for v_name, v_val in grp_vars.items():
 
             v_start = grp_vars.start_index.get(v_name, None)
+            positional = v_name.lower() in grp_vars.positional
 
-            for v_str in self._var_strings(v_name, v_val, v_start=v_start):
+            for v_str in self._var_strings(v_name, v_val, v_start=v_start,
+                                           positional=positional):
                 print(v_str, file=nml_file)
 
         print('/', file=nml_file)
 
-    def _var_strings(self, v_name, v_values, v_idx=None, v_start=None):
+    def _var_strings(self, v_name, v_values, v_idx=None, v_start=None,
+                     positional=False, exclude_index=False):
         """Convert namelist variable to list of fixed-width strings."""
         if self.uppercase:
             v_name = v_name.upper()
 
         var_strs = []
 
+        # Positional derived-type form: one `var(idx) = v1` line per inner row.
+        # Each row is a flat list of mixed-type values.
+        if positional and is_nullable_list(v_values, list):
+            i_s = v_start[0] if v_start else 1
+            for idx, val in enumerate(v_values, start=i_s):
+                if val is not None:
+                    var_strs.extend(
+                        self._var_strings("{0}({1})".format(v_name, idx), val)
+                    )
+            return var_strs
+
         # Parse a multidimensional array
-        if is_nullable_list(v_values, list):
+        elif is_nullable_list(v_values, list):
             if not v_idx:
                 v_idx = []
 
@@ -770,9 +818,39 @@ class Namelist(OrderedDict):
         # Parse derived type contents
         elif isinstance(v_values, Namelist):
             for f_name, f_vals in v_values.items():
-                v_title = '%'.join([v_name, f_name])
-
                 v_start_new = v_values.start_index.get(f_name, None)
+
+                # Handle derived type parent array indexing
+                if (f_name.lower() in v_values.parent_indexed
+                        and isinstance(f_vals, list)):
+                    i_s = v_start_new[0] if v_start_new else 1
+
+                    # If there are any indices skipped, we have to go 1-by-1
+                    if any(v is None for v in f_vals):
+                        for offset, val in enumerate(f_vals):
+                            if val is not None:
+                                # parent_name(idx)%f_name
+                                sub = '{0}({1})%{2}'.format(
+                                    v_name, i_s + offset, f_name)
+                                v_strs = self._var_strings(sub, val)
+                                var_strs.extend(v_strs)
+                    else:
+                        i_e = i_s + len(f_vals) - 1
+                        if i_s == i_e:
+                            # single array element (start/end same)
+                            # parent_name(idx)%f_name
+                            sub = '{0}({1})%{2}'.format(
+                                v_name, i_s, f_name)
+                        else:
+                            # parent_name(start_idx:end_idx)%f_name
+                            sub = '{0}({1}:{2})%{3}'.format(
+                                v_name, i_s, i_e, f_name)
+                        v_strs = self._var_strings(sub, f_vals,
+                                                   exclude_index=True)
+                        var_strs.extend(v_strs)
+                    continue
+
+                v_title = '%'.join([v_name, f_name])
 
                 v_strs = self._var_strings(v_title, f_vals,
                                            v_start=v_start_new)
@@ -807,7 +885,9 @@ class Namelist(OrderedDict):
             # Print the index range
 
             # TODO: Include a check for len(v_values) to determine if vector
-            if v_idx or v_start or use_default_start_index:
+            if exclude_index:
+                v_idx_repr = ''
+            elif v_idx or v_start or use_default_start_index:
                 v_idx_repr = '('
 
                 if v_start or use_default_start_index:
@@ -976,9 +1056,13 @@ class Namelist(OrderedDict):
                     except KeyError:
                         nmldict['_complex'] = [key]
 
-        # Append the start index if present
+        # Append the start index, positional and parent-indexed flags if present
         if self.start_index:
             nmldict['_start_index'] = self.start_index
+        if self.positional:
+            nmldict['_positional'] = sorted(self.positional)
+        if self.parent_indexed:
+            nmldict['_parent_indexed'] = sorted(self.parent_indexed)
 
         return nmldict
 
