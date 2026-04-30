@@ -47,3 +47,28 @@
     a(2)%i = 456
     a(3)%i = 789
 /
+
+&dtype_vec_range_nml
+    arr(1:2)%foo = 1.0, 2.0
+    arr(1:2)%bar = 3.0, 4.0
+/
+
+&dtype_vec_open_range_nml
+    var(1:2)%ele_name = 'P1_PIP5', 'M2_PIP0'
+/
+
+&dtype_vec_open_range_single_nml
+    var(1)%ele_name = 'O_L1'
+/
+
+&dtype_vec_range_then_single_nml
+    var(1:6)%ele_name = 'a', 'b', 'c', 'd', 'e', 'f'
+    var(1:6)%attribute = 'p', 'q', 'r', 's', 't', 'u'
+    var(1)%low_lim = 0.001
+    var(3)%low_lim = 0.001
+/
+
+&dtype_positional_nml
+    datum(1) = 'beta.a', '', '', 'M1', 'target', 4.5, 10.0
+    datum(2) = 'alpha.a', '', '', 'M1', 'target', 6.7, 100.0
+/

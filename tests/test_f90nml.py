@@ -300,6 +300,35 @@ class Test(unittest.TestCase):
                     {'i': 789},
                 ],
             },
+            'dtype_vec_range_nml': {
+                'arr': {
+                    'foo': [1.0, 2.0],
+                    'bar': [3.0, 4.0],
+                },
+            },
+            'dtype_vec_open_range_nml': {
+                'var': {
+                    'ele_name': ['P1_PIP5', 'M2_PIP0'],
+                },
+            },
+            'dtype_vec_open_range_single_nml': {
+                'var': {
+                    'ele_name': ['O_L1'],
+                },
+            },
+            'dtype_vec_range_then_single_nml': {
+                'var': {
+                    'ele_name': ['a', 'b', 'c', 'd', 'e', 'f'],
+                    'attribute': ['p', 'q', 'r', 's', 't', 'u'],
+                    'low_lim': [0.001, None, 0.001],
+                },
+            },
+            'dtype_positional_nml': {
+                'datum': [
+                    ['beta.a', '', '', 'M1', 'target', 4.5, 10.0],
+                    ['alpha.a', '', '', 'M1', 'target', 6.7, 100.0],
+                ],
+            },
         }
 
         self.dtype_case_nml = {
