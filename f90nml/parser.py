@@ -454,6 +454,13 @@ class Parser(object):
         # Index bounds to associate with the next derived-type child
         child_idx_bounds = None
 
+        # Index bounds when the values should be scattered across an
+        # existing list of derived-type elements:
+        #   `var(1:6)%attr = v1,...,v6` 
+        # after `var` has already been built up as a list of
+        # Namelists by prior `var(N)%...` assignments.
+        scatter_idx_bounds = None
+
         # Saved multidimensional index for single-element indexed assignment
         single_idx_v_idx = None  # type: FIndex | None
 
@@ -476,16 +483,18 @@ class Parser(object):
                     and i_end is not None
                     and i_end - i_start == 1
                 )
-                parent_is_dict = isinstance(
-                    parent.get(v_name.lower()), Namelist
-                )
+                existing = parent.get(v_name.lower())
+                parent_is_dict = isinstance(existing, Namelist)
+                parent_is_list = isinstance(existing, list)
                 if is_single_elem and not parent_is_dict:
                     dt_idx = i_start - v_idx.first[0]
+                elif parent_is_list:
+                    # Multi-element range over an existing list of derived-type
+                    # elements
+                    scatter_idx_bounds = v_idx_bounds
+                    v_idx = None
+                    v_idx_bounds = None
                 else:
-                    # Other cases:
-                    # * single element, parent dict
-                    # * multi element, parent dict
-                    # * multi element, not parent dict
                     child_idx_bounds = v_idx_bounds
 
                     # `arr(s:e)%foo` -> `arr%foo(s:e)`
@@ -536,74 +545,104 @@ class Parser(object):
             if v_name in patch_nml:
                 v_patch_nml = patch_nml.get(v_name.lower())
 
-            if parent:
-                vpar = parent.get(v_name.lower())
-                if vpar and isinstance(vpar, list):
-                    # If new element is not a list, then assume it's the first
-                    # element of the list.
-                    if dt_idx is None:
-                        dt_idx = self.default_start_index
+            if scatter_idx_bounds is not None:
+                self._update_tokens()
+                self._update_tokens()
+                scratch = Namelist()
+                v_att, v_att_vals = self._parse_variable(
+                    scratch,
+                    patch_nml=v_patch_nml,
+                    parent_idx_bounds=scatter_idx_bounds
+                )
+                if not isinstance(v_att_vals, list):
+                    v_att_vals = [v_att_vals]
+                vpar = parent[v_name]
+                base = parent.start_index.get(
+                    v_name.lower(), [self.default_start_index])[0]
+                first = scatter_idx_bounds[0][0]
+                for k, val in enumerate(v_att_vals):
+                    idx = first + k - base
+                    while idx >= len(vpar):
+                        vpar.append(None)
+                    if not isinstance(vpar[idx], Namelist):
+                        vpar[idx] = Namelist()
+                    vpar[idx][v_att] = val
+                # Make sure the writer emits slices for this, since the
+                # input was a slice:
+                parent.sliced_attrs.setdefault(
+                    v_name.lower(), set()).add(v_att.lower())
 
-                    try:
-                        v_parent = vpar[dt_idx]
-                    except IndexError:
-                        v_parent = Namelist()
+            else:
+                if parent:
+                    vpar = parent.get(v_name.lower())
+                    if vpar and isinstance(vpar, list):
+                        # If new element is not a list, then assume it's the first
+                        # element of the list.
+                        if dt_idx is None:
+                            dt_idx = self.default_start_index
 
-                    # `var(N) = "string"` and then
-                    # `var(N)%field = ...`:
-                    if v_parent is not None and not isinstance(v_parent, Namelist):
-                        prior = v_parent
+                        try:
+                            v_parent = vpar[dt_idx]
+                        except IndexError:
+                            v_parent = Namelist()
+
+                        # `var(N) = "string"` and then
+                        # `var(N)%field = ...`:
+                        if (v_parent is not None
+                                and not isinstance(v_parent, Namelist)):
+                            prior = v_parent
+                            v_parent = Namelist()
+                            v_parent['_positional_row'] = (
+                                list(prior) if isinstance(prior, list)
+                                else [prior]
+                            )
+                            vpar[dt_idx] = v_parent
+                            parent.positional.add(v_name.lower())
+                    elif vpar and not isinstance(vpar, Namelist):
+                        # Unindexed case:
+                        # `f = 1` then
+                        # `f%x = 2`
+                        prior = vpar
                         v_parent = Namelist()
                         v_parent['_positional_row'] = (
                             list(prior) if isinstance(prior, list) else [prior]
                         )
-                        vpar[dt_idx] = v_parent
-                        parent.positional.add(v_name.lower())
-                elif vpar and not isinstance(vpar, Namelist):
-                    # Unindexed case:
-                    # `f = 1` then 
-                    # `f%x = 2`
-                    prior = vpar
-                    v_parent = Namelist()
-                    v_parent['_positional_row'] = (
-                        list(prior) if isinstance(prior, list) else [prior]
-                    )
-                    parent[v_name] = v_parent
-                elif vpar:
-                    v_parent = vpar
+                        parent[v_name] = v_parent
+                    elif vpar:
+                        v_parent = vpar
+                    else:
+                        v_parent = Namelist()
                 else:
                     v_parent = Namelist()
-            else:
-                v_parent = Namelist()
-                parent[v_name] = v_parent
+                    parent[v_name] = v_parent
 
-            self._update_tokens()
-            self._update_tokens()
+                self._update_tokens()
+                self._update_tokens()
 
-            v_att, v_att_vals = self._parse_variable(
-                v_parent,
-                patch_nml=v_patch_nml,
-                parent_idx_bounds=child_idx_bounds
-            )
+                v_att, v_att_vals = self._parse_variable(
+                    v_parent,
+                    patch_nml=v_patch_nml,
+                    parent_idx_bounds=child_idx_bounds
+                )
 
-            if child_idx_bounds is not None:
-                # Parent-indexed: merge data from parent.
-                if v_att in v_parent:
-                    v_att_vals = merge_values(v_parent[v_att], v_att_vals)
-                v_parent[v_att] = v_att_vals
-                if parent_idx_bounds is None:
-                    v_parent.parent_indexed.add(v_att.lower())
-                    if v_att.lower() not in v_parent.start_index:
-                        i_start = child_idx_bounds[0][0]
-                        if i_start is None:
-                            i_start = self.default_start_index
-                        v_parent.start_index[v_att.lower()] = [i_start]
-                self._append_value(v_values, v_parent, v_idx)
-            else:
-                # Normal, child-indexed attribute
-                next_value = Namelist()
-                next_value[v_att] = v_att_vals
-                self._append_value(v_values, next_value, v_idx)
+                if child_idx_bounds is not None:
+                    # Parent-indexed: merge data from parent.
+                    if v_att in v_parent:
+                        v_att_vals = merge_values(v_parent[v_att], v_att_vals)
+                    v_parent[v_att] = v_att_vals
+                    if parent_idx_bounds is None:
+                        v_parent.parent_indexed.add(v_att.lower())
+                        if v_att.lower() not in v_parent.start_index:
+                            i_start = child_idx_bounds[0][0]
+                            if i_start is None:
+                                i_start = self.default_start_index
+                            v_parent.start_index[v_att.lower()] = [i_start]
+                    self._append_value(v_values, v_parent, v_idx)
+                else:
+                    # Normal, child-indexed attribute
+                    next_value = Namelist()
+                    next_value[v_att] = v_att_vals
+                    self._append_value(v_values, next_value, v_idx)
 
         else:
             # Construct the variable array

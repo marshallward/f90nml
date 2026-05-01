@@ -128,6 +128,13 @@ class Namelist(OrderedDict):
         # the namelist mixes positional assignment of derived types
         # along with separate field references (ugh!)
 
+        # _sliced_attrs: {var_name: {field, ...}} — names whose
+        # `var(s:e)%field = v1, ..., vN` slice form was scattered into a
+        # list of derived-type elements at parse time.
+        self._sliced_attrs = {
+            k: set(v) for k, v in self.pop('_sliced_attrs', {}).items()
+        }
+
         # Update the complex tuples as intrinsics
         # TODO: We are effectively setting these twice.  Instead, fetch these
         # from s_args rather than relying on Namelist to handle the content.
@@ -587,6 +594,15 @@ class Namelist(OrderedDict):
         return self._parent_indexed
 
     @property
+    def sliced_attrs(self):
+        """Map of variable name to fields that came from a slice.
+
+        :type: ``dict[str, set[str]]``
+        :default: ``{}``
+        """
+        return self._sliced_attrs
+
+    @property
     def true_repr(self):
         """Set the string representation of logical true values.
 
@@ -764,15 +780,18 @@ class Namelist(OrderedDict):
 
             v_start = grp_vars.start_index.get(v_name, None)
             positional = v_name.lower() in grp_vars.positional
+            sliced_attrs = grp_vars.sliced_attrs.get(v_name.lower(), set())
 
             for v_str in self._var_strings(v_name, v_val, v_start=v_start,
-                                           positional=positional):
+                                           positional=positional,
+                                           sliced_attrs=sliced_attrs):
                 print(v_str, file=nml_file)
 
         print('/', file=nml_file)
 
     def _var_strings(self, v_name, v_values, v_idx=None, v_start=None,
-                     positional=False, exclude_index=False):
+                     positional=False, exclude_index=False,
+                     sliced_attrs=None, skip_fields=None):
         """Convert namelist variable to list of fixed-width strings."""
         if self.uppercase:
             v_name = v_name.upper()
@@ -830,6 +849,8 @@ class Namelist(OrderedDict):
                 # `_positional_row` is actual data, but handled elsewhere
                 if f_name == '_positional_row':
                     continue
+                if skip_fields and f_name.lower() in skip_fields:
+                    continue
 
                 v_start_new = v_values.start_index.get(f_name, None)
 
@@ -864,8 +885,19 @@ class Namelist(OrderedDict):
 
                 v_title = v_name + '({0})'.format(idx)
 
-                v_strs = self._var_strings(v_title, val)
+                v_strs = self._var_strings(
+                    v_title, val, skip_fields=sliced_attrs)
                 var_strs.extend(v_strs)
+
+            if sliced_attrs:
+                for attr in sorted(sliced_attrs):
+                    attr_vals = [
+                        (val[attr] if val is not None and attr in val
+                         else None)
+                        for val in v_values
+                    ]
+                    var_strs.extend(self._make_parent_indexed_lines(
+                        v_name, attr, attr_vals, i_s))
 
         else:
             use_default_start_index = False
@@ -1104,6 +1136,10 @@ class Namelist(OrderedDict):
             nmldict['_positional'] = sorted(self.positional)
         if self.parent_indexed:
             nmldict['_parent_indexed'] = sorted(self.parent_indexed)
+        if self.sliced_attrs:
+            nmldict['_sliced_attrs'] = {
+                k: sorted(v) for k, v in self.sliced_attrs.items()
+            }
 
         return nmldict
 
