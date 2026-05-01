@@ -88,6 +88,11 @@
     design_lattice(1)%dynamic_aperture_calc = .true.
 /
 
+&dtype_unindexed_positional_then_field_nml
+    f = 'hello'
+    f%x = 42
+/
+
 &dtype_nested_parent_idx_nml
     arr(1:2)%inner%foo = 1.0, 2.0
 /

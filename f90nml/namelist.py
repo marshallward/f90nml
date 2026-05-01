@@ -787,10 +787,6 @@ class Namelist(OrderedDict):
                 if val is None:
                     continue
                 title = _join_attr(v_name, index=idx)
-                # Handle the full positional row first
-                if isinstance(val, Namelist) and '_positional_row' in val:
-                    var_strs.extend(self._var_strings(
-                        title, val['_positional_row']))
                 var_strs.extend(self._var_strings(title, val))
             return var_strs
 
@@ -824,6 +820,12 @@ class Namelist(OrderedDict):
 
         # Parse derived type contents
         elif isinstance(v_values, Namelist):
+            # Positional row comes first, as the others might override it (and
+            # we can't tell)
+            if '_positional_row' in v_values:
+                var_strs.extend(self._var_strings(
+                    v_name, v_values['_positional_row']))
+
             for f_name, f_vals in v_values.items():
                 # `_positional_row` is actual data, but handled elsewhere
                 if f_name == '_positional_row':

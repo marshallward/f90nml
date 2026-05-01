@@ -352,6 +352,12 @@ class Test(unittest.TestCase):
                     },
                 ],
             },
+            'dtype_unindexed_positional_then_field_nml': {
+                'f': {
+                    '_positional_row': ['hello'],
+                    'x': 42,
+                },
+            },
             'dtype_nested_parent_idx_nml': {
                 'arr': {
                     'inner': {
