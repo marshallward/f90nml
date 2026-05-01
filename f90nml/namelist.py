@@ -122,6 +122,12 @@ class Namelist(OrderedDict):
         #  (1) is parent-indexed, whereas (2) is not.
         self._parent_indexed = set(self.pop('_parent_indexed', ()))
 
+        # NOTE: The `_positional_row` metadata key is intentionally left
+        # in the dict. I don't see a way around storing this separately,
+        # as otherwise the user won't have access to the data when
+        # the namelist mixes positional assignment of derived types
+        # along with separate field references (ugh!)
+
         # Update the complex tuples as intrinsics
         # TODO: We are effectively setting these twice.  Instead, fetch these
         # from s_args rather than relying on Namelist to handle the content.
@@ -778,9 +784,14 @@ class Namelist(OrderedDict):
         if positional and isinstance(v_values, list):
             i_s = v_start[0] if v_start else 1
             for idx, val in enumerate(v_values, start=i_s):
-                if val is not None:
+                if val is None:
+                    continue
+                title = _join_attr(v_name, index=idx)
+                # Handle the full positional row first
+                if isinstance(val, Namelist) and '_positional_row' in val:
                     var_strs.extend(self._var_strings(
-                        _join_attr(v_name, index=idx), val))
+                        title, val['_positional_row']))
+                var_strs.extend(self._var_strings(title, val))
             return var_strs
 
         # Parse a multidimensional array
@@ -814,6 +825,10 @@ class Namelist(OrderedDict):
         # Parse derived type contents
         elif isinstance(v_values, Namelist):
             for f_name, f_vals in v_values.items():
+                # `_positional_row` is actual data, but handled elsewhere
+                if f_name == '_positional_row':
+                    continue
+
                 v_start_new = v_values.start_index.get(f_name, None)
 
                 # Handle derived type parent array indexing.  The bound

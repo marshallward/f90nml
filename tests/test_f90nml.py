@@ -344,6 +344,14 @@ class Test(unittest.TestCase):
                     },
                 ],
             },
+            'dtype_positional_then_field_nml': {
+                'design_lattice': [
+                    {
+                        '_positional_row': ['bmad.lat'],
+                        'dynamic_aperture_calc': True,
+                    },
+                ],
+            },
             'dtype_nested_parent_idx_nml': {
                 'arr': {
                     'inner': {

@@ -548,6 +548,27 @@ class Parser(object):
                         v_parent = vpar[dt_idx]
                     except IndexError:
                         v_parent = Namelist()
+
+                    # `var(N) = "string"` and then
+                    # `var(N)%field = ...`:
+                    if v_parent is not None and not isinstance(v_parent, Namelist):
+                        prior = v_parent
+                        v_parent = Namelist()
+                        v_parent['_positional_row'] = (
+                            list(prior) if isinstance(prior, list) else [prior]
+                        )
+                        vpar[dt_idx] = v_parent
+                        parent.positional.add(v_name.lower())
+                elif vpar and not isinstance(vpar, Namelist):
+                    # Unindexed case:
+                    # `f = 1` then 
+                    # `f%x = 2`
+                    prior = vpar
+                    v_parent = Namelist()
+                    v_parent['_positional_row'] = (
+                        list(prior) if isinstance(prior, list) else [prior]
+                    )
+                    parent[v_name] = v_parent
                 elif vpar:
                     v_parent = vpar
                 else:
