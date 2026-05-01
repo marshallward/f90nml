@@ -329,6 +329,21 @@ class Test(unittest.TestCase):
                     ['alpha.a', '', '', 'M1', 'target', 6.7, 100.0],
                 ],
             },
+            'dtype_positional_mixed_nml': {
+                'datum': [
+                    ['eta.x', '', 'M1', 'target', 1.2, 100.0],
+                    {
+                        'data_type': 'expression: a - b',
+                        'meas': 0.0,
+                        'weight': 1.0,
+                    },
+                    {
+                        'data_type': 'expression: c - d',
+                        'meas': 0.0,
+                        'weight': 1.0,
+                    },
+                ],
+            },
             'dtype_nested_parent_idx_nml': {
                 'arr': {
                     'inner': {
@@ -1360,6 +1375,14 @@ class Test(unittest.TestCase):
         source_str = self.get_cli_output(cmd)
 
         with open('types.nml') as target:
+            target_str = target.read()
+            self.assertEqual(source_str, target_str)
+
+    def test_cli_dtype_roundtrip(self):
+        cmd = ['f90nml', 'dtype.nml']
+        source_str = self.get_cli_output(cmd)
+
+        with open('dtype_target.nml') as target:
             target_str = target.read()
             self.assertEqual(source_str, target_str)
 
