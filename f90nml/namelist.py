@@ -1019,8 +1019,19 @@ class Namelist(OrderedDict):
             title = _join_attr(parent_name, path, index=i_s)
             return self._var_strings(title, value)
 
-        # If there are any indices skipped, we have to go 1-by-1
+        # Try to use a stride first (`(start:end:stride)`) if possible;
+        # otherwise fall back to one line per non-None entry.
         if any(v is None for v in value):
+            non_none = [(i, v) for i, v in enumerate(value) if v is not None]
+            stride = _get_array_stride([i for i, _ in non_none])
+            if stride is not None:
+                start = i_s + non_none[0][0]
+                end = i_s + non_none[-1][0]
+                title = _join_attr(
+                    parent_name, path, index=(start, end, stride))
+                return self._var_strings(
+                    title, [v for _, v in non_none], exclude_index=True)
+
             lines = []
             for offset, val in enumerate(value):
                 if val is None:
@@ -1231,6 +1242,19 @@ class NmlKey(str):
         return tok
 
 
+def _get_array_stride(offsets):
+    """Find a usable stride of `offsets`, if possible."""
+    if len(offsets) < 2:
+        return None
+    stride = offsets[1] - offsets[0]
+    if stride <= 1:
+        return None
+    for k in range(len(offsets) - 1):
+        if offsets[k + 1] - offsets[k] != stride:
+            return None
+    return stride
+
+
 def _cogroup_basename(grp):
     """Return the cogroup name from the internal key."""
     return grp[5:].rsplit('_', 1)[0] if grp.startswith('_grp_') else grp
@@ -1242,9 +1266,8 @@ def _join_attr(*parts, **kwargs):
     If kwarg `index` is provided, it represents an index on the first part.
     The formatting depends on the type of `index`:
     int: ``(idx)``
-    2-tuple: ``(start:end)``
-    With a special case of ``(start)`` when the start and end indices are the
-    same.
+    2-tuple: ``(start:end)``, collapsed to ``(start)`` when start == end
+    3-tuple: ``(start:end:stride)``
     """
     # TODO: move this to a kwarg once f90nml is Python 3+...
     index = kwargs.pop('index', None)
@@ -1255,6 +1278,9 @@ def _join_attr(*parts, **kwargs):
     if index is not None:
         if isinstance(index, int):
             suffix = '({0})'.format(index)
+        elif len(index) == 3:
+            start, end, stride = index
+            suffix = '({0}:{1}:{2})'.format(start, end, stride)
         else:
             start, end = index
             if start == end:
