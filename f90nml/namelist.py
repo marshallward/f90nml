@@ -830,7 +830,7 @@ class Namelist(OrderedDict):
                         v_name, f_name, f_vals, i_s))
                     continue
 
-                v_title = '%'.join([v_name, f_name])
+                v_title = _join_attr(v_name, f_name)
 
                 v_strs = self._var_strings(v_title, f_vals,
                                            v_start=v_start_new)
@@ -991,10 +991,11 @@ class Namelist(OrderedDict):
             # Nested derived type
             lines = []
             for f_name, f_vals in value.items():
-                path_and_name = "{0}%{1}".format(path, f_name)
                 lines.extend(
                     self._make_parent_indexed_lines(
-                        parent_name, path_and_name, f_vals, i_s
+                        parent_name,
+                        _join_attr(path, f_name),
+                        f_vals, i_s
                     )
                 )
             return lines
@@ -1002,7 +1003,7 @@ class Namelist(OrderedDict):
         # Non-list scalar leaf: a single `(idx)` slot.
         # parent_name(idx)%path
         if not isinstance(value, list):
-            title = "{0}({1}){2}".format(parent_name, i_s, "%" + path if path else "")
+            title = _join_attr(parent_name, path, index=i_s)
             return self._var_strings(title, value)
 
         # If there are any indices skipped, we have to go 1-by-1
@@ -1012,23 +1013,13 @@ class Namelist(OrderedDict):
                 if val is None:
                     continue
                 # parent_name(idx)%path
-                title = "{0}({1}){2}".format(
-                    parent_name, i_s + offset, "%" + path if path else ""
-                )
+                title = _join_attr(parent_name, path, index=i_s + offset)
                 lines.extend(self._var_strings(title, val))
             return lines
 
-        # Dense list leaf: a single `(s:e)` slice.
+        # Dense list leaf: a single `(start:end)%path` slice
         i_e = i_s + len(value) - 1
-        if i_s == i_e:
-            # Single array element (start/end same)
-            # parent_name(idx)%path
-            title = "{0}({1}){2}".format(parent_name, i_s, "%" + path if path else "")
-        else:
-            # parent_name(start_idx:end_idx)%path
-            title = "{0}({1}:{2}){3}".format(
-                parent_name, i_s, i_e, "%" + path if path else ""
-            )
+        title = _join_attr(parent_name, path, index=(i_s, i_e))
         return self._var_strings(title, value, exclude_index=True)
 
     def todict(self, complex_tuple=False):
@@ -1230,6 +1221,36 @@ class NmlKey(str):
 def _cogroup_basename(grp):
     """Return the cogroup name from the internal key."""
     return grp[5:].rsplit('_', 1)[0] if grp.startswith('_grp_') else grp
+
+
+def _join_attr(*parts, **kwargs):
+    """Join non-empty path parts with the Fortran `%` attribute separator.
+
+    If kwarg `index` is provided, it represents an index on the first part.
+    The formatting depends on the type of `index`:
+    int: ``(idx)``
+    2-tuple: ``(start:end)``
+    With a special case of ``(start)`` when the start and end indices are the
+    same.
+    """
+    # TODO: move this to a kwarg once f90nml is Python 3+...
+    index = kwargs.pop('index', None)
+    if kwargs:
+        raise TypeError(
+            'unexpected keyword argument(s): {0}'.format(sorted(kwargs)))
+
+    if index is not None:
+        if isinstance(index, int):
+            suffix = '({0})'.format(index)
+        else:
+            start, end = index
+            if start == end:
+                suffix = '({0})'.format(start)
+            else:
+                suffix = '({0}:{1})'.format(start, end)
+        parts = (parts[0] + suffix,) + parts[1:]
+
+    return '%'.join(p for p in parts if p)
 
 
 def is_nullable_list(val, vtype):
