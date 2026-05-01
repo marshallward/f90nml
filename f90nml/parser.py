@@ -462,7 +462,7 @@ class Parser(object):
         scatter_idx_bounds = None
 
         # Saved multidimensional index for single-element indexed assignment
-        single_idx_v_idx = None  # type: FIndex | None
+        single_idx_v_idx = None
 
         v_idx_bounds = None
 
@@ -590,23 +590,14 @@ class Parser(object):
                         # `var(N)%field = ...`:
                         if (v_parent is not None
                                 and not isinstance(v_parent, Namelist)):
-                            prior = v_parent
-                            v_parent = Namelist()
-                            v_parent['_positional_row'] = (
-                                list(prior) if isinstance(prior, list)
-                                else [prior]
-                            )
+                            v_parent = _wrap_as_positional_row(v_parent)
                             vpar[dt_idx] = v_parent
                             parent.positional.add(v_name.lower())
                     elif vpar and not isinstance(vpar, Namelist):
                         # Unindexed case:
                         # `f = 1` then
                         # `f%x = 2`
-                        prior = vpar
-                        v_parent = Namelist()
-                        v_parent['_positional_row'] = (
-                            list(prior) if isinstance(prior, list) else [prior]
-                        )
+                        v_parent = _wrap_as_positional_row(vpar)
                         parent[v_name] = v_parent
                     elif vpar:
                         v_parent = vpar
@@ -1091,6 +1082,13 @@ def delist(values):
         return values[0]
 
     return values
+
+
+def _wrap_as_positional_row(value):
+    """Promote scalar/list value into a positional Namelist"""
+    nm = Namelist()
+    nm['_positional_row'] = list(value) if isinstance(value, list) else [value]
+    return nm
 
 
 def _is_single_element_bound(v_idx_bounds):
