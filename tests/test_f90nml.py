@@ -402,6 +402,37 @@ class Test(unittest.TestCase):
                     'foo': [10.0, None, 30.0, None, 50.0],
                 },
             },
+            'dtype_scatter_partial_nml': {
+                'var': [
+                    {'x': 1},
+                    {'attr': 'a'},
+                    {'attr': 'b'},
+                ],
+            },
+            'dtype_scatter_irregular_nml': {
+                'var': [
+                    {'attr': 'a'},
+                    {'x': 2},
+                    {'attr': 'c'},
+                    {'attr': 'd'},
+                ],
+            },
+            'dtype_scatter_nested_nml': {
+                'var': [
+                    {'x': 1, 'inner': {'foo': [1.0, 2.0]}},
+                    {'x': 2},
+                ],
+            },
+            'dtype_open_start_parent_idx_nml': {
+                'arr': {
+                    'inner': {
+                        'foo': [1.0, 2.0],
+                    },
+                },
+            },
+            'dtype_positional_gap_nml': {
+                'datum': [['a', 1], None, ['b', 2]],
+            },
         }
 
         self.dtype_case_nml = {
@@ -1734,6 +1765,27 @@ class Test(unittest.TestCase):
 
     def test_file_first_grp_no_end_dollar(self):
         self.assertRaises(ValueError, f90nml.read, 'first_grp_no_end_dollar.nml')
+
+    def test_findex_str(self):
+        idx = FIndex(bounds=[(1, 4, 1)])
+        s = str(idx)
+        self.assertIn('FIndex', s)
+        self.assertIn('start=', s)
+
+    def test_join_attr_unexpected_kwarg(self):
+        from f90nml.namelist import _join_attr
+        self.assertRaises(TypeError, _join_attr, 'a', 'b', bogus=1)
+
+    def test_get_array_stride(self):
+        from f90nml.namelist import _get_array_stride
+        # len < 2
+        self.assertIsNone(_get_array_stride([0]))
+        # stride <= 1
+        self.assertIsNone(_get_array_stride([0, 1]))
+        # irregular
+        self.assertIsNone(_get_array_stride([0, 2, 3]))
+        # valid stride
+        self.assertEqual(_get_array_stride([0, 2, 4]), 2)
 
 
 if __name__ == '__main__':

@@ -120,3 +120,31 @@
 &dtype_strided_parent_idx_nml
     arr(1:5:2)%foo = 10.0, 30.0, 50.0
 /
+
+&dtype_scatter_partial_nml
+    var(1)%x = 1
+    var(2)%attr = 'a'
+    var(3)%attr = 'b'
+/
+
+&dtype_scatter_irregular_nml
+    var(2)%x = 2
+    var(1)%attr = 'a'
+    var(3)%attr = 'c'
+    var(4)%attr = 'd'
+/
+
+&dtype_scatter_nested_nml
+    var(1)%x = 1
+    var(2)%x = 2
+    var(1)%inner%foo(1:2) = 1.0, 2.0
+/
+
+&dtype_open_start_parent_idx_nml
+    arr(1:2)%inner%foo = 1.0, 2.0
+/
+
+&dtype_positional_gap_nml
+    datum(1) = 'a', 1
+    datum(3) = 'b', 2
+/

@@ -1045,12 +1045,6 @@ class Namelist(OrderedDict):
                 )
             return lines
 
-        # Non-list scalar leaf: a single `(idx)` slot.
-        # parent_name(idx)%path
-        if not isinstance(value, list):
-            title = _join_attr(parent_name, path, index=i_s)
-            return self._var_strings(title, value)
-
         # Try to use a stride first (`(start:end:stride)`) if possible;
         # otherwise fall back to one line per non-None entry.
         if any(v is None for v in value):
