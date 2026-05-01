@@ -95,6 +95,13 @@
     f%x = 42
 /
 
+&dtype_scatter_over_dt_array_nml
+    var(1)%ele_name = 'a'
+    var(2)%ele_name = 'b'
+    var(3)%ele_name = 'c'
+    var(1:3)%attribute = 'k1', 'k2', 'k3'
+/
+
 &dtype_nested_parent_idx_nml
     arr(1:2)%inner%foo = 1.0, 2.0
 /

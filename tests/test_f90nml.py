@@ -358,6 +358,13 @@ class Test(unittest.TestCase):
                     'x': 42,
                 },
             },
+            'dtype_scatter_over_dt_array_nml': {
+                'var': [
+                    {'ele_name': 'a', 'attribute': 'k1'},
+                    {'ele_name': 'b', 'attribute': 'k2'},
+                    {'ele_name': 'c', 'attribute': 'k3'},
+                ],
+            },
             'dtype_nested_parent_idx_nml': {
                 'arr': {
                     'inner': {
