@@ -75,6 +75,16 @@
     datum(2) = 'alpha.a', '', '', 'M1', 'target', 6.7, 1e2
 /
 
+&dtype_positional_mixed_nml
+    datum(1) = 'eta.x', '', 'M1', 'target', 1.2, 1e2
+    datum(2)%data_type = 'expression: a - b'
+    datum(2)%meas = 0.0
+    datum(2)%weight = 1.0
+    datum(3)%data_type = 'expression: c - d'
+    datum(3)%meas = 0.0
+    datum(3)%weight = 1.0
+/
+
 &dtype_nested_parent_idx_nml
     arr(1:2)%inner%foo = 1.0, 2.0
 /

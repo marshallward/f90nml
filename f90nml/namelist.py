@@ -233,12 +233,9 @@ class Namelist(OrderedDict):
             )
 
         # Convert list of dicts to list of namelists
-        elif is_nullable_list(value, dict):
+        elif isinstance(value, list):
             for i, v in enumerate(value):
-                if isinstance(v, Namelist) or v is None:
-                    value[i] = v
-                else:
-                    # value is a non-Namelist dict
+                if isinstance(v, dict) and not isinstance(v, Namelist):
                     value[i] = Namelist(
                         v,
                         default_start_index=self.default_start_index
@@ -778,13 +775,12 @@ class Namelist(OrderedDict):
 
         # Positional derived-type form: one `var(idx) = v1` line per inner row.
         # Each row is a flat list of mixed-type values.
-        if positional and is_nullable_list(v_values, list):
+        if positional and isinstance(v_values, list):
             i_s = v_start[0] if v_start else 1
             for idx, val in enumerate(v_values, start=i_s):
                 if val is not None:
-                    var_strs.extend(
-                        self._var_strings("{0}({1})".format(v_name, idx), val)
-                    )
+                    var_strs.extend(self._var_strings(
+                        _join_attr(v_name, index=idx), val))
             return var_strs
 
         # Parse a multidimensional array
