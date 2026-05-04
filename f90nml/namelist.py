@@ -128,9 +128,9 @@ class Namelist(OrderedDict):
         # the namelist mixes positional assignment of derived types
         # along with separate field references (ugh!)
 
-        # _sliced_attrs: {var_name: {field, ...}} — names whose
-        # `var(s:e)%field = v1, ..., vN` slice form was scattered into a
-        # list of derived-type elements at parse time.
+        # _sliced_attrs: {var_name: {field, ...}}
+        # map of variable name to set of fields which started out as slices
+        # during parse time.
         self._sliced_attrs = {
             k: set(v) for k, v in self.pop('_sliced_attrs', {}).items()
         }
