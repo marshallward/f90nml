@@ -820,34 +820,14 @@ class Namelist(OrderedDict):
             for f_name, f_vals in v_values.items():
                 v_start_new = v_values.start_index.get(f_name, None)
 
-                # Handle derived type parent array indexing
-                if (f_name.lower() in v_values.parent_indexed
-                        and isinstance(f_vals, list)):
+                # Handle derived type parent array indexing.  The bound
+                # `(s:e)` belongs to `v_name`; emit `v_name(idx)%f_name%...`
+                # lines.  Walks into `f_vals` if it is itself a Namelist
+                # (e.g. `arr(1:2)%inner%foo = ...`).
+                if f_name.lower() in v_values.parent_indexed:
                     i_s = v_start_new[0] if v_start_new else 1
-
-                    # If there are any indices skipped, we have to go 1-by-1
-                    if any(v is None for v in f_vals):
-                        for offset, val in enumerate(f_vals):
-                            if val is not None:
-                                # parent_name(idx)%f_name
-                                sub = '{0}({1})%{2}'.format(
-                                    v_name, i_s + offset, f_name)
-                                v_strs = self._var_strings(sub, val)
-                                var_strs.extend(v_strs)
-                    else:
-                        i_e = i_s + len(f_vals) - 1
-                        if i_s == i_e:
-                            # single array element (start/end same)
-                            # parent_name(idx)%f_name
-                            sub = '{0}({1})%{2}'.format(
-                                v_name, i_s, f_name)
-                        else:
-                            # parent_name(start_idx:end_idx)%f_name
-                            sub = '{0}({1}:{2})%{3}'.format(
-                                v_name, i_s, i_e, f_name)
-                        v_strs = self._var_strings(sub, f_vals,
-                                                   exclude_index=True)
-                        var_strs.extend(v_strs)
+                    var_strs.extend(self._make_parent_indexed_lines(
+                        v_name, f_name, f_vals, i_s))
                     continue
 
                 v_title = '%'.join([v_name, f_name])
@@ -1004,6 +984,52 @@ class Namelist(OrderedDict):
                 var_strs.extend(val_strs)
 
         return var_strs
+
+    def _make_parent_indexed_lines(self, parent_name, path, value, i_s):
+        """Make `parent_name(s:e)%path%... = ...` lines."""
+        if isinstance(value, Namelist):
+            # Nested derived type
+            lines = []
+            for f_name, f_vals in value.items():
+                path_and_name = "{0}%{1}".format(path, f_name)
+                lines.extend(
+                    self._make_parent_indexed_lines(
+                        parent_name, path_and_name, f_vals, i_s
+                    )
+                )
+            return lines
+
+        # Non-list scalar leaf: a single `(idx)` slot.
+        # parent_name(idx)%path
+        if not isinstance(value, list):
+            title = "{0}({1}){2}".format(parent_name, i_s, "%" + path if path else "")
+            return self._var_strings(title, value)
+
+        # If there are any indices skipped, we have to go 1-by-1
+        if any(v is None for v in value):
+            lines = []
+            for offset, val in enumerate(value):
+                if val is None:
+                    continue
+                # parent_name(idx)%path
+                title = "{0}({1}){2}".format(
+                    parent_name, i_s + offset, "%" + path if path else ""
+                )
+                lines.extend(self._var_strings(title, val))
+            return lines
+
+        # Dense list leaf: a single `(s:e)` slice.
+        i_e = i_s + len(value) - 1
+        if i_s == i_e:
+            # Single array element (start/end same)
+            # parent_name(idx)%path
+            title = "{0}({1}){2}".format(parent_name, i_s, "%" + path if path else "")
+        else:
+            # parent_name(start_idx:end_idx)%path
+            title = "{0}({1}:{2}){3}".format(
+                parent_name, i_s, i_e, "%" + path if path else ""
+            )
+        return self._var_strings(title, value, exclude_index=True)
 
     def todict(self, complex_tuple=False):
         """Return a dict equivalent to the namelist.

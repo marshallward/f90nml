@@ -499,10 +499,15 @@ class Parser(object):
                 # along `dt_idx` to the `%` handler.
 
         elif parent_idx_bounds is not None:
-            # Index from parent derived type; treat as if the source
-            # were `<v_name>(start:end) = ...`.
-            v_idx_bounds = parent_idx_bounds
-            v_idx = self._record_indexed_var(parent, v_name, v_idx_bounds)
+            if self.token == '%':
+                # `parent(s:e)%inner%foo = ...`: this frame is `inner`,
+                #              ^^^^^  we are here at `inner`
+                child_idx_bounds = parent_idx_bounds
+                v_idx = None
+            else:
+                # Treat as if `<v_name>(start:end) = ...`.
+                v_idx_bounds = parent_idx_bounds
+                v_idx = self._record_indexed_var(parent, v_name, v_idx_bounds)
 
         else:
             v_idx = None
@@ -561,12 +566,17 @@ class Parser(object):
             )
 
             if child_idx_bounds is not None:
-                # Parent-indexed attribute - merge any data existing in the
-                # parent and then mark it as such.
+                # Parent-indexed: merge data from parent.
                 if v_att in v_parent:
                     v_att_vals = merge_values(v_parent[v_att], v_att_vals)
                 v_parent[v_att] = v_att_vals
-                v_parent.parent_indexed.add(v_att.lower())
+                if parent_idx_bounds is None:
+                    v_parent.parent_indexed.add(v_att.lower())
+                    if v_att.lower() not in v_parent.start_index:
+                        i_start = child_idx_bounds[0][0]
+                        if i_start is None:
+                            i_start = self.default_start_index
+                        v_parent.start_index[v_att.lower()] = [i_start]
                 self._append_value(v_values, v_parent, v_idx)
             else:
                 # Normal, child-indexed attribute
