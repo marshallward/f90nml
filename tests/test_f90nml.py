@@ -329,6 +329,43 @@ class Test(unittest.TestCase):
                     ['alpha.a', '', '', 'M1', 'target', 6.7, 100.0],
                 ],
             },
+            'dtype_nested_parent_idx_nml': {
+                'arr': {
+                    'inner': {
+                        'foo': [1.0, 2.0],
+                    },
+                },
+            },
+            'dtype_nested_parent_idx_multi_nml': {
+                'arr': {
+                    'inner': {
+                        'foo': [1.0, 2.0],
+                        'bar': [3.0, 4.0],
+                    },
+                },
+            },
+            'dtype_triple_nested_parent_idx_nml': {
+                'arr': {
+                    'a': {
+                        'b': {
+                            'c': [1.0, 2.0],
+                        },
+                    },
+                },
+            },
+            'dtype_mixed_flat_then_nested_nml': {
+                'arr': {
+                    'foo': [1.0, 2.0],
+                    'inner': {
+                        'bar': [3.0, 4.0],
+                    },
+                },
+            },
+            'dtype_strided_parent_idx_nml': {
+                'arr': {
+                    'foo': [10.0, None, 30.0, None, 50.0],
+                },
+            },
         }
 
         self.dtype_case_nml = {

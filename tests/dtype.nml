@@ -74,3 +74,25 @@
     datum(1) = 'beta.a',  '', '', 'M1', 'target', 4.5, 1e1
     datum(2) = 'alpha.a', '', '', 'M1', 'target', 6.7, 1e2
 /
+
+&dtype_nested_parent_idx_nml
+    arr(1:2)%inner%foo = 1.0, 2.0
+/
+
+&dtype_nested_parent_idx_multi_nml
+    arr(1:2)%inner%foo = 1.0, 2.0
+    arr(1:2)%inner%bar = 3.0, 4.0
+/
+
+&dtype_triple_nested_parent_idx_nml
+    arr(1:2)%a%b%c = 1.0, 2.0
+/
+
+&dtype_mixed_flat_then_nested_nml
+    arr(1:2)%foo = 1.0, 2.0
+    arr(1:2)%inner%bar = 3.0, 4.0
+/
+
+&dtype_strided_parent_idx_nml
+    arr(1:5:2)%foo = 10.0, 30.0, 50.0
+/
