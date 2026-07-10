@@ -112,16 +112,6 @@ class Namelist(OrderedDict):
         # in the namelist
         self._positional = set(self.pop('_positional', ()))
 
-        # _parent_indexed: set of lowercase names that come from a parent-indexed
-        # derived-type assignment
-        #
-        # Compare `ele_name` in these two cases:
-        #  1. `var(1:6)%ele_name = ...`.
-        #  2. `var%ele_name(1:6) = ...`.
-        #
-        #  (1) is parent-indexed, whereas (2) is not.
-        self._parent_indexed = set(self.pop('_parent_indexed', ()))
-
         # NOTE: The `_positional_row` metadata key is intentionally left
         # in the dict. I don't see a way around storing this separately,
         # as otherwise the user won't have access to the data when
@@ -584,16 +574,6 @@ class Namelist(OrderedDict):
         return self._positional
 
     @property
-    def parent_indexed(self):
-        """
-        Child names that should round-trip as ``parent(s:e)%child``.
-
-        :type: ``set[str]``
-        :default: ``set()``
-        """
-        return self._parent_indexed
-
-    @property
     def sliced_attrs(self):
         """Map of variable name to fields that came from a slice.
 
@@ -854,16 +834,6 @@ class Namelist(OrderedDict):
 
                 v_start_new = v_values.start_index.get(f_name, None)
 
-                # Handle derived type parent array indexing.  The bound
-                # `(s:e)` belongs to `v_name`; emit `v_name(idx)%f_name%...`
-                # lines.  Walks into `f_vals` if it is itself a Namelist
-                # (e.g. `arr(1:2)%inner%foo = ...`).
-                if f_name.lower() in v_values.parent_indexed:
-                    i_s = v_start_new[0] if v_start_new else 1
-                    var_strs.extend(self._make_parent_indexed_lines(
-                        v_name, f_name, f_vals, i_s))
-                    continue
-
                 v_title = _join_attr(v_name, f_name)
 
                 v_strs = self._var_strings(v_title, f_vals,
@@ -896,7 +866,7 @@ class Namelist(OrderedDict):
                          else None)
                         for val in v_values
                     ]
-                    var_strs.extend(self._make_parent_indexed_lines(
+                    var_strs.extend(self._make_sliced_attr_lines(
                         v_name, attr, attr_vals, i_s))
 
         else:
@@ -1030,21 +1000,8 @@ class Namelist(OrderedDict):
 
         return var_strs
 
-    def _make_parent_indexed_lines(self, parent_name, path, value, i_s):
-        """Make `parent_name(s:e)%path%... = ...` lines."""
-        if isinstance(value, Namelist):
-            # Nested derived type
-            lines = []
-            for f_name, f_vals in value.items():
-                lines.extend(
-                    self._make_parent_indexed_lines(
-                        parent_name,
-                        _join_attr(path, f_name),
-                        f_vals, i_s
-                    )
-                )
-            return lines
-
+    def _make_sliced_attr_lines(self, parent_name, path, value, i_s):
+        """Emit compact `parent_name(s:e)%path = ...` lines for a slice."""
         # Try to use a stride first (`(start:end:stride)`) if possible;
         # otherwise fall back to one line per non-None entry.
         if any(v is None for v in value):
@@ -1123,13 +1080,12 @@ class Namelist(OrderedDict):
                     except KeyError:
                         nmldict['_complex'] = [key]
 
-        # Append the start index, positional and parent-indexed flags if present
+        # Append the start index, positional and sliced-attribute flags if
+        # present
         if self.start_index:
             nmldict['_start_index'] = self.start_index
         if self.positional:
             nmldict['_positional'] = sorted(self.positional)
-        if self.parent_indexed:
-            nmldict['_parent_indexed'] = sorted(self.parent_indexed)
         if self.sliced_attrs:
             nmldict['_sliced_attrs'] = {
                 k: sorted(v) for k, v in self.sliced_attrs.items()

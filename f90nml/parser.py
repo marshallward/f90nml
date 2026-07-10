@@ -437,7 +437,7 @@ class Parser(object):
 
         return nmls
 
-    def _parse_variable(self, parent, patch_nml=None, parent_idx_bounds=None):
+    def _parse_variable(self, parent, patch_nml=None):
         """Parse a variable and return its name and values."""
         if not patch_nml:
             patch_nml = Namelist()
@@ -451,14 +451,9 @@ class Parser(object):
         # Derived type parent index (see notes below)
         dt_idx = None
 
-        # Index bounds to associate with the next derived-type child
-        child_idx_bounds = None
-
-        # Index bounds when the values should be scattered across an
-        # existing list of derived-type elements:
-        #   `var(1:6)%attr = v1,...,v6` 
-        # after `var` has already been built up as a list of
-        # Namelists by prior `var(N)%...` assignments.
+        # Index bounds when the values of a derived-type array-section
+        # assignment should be scattered across a list of derived-type
+        # elements, e.g. `var(1:6)%attr = v1,...,v6` (see `_expand_section`).
         scatter_idx_bounds = None
 
         # Saved multidimensional index for single-element indexed assignment
@@ -485,38 +480,16 @@ class Parser(object):
                 )
                 existing = parent.get(v_name.lower())
                 parent_is_dict = isinstance(existing, Namelist)
-                parent_is_list = isinstance(existing, list)
                 if is_single_elem and not parent_is_dict:
+                    # `var(N)%field`: a single element of a derived-type
+                    # vector, handled below via `dt_idx`.
                     dt_idx = i_start - v_idx.first[0]
-                elif parent_is_list:
-                    # Multi-element range over an existing list of derived-type
-                    # elements
+                else:
+                    # `var(s:e)%field`: an array section of a derived-type
+                    # vector.
                     scatter_idx_bounds = v_idx_bounds
                     v_idx = None
                     v_idx_bounds = None
-                else:
-                    child_idx_bounds = v_idx_bounds
-
-                    # `arr(s:e)%foo` -> `arr%foo(s:e)`
-                    # Parent becomes a dict of arrays, start index moves to child.
-                    parent.start_index.pop(v_name.lower(), None)
-                    v_idx = None
-                    v_idx_bounds = None
-
-                # NOTE: This is the sensible play to call `parse_variable`
-                # but not yet sure how to implement it, so we currently pass
-                # along `dt_idx` to the `%` handler.
-
-        elif parent_idx_bounds is not None:
-            if self.token == '%':
-                # `parent(s:e)%inner%foo = ...`: this frame is `inner`,
-                #              ^^^^^  we are here at `inner`
-                child_idx_bounds = parent_idx_bounds
-                v_idx = None
-            else:
-                # Treat as if `<v_name>(start:end) = ...`.
-                v_idx_bounds = parent_idx_bounds
-                v_idx = self._record_indexed_var(parent, v_name, v_idx_bounds)
 
         else:
             v_idx = None
@@ -546,31 +519,30 @@ class Parser(object):
                 v_patch_nml = patch_nml.get(v_name.lower())
 
             if scatter_idx_bounds is not None:
-                self._update_tokens()
-                self._update_tokens()
+                # Walk the remaining component path `%a%b%...` that follows
+                # the array section.
+                v_att_path = []
+                while self.token == '%':
+                    self._update_tokens()
+                    v_att_path.append(self.token)
+                    self._update_tokens()
+                    if self.token == '(':
+                        raise ValueError(
+                            'f90nml: error: indexing an intermediate '
+                            'derived-type component of an array section '
+                            "('{0}') is not supported.".format(v_name)
+                        )
+
+                # Parse the assigned values as a plain (unindexed) list; the
+                # section bounds decide how they map onto array elements.
                 scratch = Namelist()
-                v_att, v_att_vals = self._parse_variable(
-                    scratch,
-                    patch_nml=v_patch_nml,
-                    parent_idx_bounds=scatter_idx_bounds
-                )
-                if not isinstance(v_att_vals, list):
-                    v_att_vals = [v_att_vals]
-                vpar = parent[v_name]
-                base = parent.start_index.get(
-                    v_name.lower(), [self.default_start_index])[0]
-                first = scatter_idx_bounds[0][0]
-                for k, val in enumerate(v_att_vals):
-                    idx = first + k - base
-                    while idx >= len(vpar):
-                        vpar.append(None)
-                    if not isinstance(vpar[idx], Namelist):
-                        vpar[idx] = Namelist()
-                    vpar[idx][v_att] = val
-                # Make sure the writer emits slices for this, since the
-                # input was a slice:
-                parent.sliced_attrs.setdefault(
-                    v_name.lower(), set()).add(v_att.lower())
+                _, raw_vals = self._parse_variable(
+                    scratch, patch_nml=v_patch_nml)
+                sec_vals = (raw_vals if isinstance(raw_vals, list)
+                            else [raw_vals])
+
+                self._expand_section(
+                    parent, v_name, scatter_idx_bounds, v_att_path, sec_vals)
 
             else:
                 if parent:
@@ -586,10 +558,14 @@ class Parser(object):
                         except IndexError:
                             v_parent = Namelist()
 
-                        # `var(N) = "string"` and then
-                        # `var(N)%field = ...`:
-                        if (v_parent is not None
-                                and not isinstance(v_parent, Namelist)):
+                        if v_parent is None:
+                            # A gap left by an earlier, higher-indexed
+                            # element assignment (e.g. `var(2)%x` before
+                            # `var(1)%attr`).
+                            v_parent = Namelist()
+                        elif not isinstance(v_parent, Namelist):
+                            # `var(N) = "string"` and then
+                            # `var(N)%field = ...`:
                             v_parent = _wrap_as_positional_row(v_parent)
                             vpar[dt_idx] = v_parent
                             parent.positional.add(v_name.lower())
@@ -613,27 +589,11 @@ class Parser(object):
                 v_att, v_att_vals = self._parse_variable(
                     v_parent,
                     patch_nml=v_patch_nml,
-                    parent_idx_bounds=child_idx_bounds
                 )
 
-                if child_idx_bounds is not None:
-                    # Parent-indexed: merge data from parent.
-                    if v_att in v_parent:
-                        v_att_vals = merge_values(v_parent[v_att], v_att_vals)
-                    v_parent[v_att] = v_att_vals
-                    if parent_idx_bounds is None:
-                        v_parent.parent_indexed.add(v_att.lower())
-                        if v_att.lower() not in v_parent.start_index:
-                            i_start = child_idx_bounds[0][0]
-                            if i_start is None:
-                                i_start = self.default_start_index
-                            v_parent.start_index[v_att.lower()] = [i_start]
-                    self._append_value(v_values, v_parent, v_idx)
-                else:
-                    # Normal, child-indexed attribute
-                    next_value = Namelist()
-                    next_value[v_att] = v_att_vals
-                    self._append_value(v_values, next_value, v_idx)
+                next_value = Namelist()
+                next_value[v_att] = v_att_vals
+                self._append_value(v_values, next_value, v_idx)
 
         else:
             # Construct the variable array
@@ -766,6 +726,53 @@ class Parser(object):
         if not v_idx:
             v_values = delist(v_values)
         return v_name, v_values
+
+    def _expand_section(self, parent, v_name, sec_bounds, path, values):
+        """Scatter `values` across a list of derived-type elements.
+
+        Distributes each value of an array-section assignment
+        `v_name(s:e)%path = values` to the corresponding element of a list of
+        Namelists under `v_name`, creating or extending the list as needed.
+        """
+        start, _end, stride = sec_bounds[0]
+        if start is None:
+            start = self.default_start_index
+        if stride is None:
+            stride = 1
+
+        existing = parent.get(v_name.lower())
+        if isinstance(existing, list):
+            vpar = existing
+            base = parent.start_index.get(
+                v_name.lower(), [self.default_start_index])[0]
+        else:
+            vpar = []
+            base = start
+
+        for k, val in enumerate(values):
+            pos = (start - base) + k * stride
+            while pos >= len(vpar):
+                vpar.append(None)
+            if not isinstance(vpar[pos], Namelist):
+                vpar[pos] = Namelist()
+
+            node = vpar[pos]
+            for name in path[:-1]:
+                child = node.get(name.lower())
+                if not isinstance(child, Namelist):
+                    child = Namelist()
+                    node[name] = child
+                node = child
+            node[path[-1]] = val
+
+        parent[v_name] = vpar
+        parent.start_index[v_name.lower()] = [base]
+
+        # Preserve the compact `v_name(s:e)%attr = ...` slice form on output
+        # for a terminal, single-level component.
+        if len(path) == 1:
+            parent.sliced_attrs.setdefault(
+                v_name.lower(), set()).add(path[0].lower())
 
     def _record_indexed_var(self, parent, v_name, v_idx_bounds):
         """Build the FIndex for an indexed assignment and update the parent."""
