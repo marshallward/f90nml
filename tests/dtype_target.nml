@@ -156,3 +156,11 @@
     datum(1) = 'a', 1
     datum(3) = 'b', 2
 /
+
+&config_issue_185
+    settings(1:2)%flag = .true., .false.
+/
+
+&config_issue_185_unsectioned
+    settings%flag = .true., .false.
+/

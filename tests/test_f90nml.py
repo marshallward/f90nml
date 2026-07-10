@@ -432,6 +432,15 @@ class Test(unittest.TestCase):
             'dtype_positional_gap_nml': {
                 'datum': [['a', 1], None, ['b', 2]],
             },
+            'config_issue_185': {
+                'settings': [
+                    {'flag': True},
+                    {'flag': False},
+                ]
+            },
+            'config_issue_185_unsectioned': {
+                'settings': {'flag': [True, False]},
+            },
         }
 
         self.dtype_case_nml = {
@@ -838,6 +847,38 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('dtype.nml')
         self.assertEqual(self.dtype_nml, test_nml)
         self.assert_write(test_nml, 'dtype_target.nml')
+
+    def test_array_section_component_forms(self):
+        cases = {
+            's(1:2)%flag = .true., .false.':
+                [{'flag': True}, {'flag': False}],
+            's(:)%flag = .true., .false.':
+                [{'flag': True}, {'flag': False}],
+            's(1:5:2)%x = 10.0, 30.0, 50.0':
+                [{'x': 10.0}, None, {'x': 30.0}, None, {'x': 50.0}],
+            's(1:2)%inner%foo = 1.0, 2.0':
+                [{'inner': {'foo': 1.0}}, {'inner': {'foo': 2.0}}],
+        }
+        for text, expected in cases.items():
+            nml = f90nml.reads("&g\n  {0}\n/\n".format(text))
+            self.assertEqual({'g': {'s': expected}}, nml, msg=text)
+
+    def test_array_section_component_edge_cases(self):
+        # Higher index first -> lower index second
+        nml = f90nml.reads(
+            '&g\n'
+            "  v(2)%x = 2\n"
+            "  v(1)%attr = 'a'\n"
+            '/\n'
+        )
+        self.assertEqual({'g': {'v': [{'attr': 'a'}, {'x': 2}]}}, nml)
+
+        # Indexing an intermediate component of a section is unsupported.
+        self.assertRaises(
+            ValueError,
+            f90nml.reads,
+            '&g\n  a(1:2)%inner(3)%foo = 1.0, 2.0\n/\n',
+        )
 
     def test_ieee(self):
         test_nml = f90nml.read('ieee.nml')
