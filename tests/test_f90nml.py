@@ -301,27 +301,31 @@ class Test(unittest.TestCase):
                 ],
             },
             'dtype_vec_range_nml': {
-                'arr': {
-                    'foo': [1.0, 2.0],
-                    'bar': [3.0, 4.0],
-                },
+                'arr': [
+                    {'foo': 1.0, 'bar': 3.0},
+                    {'foo': 2.0, 'bar': 4.0},
+                ],
             },
             'dtype_vec_open_range_nml': {
-                'var': {
-                    'ele_name': ['P1_PIP5', 'M2_PIP0'],
-                },
+                'var': [
+                    {'ele_name': 'P1_PIP5'},
+                    {'ele_name': 'M2_PIP0'},
+                ],
             },
             'dtype_vec_open_range_single_nml': {
-                'var': {
-                    'ele_name': ['O_L1'],
-                },
+                'var': [
+                    {'ele_name': 'O_L1'},
+                ],
             },
             'dtype_vec_range_then_single_nml': {
-                'var': {
-                    'ele_name': ['a', 'b', 'c', 'd', 'e', 'f'],
-                    'attribute': ['p', 'q', 'r', 's', 't', 'u'],
-                    'low_lim': [0.001, None, 0.001],
-                },
+                'var': [
+                    {'ele_name': 'a', 'attribute': 'p', 'low_lim': 0.001},
+                    {'ele_name': 'b', 'attribute': 'q'},
+                    {'ele_name': 'c', 'attribute': 'r', 'low_lim': 0.001},
+                    {'ele_name': 'd', 'attribute': 's'},
+                    {'ele_name': 'e', 'attribute': 't'},
+                    {'ele_name': 'f', 'attribute': 'u'},
+                ],
             },
             'dtype_positional_nml': {
                 'datum': [
@@ -366,41 +370,37 @@ class Test(unittest.TestCase):
                 ],
             },
             'dtype_nested_parent_idx_nml': {
-                'arr': {
-                    'inner': {
-                        'foo': [1.0, 2.0],
-                    },
-                },
+                'arr': [
+                    {'inner': {'foo': 1.0}},
+                    {'inner': {'foo': 2.0}},
+                ],
             },
             'dtype_nested_parent_idx_multi_nml': {
-                'arr': {
-                    'inner': {
-                        'foo': [1.0, 2.0],
-                        'bar': [3.0, 4.0],
-                    },
-                },
+                'arr': [
+                    {'inner': {'foo': 1.0, 'bar': 3.0}},
+                    {'inner': {'foo': 2.0, 'bar': 4.0}},
+                ],
             },
             'dtype_triple_nested_parent_idx_nml': {
-                'arr': {
-                    'a': {
-                        'b': {
-                            'c': [1.0, 2.0],
-                        },
-                    },
-                },
+                'arr': [
+                    {'a': {'b': {'c': 1.0}}},
+                    {'a': {'b': {'c': 2.0}}},
+                ],
             },
             'dtype_mixed_flat_then_nested_nml': {
-                'arr': {
-                    'foo': [1.0, 2.0],
-                    'inner': {
-                        'bar': [3.0, 4.0],
-                    },
-                },
+                'arr': [
+                    {'foo': 1.0, 'inner': {'bar': 3.0}},
+                    {'foo': 2.0, 'inner': {'bar': 4.0}},
+                ],
             },
             'dtype_strided_parent_idx_nml': {
-                'arr': {
-                    'foo': [10.0, None, 30.0, None, 50.0],
-                },
+                'arr': [
+                    {'foo': 10.0},
+                    None,
+                    {'foo': 30.0},
+                    None,
+                    {'foo': 50.0},
+                ],
             },
             'dtype_scatter_partial_nml': {
                 'var': [
@@ -419,16 +419,15 @@ class Test(unittest.TestCase):
             },
             'dtype_scatter_nested_nml': {
                 'var': [
-                    {'x': 1, 'inner': {'foo': [1.0, 2.0]}},
-                    {'x': 2},
+                    {'x': 1, 'inner': {'foo': 1.0}},
+                    {'x': 2, 'inner': {'foo': 2.0}},
                 ],
             },
             'dtype_open_start_parent_idx_nml': {
-                'arr': {
-                    'inner': {
-                        'foo': [1.0, 2.0],
-                    },
-                },
+                'arr': [
+                    {'inner': {'foo': 1.0}},
+                    {'inner': {'foo': 2.0}},
+                ],
             },
             'dtype_positional_gap_nml': {
                 'datum': [['a', 1], None, ['b', 2]],
