@@ -59,9 +59,8 @@ for d in (
 ):
     M['blank'].update(d)
 
-# This doesn't actually get used more than once, but it is correct.
 M['cmt'] = {c: 'cmt' for c in notchar('\n')}
-M['cmt']['\n'] = 'end'
+M['cmt']['\n'] = 'blank'
 
 
 # Identifiers (keywords, functions, variables, ...)
@@ -227,16 +226,16 @@ for d in (
     M['op_keyword'].update(d)
 
 
-def scan(file):
+def scan(source):
     lexemes = []
 
     lex = ''
     state = 'start'
 
-    for line in file:
-        linelx = []
-
-        for char in line:
+    # This is the "unit of characters" from the input source.
+    # For files, this is a line.  For strings, this is a character.
+    for unit in source:
+        for char in unit:
             try:
                 state = M[state][char]
             except KeyError:
@@ -246,37 +245,18 @@ def scan(file):
                     # However, non-closed strings are an error
                     raise
 
-            if state not in ('end', 'cmt'):
+            if state != 'end':
                 lex += char
 
-            elif (state == 'end'):
-                linelx.append(lex)
+            else:
+                lexemes.append(lex)
 
                 # Re-evaluate the current token (as a lookback)
                 lex = char
                 state = M['start'][char]
 
-            elif (state == 'cmt'):
-                # Find the index of the first comment character.
-                buf = ''.join(linelx) + lex
-                idx = len(buf[buf.rfind('\n') + 1:])
-
-                # Skip per-character iteration and append the comment as blank.
-                lex += line[idx:]
-                state = 'blank'
-
-                break
-
-        lexemes.extend(linelx)
-
     # Append any trailing lexeme
     if lex:
-        try:
-            assert any('end' in M[state][c] for c in M[state])
-        except AssertionError:
-            print(M[state])
-            raise
-
         lexemes.append(lex)
 
     return lexemes
