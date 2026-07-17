@@ -110,6 +110,9 @@ class Test(unittest.TestCase):
         result = scan('+123')
         self.assertEqual(['+123'], result)
 
+    def test_integer_kind(self):
+        self.assertRaises(KeyError, scan, '1_8')
+
     def test_real_decimal(self):
         result = scan('1.23')
         self.assertEqual(['1.23'], result)
@@ -121,6 +124,12 @@ class Test(unittest.TestCase):
     def test_real_signed_leading_decimal(self):
         result = scan('-.12')
         self.assertEqual(['-.12'], result)
+
+    def test_real_decimal_kind(self):
+        self.assertRaises(KeyError, scan, '1.0_8')
+
+    def test_real_leading_decimal_kind(self):
+        self.assertRaises(KeyError, scan, '.1_8')
 
     # Exponent form
 
@@ -139,6 +148,9 @@ class Test(unittest.TestCase):
     def test_real_d_signed_exp(self):
         result = scan('-1.2D+3')
         self.assertEqual(['-1.2D+3'], result)
+
+    def test_real_exponent_kind(self):
+        self.assertRaises(KeyError, scan, '1e3_8')
 
     # The hideous no-exponent reals!
     def test_real_no_e(self):

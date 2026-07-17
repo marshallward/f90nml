@@ -101,7 +101,6 @@ for d in (
     {c: 'num_float_e' for c in 'eEdD'},
     {'.': 'num_frac'},
     {c: 'num_float_sign' for c in '+-'},
-    {'_': 'num_kind'},
     {c: 'end' for c in notchar(digit + '+-._eEdD')},
 ):
     M['num'].update(d)
@@ -111,7 +110,6 @@ for d in (
     {c: 'num_frac' for c in digit},
     {c: 'num_float_e' for c in 'eEdD'},
     {c: 'num_float_sign' for c in '+-'},
-    {'_': 'num_kind'},
     {c: 'end' for c in notchar(digit + '+-_eEdD')},
 ):
     M['num_frac'].update(d)
@@ -133,36 +131,9 @@ M['num_float_sign'] = {c: 'num_float_exp' for c in digit}
 M['num_float_exp'] = {}
 for d in (
     {c: 'num_float_exp' for c in digit},
-    {'_': 'num_kind'},
     {c: 'end' for c in notchar(digit + '_')},
 ):
     M['num_float_exp'].update(d)
-
-# Numeric kind token (_)
-M['num_kind'] = {}
-for d in (
-    {c: 'num_kind_name' for c in alpha},
-    {c: 'num_kind_int' for c in digit},
-):
-    M['num_kind'].update(d)
-
-# Numeric kind as a variable name
-# NOTE: This is identical to name, but might be useful for tokenization
-M['num_kind_name'] = {}
-for d in (
-    {c: 'num_kind_name' for c in alnum},
-    {c: 'end' for c in notchar(alnum)},
-):
-    M['num_kind_name'].update(d)
-
-# Numeric kind as coded integer
-# XXX: Why is this alnum?  Shouldn't it be digit?
-M['num_kind_int'] = {}
-for d in (
-    {c: 'num_kind_int' for c in alnum},
-    {c: 'end' for c in notchar(alnum)},
-):
-    M['num_kind_int'].update(d)
 
 # ----
 # Old numeric stuff.. not sure how it holds up
@@ -172,7 +143,6 @@ for d in (
 M['dec'] = {}
 for d in (
     {c: 'num' for c in digit},
-    {'_': 'num_kind'},
     {c: 'op_keyword' for c in notchar('eEdD', ref=alpha)},
     {c: 'op_kw_test' for c in 'eEdD'},
     {c: 'end' for c in notchar(digit + alpha + '_')},
