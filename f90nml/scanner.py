@@ -240,9 +240,7 @@ def scan(source):
                 state = M[state][char]
             except KeyError:
                 # This catches potential unicode characters in a string.
-                # TODO: What about non-delimited strings?
-                if state in ('str_a', 'str_q') and char == '\n':
-                    # However, non-closed strings are an error
+                if state not in ('str_a', 'str_q'):
                     raise
 
             if state != 'end':
