@@ -22,6 +22,16 @@ class FIndex(object):
         else:
             self.first = [b[0] for b in bounds]
 
+    def __str__(self):
+        return "{0}(start={1}, end={2}, step={3}, current={4}, first={5})".format(
+            type(self).__name__,
+            self.start,
+            self.end,
+            self.step,
+            self.current,
+            self.first,
+        )
+
     def __iter__(self):
         """Declare object as iterator."""
         return self

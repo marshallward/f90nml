@@ -300,6 +300,147 @@ class Test(unittest.TestCase):
                     {'i': 789},
                 ],
             },
+            'dtype_vec_range_nml': {
+                'arr': [
+                    {'foo': 1.0, 'bar': 3.0},
+                    {'foo': 2.0, 'bar': 4.0},
+                ],
+            },
+            'dtype_vec_open_range_nml': {
+                'var': [
+                    {'ele_name': 'P1_PIP5'},
+                    {'ele_name': 'M2_PIP0'},
+                ],
+            },
+            'dtype_vec_open_range_single_nml': {
+                'var': [
+                    {'ele_name': 'O_L1'},
+                ],
+            },
+            'dtype_vec_range_then_single_nml': {
+                'var': [
+                    {'ele_name': 'a', 'attribute': 'p', 'low_lim': 0.001},
+                    {'ele_name': 'b', 'attribute': 'q'},
+                    {'ele_name': 'c', 'attribute': 'r', 'low_lim': 0.001},
+                    {'ele_name': 'd', 'attribute': 's'},
+                    {'ele_name': 'e', 'attribute': 't'},
+                    {'ele_name': 'f', 'attribute': 'u'},
+                ],
+            },
+            'dtype_positional_nml': {
+                'datum': [
+                    ['beta.a', '', '', 'M1', 'target', 4.5, 10.0],
+                    ['alpha.a', '', '', 'M1', 'target', 6.7, 100.0],
+                ],
+            },
+            'dtype_positional_mixed_nml': {
+                'datum': [
+                    ['eta.x', '', 'M1', 'target', 1.2, 100.0],
+                    {
+                        'data_type': 'expression: a - b',
+                        'meas': 0.0,
+                        'weight': 1.0,
+                    },
+                    {
+                        'data_type': 'expression: c - d',
+                        'meas': 0.0,
+                        'weight': 1.0,
+                    },
+                ],
+            },
+            'dtype_positional_then_field_nml': {
+                'design_lattice': [
+                    {
+                        '_positional_row': ['bmad.lat'],
+                        'dynamic_aperture_calc': True,
+                    },
+                ],
+            },
+            'dtype_unindexed_positional_then_field_nml': {
+                'f': {
+                    '_positional_row': ['hello'],
+                    'x': 42,
+                },
+            },
+            'dtype_scatter_over_dt_array_nml': {
+                'var': [
+                    {'ele_name': 'a', 'attribute': 'k1'},
+                    {'ele_name': 'b', 'attribute': 'k2'},
+                    {'ele_name': 'c', 'attribute': 'k3'},
+                ],
+            },
+            'dtype_nested_parent_idx_nml': {
+                'arr': [
+                    {'inner': {'foo': 1.0}},
+                    {'inner': {'foo': 2.0}},
+                ],
+            },
+            'dtype_nested_parent_idx_multi_nml': {
+                'arr': [
+                    {'inner': {'foo': 1.0, 'bar': 3.0}},
+                    {'inner': {'foo': 2.0, 'bar': 4.0}},
+                ],
+            },
+            'dtype_triple_nested_parent_idx_nml': {
+                'arr': [
+                    {'a': {'b': {'c': 1.0}}},
+                    {'a': {'b': {'c': 2.0}}},
+                ],
+            },
+            'dtype_mixed_flat_then_nested_nml': {
+                'arr': [
+                    {'foo': 1.0, 'inner': {'bar': 3.0}},
+                    {'foo': 2.0, 'inner': {'bar': 4.0}},
+                ],
+            },
+            'dtype_strided_parent_idx_nml': {
+                'arr': [
+                    {'foo': 10.0},
+                    None,
+                    {'foo': 30.0},
+                    None,
+                    {'foo': 50.0},
+                ],
+            },
+            'dtype_scatter_partial_nml': {
+                'var': [
+                    {'x': 1},
+                    {'attr': 'a'},
+                    {'attr': 'b'},
+                ],
+            },
+            'dtype_scatter_irregular_nml': {
+                'var': [
+                    {'attr': 'a'},
+                    {'x': 2},
+                    {'attr': 'c'},
+                    {'attr': 'd'},
+                ],
+            },
+            'dtype_scatter_nested_nml': {
+                'var': [
+                    {'x': 1, 'inner': {'foo': 1.0}},
+                    {'x': 2, 'inner': {'foo': 2.0}},
+                ],
+            },
+            'dtype_open_start_parent_idx_nml': {
+                'arr': [
+                    {'inner': {'foo': 1.0}},
+                    {'inner': {'foo': 2.0}},
+                ],
+            },
+            'dtype_positional_gap_nml': {
+                'datum': [['a', 1], None, ['b', 2]],
+            },
+            'config_issue_185': {
+                'settings': [
+                    {'flag': True},
+                    {'flag': False},
+                ]
+            },
+            'config_issue_185_unsectioned': {
+                'settings': {'flag': [True, False]},
+            },
         }
 
         self.dtype_case_nml = {
@@ -706,6 +847,38 @@ class Test(unittest.TestCase):
         test_nml = f90nml.read('dtype.nml')
         self.assertEqual(self.dtype_nml, test_nml)
         self.assert_write(test_nml, 'dtype_target.nml')
+
+    def test_array_section_component_forms(self):
+        cases = {
+            's(1:2)%flag = .true., .false.':
+                [{'flag': True}, {'flag': False}],
+            's(:)%flag = .true., .false.':
+                [{'flag': True}, {'flag': False}],
+            's(1:5:2)%x = 10.0, 30.0, 50.0':
+                [{'x': 10.0}, None, {'x': 30.0}, None, {'x': 50.0}],
+            's(1:2)%inner%foo = 1.0, 2.0':
+                [{'inner': {'foo': 1.0}}, {'inner': {'foo': 2.0}}],
+        }
+        for text, expected in cases.items():
+            nml = f90nml.reads("&g\n  {0}\n/\n".format(text))
+            self.assertEqual({'g': {'s': expected}}, nml, msg=text)
+
+    def test_array_section_component_edge_cases(self):
+        # Higher index first -> lower index second
+        nml = f90nml.reads(
+            '&g\n'
+            "  v(2)%x = 2\n"
+            "  v(1)%attr = 'a'\n"
+            '/\n'
+        )
+        self.assertEqual({'g': {'v': [{'attr': 'a'}, {'x': 2}]}}, nml)
+
+        # Indexing an intermediate component of a section is unsupported.
+        self.assertRaises(
+            ValueError,
+            f90nml.reads,
+            '&g\n  a(1:2)%inner(3)%foo = 1.0, 2.0\n/\n',
+        )
 
     def test_ieee(self):
         test_nml = f90nml.read('ieee.nml')
@@ -1297,6 +1470,14 @@ class Test(unittest.TestCase):
             target_str = target.read()
             self.assertEqual(source_str, target_str)
 
+    def test_cli_dtype_roundtrip(self):
+        cmd = ['f90nml', 'dtype.nml']
+        source_str = self.get_cli_output(cmd)
+
+        with open('dtype_target.nml') as target:
+            target_str = target.read()
+            self.assertEqual(source_str, target_str)
+
     def test_cli_gen(self):
         cmd = ['f90nml', '-g', 'gen_nml', '-v', 'x=1']
         source_str = self.get_cli_output(cmd)
@@ -1624,6 +1805,27 @@ class Test(unittest.TestCase):
 
     def test_file_first_grp_no_end_dollar(self):
         self.assertRaises(ValueError, f90nml.read, 'first_grp_no_end_dollar.nml')
+
+    def test_findex_str(self):
+        idx = FIndex(bounds=[(1, 4, 1)])
+        s = str(idx)
+        self.assertIn('FIndex', s)
+        self.assertIn('start=', s)
+
+    def test_join_attr_unexpected_kwarg(self):
+        from f90nml.namelist import _join_attr
+        self.assertRaises(TypeError, _join_attr, 'a', 'b', bogus=1)
+
+    def test_get_array_stride(self):
+        from f90nml.namelist import _get_array_stride
+        # len < 2
+        self.assertIsNone(_get_array_stride([0]))
+        # stride <= 1
+        self.assertIsNone(_get_array_stride([0, 1]))
+        # irregular
+        self.assertIsNone(_get_array_stride([0, 2, 3]))
+        # valid stride
+        self.assertEqual(_get_array_stride([0, 2, 4]), 2)
 
 
 if __name__ == '__main__':

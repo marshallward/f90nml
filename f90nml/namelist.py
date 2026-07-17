@@ -108,6 +108,23 @@ class Namelist(OrderedDict):
 
         self.start_index = self.pop('_start_index', {})
 
+        # _positional: set of lowercase names that use positional assignment
+        # in the namelist
+        self._positional = set(self.pop('_positional', ()))
+
+        # NOTE: The `_positional_row` metadata key is intentionally left
+        # in the dict. I don't see a way around storing this separately,
+        # as otherwise the user won't have access to the data when
+        # the namelist mixes positional assignment of derived types
+        # along with separate field references (ugh!)
+
+        # _sliced_attrs: {var_name: {field, ...}}
+        # map of variable name to set of fields which started out as slices
+        # during parse time.
+        self._sliced_attrs = {
+            k: set(v) for k, v in self.pop('_sliced_attrs', {}).items()
+        }
+
         # Update the complex tuples as intrinsics
         # TODO: We are effectively setting these twice.  Instead, fetch these
         # from s_args rather than relying on Namelist to handle the content.
@@ -219,12 +236,9 @@ class Namelist(OrderedDict):
             )
 
         # Convert list of dicts to list of namelists
-        elif is_nullable_list(value, dict):
+        elif isinstance(value, list):
             for i, v in enumerate(value):
-                if isinstance(v, Namelist) or v is None:
-                    value[i] = v
-                else:
-                    # value is a non-Namelist dict
+                if isinstance(v, dict) and not isinstance(v, Namelist):
                     value[i] = Namelist(
                         v,
                         default_start_index=self.default_start_index
@@ -550,6 +564,25 @@ class Namelist(OrderedDict):
         self._start_index = value
 
     @property
+    def positional(self):
+        """
+        Set of variable names stored as Fortran positional derived types.
+
+        :type: ``set[str]``
+        :default: ``set()``
+        """
+        return self._positional
+
+    @property
+    def sliced_attrs(self):
+        """Map of variable name to fields that came from a slice.
+
+        :type: ``dict[str, set[str]]``
+        :default: ``{}``
+        """
+        return self._sliced_attrs
+
+    @property
     def true_repr(self):
         """Set the string representation of logical true values.
 
@@ -726,21 +759,38 @@ class Namelist(OrderedDict):
         for v_name, v_val in grp_vars.items():
 
             v_start = grp_vars.start_index.get(v_name, None)
+            positional = v_name.lower() in grp_vars.positional
+            sliced_attrs = grp_vars.sliced_attrs.get(v_name.lower(), set())
 
-            for v_str in self._var_strings(v_name, v_val, v_start=v_start):
+            for v_str in self._var_strings(v_name, v_val, v_start=v_start,
+                                           positional=positional,
+                                           sliced_attrs=sliced_attrs):
                 print(v_str, file=nml_file)
 
         print('/', file=nml_file)
 
-    def _var_strings(self, v_name, v_values, v_idx=None, v_start=None):
+    def _var_strings(self, v_name, v_values, v_idx=None, v_start=None,
+                     positional=False, exclude_index=False,
+                     sliced_attrs=None, skip_fields=None):
         """Convert namelist variable to list of fixed-width strings."""
         if self.uppercase:
             v_name = v_name.upper()
 
         var_strs = []
 
+        # Positional derived-type form: one `var(idx) = v1` line per inner row.
+        # Each row is a flat list of mixed-type values.
+        if positional and isinstance(v_values, list):
+            i_s = v_start[0] if v_start else 1
+            for idx, val in enumerate(v_values, start=i_s):
+                if val is None:
+                    continue
+                title = _join_attr(v_name, index=idx)
+                var_strs.extend(self._var_strings(title, val))
+            return var_strs
+
         # Parse a multidimensional array
-        if is_nullable_list(v_values, list):
+        elif is_nullable_list(v_values, list):
             if not v_idx:
                 v_idx = []
 
@@ -769,10 +819,22 @@ class Namelist(OrderedDict):
 
         # Parse derived type contents
         elif isinstance(v_values, Namelist):
+            # Positional row comes first, as the others might override it (and
+            # we can't tell)
+            if '_positional_row' in v_values:
+                var_strs.extend(self._var_strings(
+                    v_name, v_values['_positional_row']))
+
             for f_name, f_vals in v_values.items():
-                v_title = '%'.join([v_name, f_name])
+                # `_positional_row` is actual data, but handled elsewhere
+                if f_name == '_positional_row':
+                    continue
+                if skip_fields and f_name.lower() in skip_fields:
+                    continue
 
                 v_start_new = v_values.start_index.get(f_name, None)
+
+                v_title = _join_attr(v_name, f_name)
 
                 v_strs = self._var_strings(v_title, f_vals,
                                            v_start=v_start_new)
@@ -793,8 +855,19 @@ class Namelist(OrderedDict):
 
                 v_title = v_name + '({0})'.format(idx)
 
-                v_strs = self._var_strings(v_title, val)
+                v_strs = self._var_strings(
+                    v_title, val, skip_fields=sliced_attrs)
                 var_strs.extend(v_strs)
+
+            if sliced_attrs:
+                for attr in sorted(sliced_attrs):
+                    attr_vals = [
+                        (val[attr] if val is not None and attr in val
+                         else None)
+                        for val in v_values
+                    ]
+                    var_strs.extend(self._make_sliced_attr_lines(
+                        v_name, attr, attr_vals, i_s))
 
         else:
             use_default_start_index = False
@@ -807,7 +880,9 @@ class Namelist(OrderedDict):
             # Print the index range
 
             # TODO: Include a check for len(v_values) to determine if vector
-            if v_idx or v_start or use_default_start_index:
+            if exclude_index:
+                v_idx_repr = ''
+            elif v_idx or v_start or use_default_start_index:
                 v_idx_repr = '('
 
                 if v_start or use_default_start_index:
@@ -925,6 +1000,35 @@ class Namelist(OrderedDict):
 
         return var_strs
 
+    def _make_sliced_attr_lines(self, parent_name, path, value, i_s):
+        """Emit compact `parent_name(s:e)%path = ...` lines for a slice."""
+        # Try to use a stride first (`(start:end:stride)`) if possible;
+        # otherwise fall back to one line per non-None entry.
+        if any(v is None for v in value):
+            non_none = [(i, v) for i, v in enumerate(value) if v is not None]
+            stride = _get_array_stride([i for i, _ in non_none])
+            if stride is not None:
+                start = i_s + non_none[0][0]
+                end = i_s + non_none[-1][0]
+                title = _join_attr(
+                    parent_name, path, index=(start, end, stride))
+                return self._var_strings(
+                    title, [v for _, v in non_none], exclude_index=True)
+
+            lines = []
+            for offset, val in enumerate(value):
+                if val is None:
+                    continue
+                # parent_name(idx)%path
+                title = _join_attr(parent_name, path, index=i_s + offset)
+                lines.extend(self._var_strings(title, val))
+            return lines
+
+        # Dense list leaf: a single `(start:end)%path` slice
+        i_e = i_s + len(value) - 1
+        title = _join_attr(parent_name, path, index=(i_s, i_e))
+        return self._var_strings(title, value, exclude_index=True)
+
     def todict(self, complex_tuple=False):
         """Return a dict equivalent to the namelist.
 
@@ -976,9 +1080,16 @@ class Namelist(OrderedDict):
                     except KeyError:
                         nmldict['_complex'] = [key]
 
-        # Append the start index if present
+        # Append the start index, positional and sliced-attribute flags if
+        # present
         if self.start_index:
             nmldict['_start_index'] = self.start_index
+        if self.positional:
+            nmldict['_positional'] = sorted(self.positional)
+        if self.sliced_attrs:
+            nmldict['_sliced_attrs'] = {
+                k: sorted(v) for k, v in self.sliced_attrs.items()
+            }
 
         return nmldict
 
@@ -1117,9 +1228,54 @@ class NmlKey(str):
         return tok
 
 
+def _get_array_stride(offsets):
+    """Find a usable stride of `offsets`, if possible."""
+    if len(offsets) < 2:
+        return None
+    stride = offsets[1] - offsets[0]
+    if stride <= 1:
+        return None
+    for k in range(len(offsets) - 1):
+        if offsets[k + 1] - offsets[k] != stride:
+            return None
+    return stride
+
+
 def _cogroup_basename(grp):
     """Return the cogroup name from the internal key."""
     return grp[5:].rsplit('_', 1)[0] if grp.startswith('_grp_') else grp
+
+
+def _join_attr(*parts, **kwargs):
+    """Join non-empty path parts with the Fortran `%` attribute separator.
+
+    If kwarg `index` is provided, it represents an index on the first part.
+    The formatting depends on the type of `index`:
+    int: ``(idx)``
+    2-tuple: ``(start:end)``, collapsed to ``(start)`` when start == end
+    3-tuple: ``(start:end:stride)``
+    """
+    # TODO: move this to a kwarg once f90nml is Python 3+...
+    index = kwargs.pop('index', None)
+    if kwargs:
+        raise TypeError(
+            'unexpected keyword argument(s): {0}'.format(sorted(kwargs)))
+
+    if index is not None:
+        if isinstance(index, int):
+            suffix = '({0})'.format(index)
+        elif len(index) == 3:
+            start, end, stride = index
+            suffix = '({0}:{1}:{2})'.format(start, end, stride)
+        else:
+            start, end = index
+            if start == end:
+                suffix = '({0})'.format(start)
+            else:
+                suffix = '({0}:{1})'.format(start, end)
+        parts = (parts[0] + suffix,) + parts[1:]
+
+    return '%'.join(p for p in parts if p)
 
 
 def is_nullable_list(val, vtype):
