@@ -8,9 +8,10 @@
 class FIndex(object):
     """Column-major multidimensional index iterator."""
 
-    def __init__(self, bounds, first=None):
+    def __init__(self, bounds, first=None, default_start_index=1):
         """Initialise the index iterator."""
-        self.start = [1 if b[0] is None else b[0] for b in bounds]
+        self.start = [default_start_index if b[0] is None else b[0]
+                      for b in bounds]
         self.end = [b[1] for b in bounds]
         self.step = [1 if b[2] is None else b[2] for b in bounds]
 

@@ -992,10 +992,106 @@ class Test(unittest.TestCase):
         test_nml = parser.read('global_index.nml')
         self.assertEqual(self.global_index_nml, test_nml)
 
+    def test_parser_default_index_multidimensional(self):
+        for start in (0, -2, 3):
+            for row_major in (False, True):
+                for sparse in (False, True):
+                    parser = f90nml.Parser()
+                    parser.default_start_index = start
+                    parser.row_major = row_major
+                    parser.sparse_arrays = sparse
+                    text = '&n a({0}:{1},:)=1,2,3,4 /'.format(
+                        start, start + 1)
+                    nml = parser.reads(text)
+                    expected = ([[1, 3], [2, 4]] if row_major else
+                                [[1, 2], [3, 4]])
+                    self.assertEqual(nml['n']['a'], expected)
+
+    def test_parser_default_index_implicit_first_axis(self):
+        for start in (0, -2, 3):
+            parser = f90nml.Parser()
+            parser.default_start_index = start
+            text = '&n a(:{1},{0}:{1})=1,2,3,4 /'.format(start, start + 1)
+            nml = parser.reads(text)
+            self.assertEqual(nml['n']['a'], [[1, 2], [3, 4]])
+
+    def test_parser_default_index_three_dimensions(self):
+        parser = f90nml.Parser()
+        parser.default_start_index = 0
+        nml = parser.reads('&n a(0:1,:1,:)=1,2,3,4,5,6,7,8 /')
+        self.assertEqual(nml['n']['a'],
+                         [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+
+    def test_parser_default_index_explicit_bounds(self):
+        for start in (0, -2, 3):
+            parser = f90nml.Parser()
+            parser.default_start_index = start
+            nml = parser.reads('&n a(1:2,2:3)=1,2,3,4 /')
+            self.assertEqual(nml['n']['a'], [[1, 2], [3, 4]])
+            self.assertEqual(nml['n'].start_index['a'], [1, 2])
+
+    def test_parser_default_index_global_padding(self):
+        parser = f90nml.Parser()
+        parser.default_start_index = 0
+        parser.global_start_index = -1
+        nml = parser.reads('&n a(0:1,:1)=1,2,3,4 /')
+        self.assertEqual(nml['n']['a'],
+                         [[None, None, None], [None, 1, 2], [None, 3, 4]])
+        self.assertEqual(nml['n'].start_index['a'], [-1, -1])
+
+    def test_findex_default_index(self):
+        bounds = [(None, 2, None), (None, 2, None)]
+        fidx = FIndex(bounds, default_start_index=0)
+        self.assertEqual(list(fidx), [[0, 0], [1, 0], [0, 1], [1, 1]])
+        self.assertEqual(fidx.first, [None, None])
+        self.assertEqual(list(FIndex(bounds)), [[1, 1]])
+
     def test_namelist_default_index(self):
         d = {'x_nml': {'x': [1, 2, 3]}}
         test_nml = f90nml.Namelist(d, default_start_index=1)
         # TODO: Check value
+
+    def test_namelist_default_index_multidimensional(self):
+        data = [[0, 1, 2], [3, 4, 5]]
+        for start in (-2, -1, 0, 1, 3):
+            nml = f90nml.Namelist({'n': {'a': data}},
+                                  default_start_index=start)
+            expected = ('&n\n    a({0}:{1},{0}) = 0, 1, 2\n'
+                        '    a({0}:{1},{2}) = 3, 4, 5\n/').format(
+                            start, start + 2, start + 1)
+            self.assertEqual(str(nml), expected)
+            parsed = f90nml.reads(str(nml))
+            self.assertEqual(parsed['n']['a'], data)
+            self.assertEqual(parsed['n'].start_index['a'], [start, start])
+
+    def test_namelist_default_index_three_dimensions(self):
+        data = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+        for start in (-2, 0, 3):
+            nml = f90nml.Namelist({'n': {'a': data}},
+                                  default_start_index=start)
+            parsed = f90nml.reads(str(nml))
+            self.assertEqual(parsed['n']['a'], data)
+            self.assertEqual(parsed['n'].start_index['a'], [start] * 3)
+
+    def test_namelist_default_index_explicit_bounds(self):
+        nml = f90nml.reads('&n a(4:5,-2:-1)=1,2,3,4 /')
+        original = str(nml)
+        nml.default_start_index = 0
+        self.assertEqual(str(nml), original)
+
+    def test_namelist_default_index_missing_bounds(self):
+        for text, expected in (('&n a(:2,4:5)=1,2,3,4 /', [None, 4]),
+                               ('&n a(4:5,:)=1,2,3,4 /', [4, 0])):
+            nml = f90nml.reads(text)
+            nml.default_start_index = 0
+            parsed = f90nml.reads(str(nml))
+            self.assertEqual(parsed['n']['a'], [[1, 2], [3, 4]])
+            self.assertEqual(parsed['n'].start_index['a'], expected)
+
+    def test_namelist_default_index_unset(self):
+        nml = f90nml.Namelist({'n': {'a': [[1, 2], [3, 4]]}})
+        self.assertEqual(str(nml),
+                         '&n\n    a(:,1) = 1, 2\n    a(:,2) = 3, 4\n/')
 
     def test_index_syntax(self):
         self.assertRaises(ValueError, f90nml.read, 'index_empty.nml')
