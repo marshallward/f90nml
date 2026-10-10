@@ -77,6 +77,8 @@ class Parser(object):
         :type: ``int``
         :default: 1
 
+        This value applies to omitted lower bounds in every array dimension.
+
         Since Fortran allows users to set an arbitrary start index, it is not
         always possible to assign an index to values when no index range has
         been provided.
@@ -454,7 +456,8 @@ class Parser(object):
         if self.token == '(':
 
             v_idx_bounds = self._parse_indices()
-            v_idx = FIndex(v_idx_bounds, self.global_start_index)
+            v_idx = FIndex(v_idx_bounds, self.global_start_index,
+                           self.default_start_index)
 
             # Update starting index against namelist record
             if v_name.lower() in parent.start_index:

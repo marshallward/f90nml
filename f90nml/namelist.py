@@ -296,6 +296,9 @@ class Namelist(OrderedDict):
         start index are assumed to begin with `default_start_index`.  This
         index is shown when printing the namelist output.
 
+        For multidimensional numeric arrays, the same default is used for
+        unspecified outer dimensions.
+
         If set to `None`, then no start index is assumed and is left as
         implicit for any vectors undefined in `start_index`.
         """
@@ -756,10 +759,11 @@ class Namelist(OrderedDict):
             # NOTE: Fixing this would also clean up the output of todict(),
             # which is now incorrectly documenting unspecified indices as 1.
 
-            # For now, we will assume 1-based indexing here, just to keep
-            # things working smoothly.
+            # Use the configured default where available, otherwise fall back
+            # to 1-based indexing to keep multidimensional output working.
             if i_s is None:
-                i_s = 1
+                i_s = (self.default_start_index
+                       if self.default_start_index is not None else 1)
 
             for idx, val in enumerate(v_values, start=i_s):
                 v_idx_new = v_idx + [idx]
