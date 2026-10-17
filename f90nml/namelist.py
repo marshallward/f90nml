@@ -678,14 +678,29 @@ class Namelist(OrderedDict):
         a namelist section.  Rather, it updates the values within a section.
         """
         for sec in nml_patch:
-            if sec not in self:
-                self[sec] = Namelist()
+            sec_patch = nml_patch[sec]
+            key = sec._key if isinstance(sec, NmlKey) else sec
 
-            if '_index' in nml_patch[sec]:
-                index = int(nml_patch[sec].pop('_index'))
-                self[sec][index].update(nml_patch[sec])
+            if key.startswith('_grp_'):
+                # Repeated group names are stored as cogroups, so the patch is
+                #   applied to the target's corresponding group.
+                grp = _cogroup_basename(key)
+                index = nml_patch._cogroups[grp].index(key)
+                while index >= len(self._cogroups.get(grp, [])):
+                    self.add_cogroup(grp, Namelist())
+                self[grp][index].update(sec_patch)
+
             else:
-                self[sec].update(nml_patch[sec])
+                if sec not in self:
+                    self[key] = Namelist()
+
+                # NOTE: Resolve the name through `__getitem__`, so that a
+                #   cogroup target is updated as a whole.
+                if '_index' in sec_patch:
+                    index = int(sec_patch.pop('_index'))
+                    self[key][index].update(sec_patch)
+                else:
+                    self[key].update(sec_patch)
 
     def groups(self):
         """Return an iterator that spans values with group and variable names.

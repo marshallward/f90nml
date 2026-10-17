@@ -838,6 +838,52 @@ class Test(unittest.TestCase):
         self.assertRaises(NotImplementedError,
                 cogrp_nml['cogroup_nml'].update, cg_patch)
 
+    def test_cogroup_patch_cogrp(self):
+        cogrp_nml = f90nml.Namelist()
+        cogrp_nml['cogroup_nml'] = {'x': 1}
+        cg_patch = f90nml.Namelist()
+        cg_patch.create_cogroup('cogroup_nml')
+        cg_patch.add_cogroup('cogroup_nml', {'x': 3})
+        cg_patch.add_cogroup('cogroup_nml', {'x': 4})
+        cogrp_nml.patch(cg_patch)
+        self.assertEqual([{'x': 3}, {'x': 4}], cogrp_nml['cogroup_nml'])
+
+    def test_cogroup_patch_nml(self):
+        cogrp_nml = f90nml.read('cogroup.nml')
+        cg_patch = f90nml.Namelist(cogroup_nml={'x': 3})
+        cogrp_nml.patch(cg_patch)
+        # NOTE: Cogroup equivalence still broken, this is a weaker test.
+        self.assertEqual({'x': 3}, cogrp_nml['cogroup_nml'][1])
+
+    def test_cogroup_patch_path(self):
+        cg_patch = f90nml.Namelist()
+        cg_patch.create_cogroup('cogroup_nml')
+        cg_patch.add_cogroup('cogroup_nml', {'x': 3})
+        cg_patch.add_cogroup('cogroup_nml', {'x': 4})
+        f90nml.patch('cogroup.nml', cg_patch, 'tmp.nml')
+        test_nml = f90nml.read('tmp.nml')
+        ref_nml = f90nml.Namelist()
+        ref_nml['cogroup_nml'] = {'x': 3}
+        ref_nml.add_cogroup('cogroup_nml', {'x': 4})
+        ref_nml['case_check_nml'] = {'y': 1}
+        ref_nml.add_cogroup('case_check_nml', {'y': 2})
+        try:
+            self.assertEqual(ref_nml, test_nml)
+        finally:
+            os.remove('tmp.nml')
+
+    def test_cogroup_patch_new_group(self):
+        # cogroup.nml has no &new_nml, so the whole patch is left over.
+        cg_patch = f90nml.Namelist()
+        cg_patch.create_cogroup('new_nml')
+        cg_patch.add_cogroup('new_nml', {'a': 1})
+        cg_patch.add_cogroup('new_nml', {'a': 2})
+        test_nml = f90nml.patch('cogroup.nml', cg_patch, 'tmp.nml')
+        try:
+            self.assertEqual([{'a': 1}, {'a': 2}], test_nml['new_nml'])
+        finally:
+            os.remove('tmp.nml')
+
     def test_key_repeat(self):
         test_nml = f90nml.read('key_repeat.nml')
         self.assertEqual(test_nml, self.key_repeat_nml)
