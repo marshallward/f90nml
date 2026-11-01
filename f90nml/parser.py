@@ -788,7 +788,8 @@ class Parser(object):
 
     def _record_indexed_var(self, parent, v_name, v_idx_bounds):
         """Build the FIndex for an indexed assignment and update the parent."""
-        v_idx = FIndex(bounds=v_idx_bounds, first=self.global_start_index)
+        v_idx = FIndex(bounds=v_idx_bounds, first=self.global_start_index,
+                       default_start_index=self.default_start_index)
 
         if v_name.lower() in parent.start_index:
             p_idx = parent.start_index[v_name.lower()]
