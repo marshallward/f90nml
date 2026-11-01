@@ -310,6 +310,9 @@ class Namelist(OrderedDict):
         start index are assumed to begin with `default_start_index`.  This
         index is shown when printing the namelist output.
 
+        For multidimensional numeric arrays, the same default is used for
+        unspecified outer dimensions.
+
         If set to `None`, then no start index is assumed and is left as
         implicit for any vectors undefined in `start_index`.
         """
@@ -708,14 +711,35 @@ class Namelist(OrderedDict):
         a namelist section.  Rather, it updates the values within a section.
         """
         for sec in nml_patch:
-            if sec not in self:
-                self[sec] = Namelist()
+            sec_patch = nml_patch[sec]
+            key = sec._key if isinstance(sec, NmlKey) else sec
 
-            if '_index' in nml_patch[sec]:
-                index = int(nml_patch[sec].pop('_index'))
-                self[sec][index].update(nml_patch[sec])
+            if key.startswith('_grp_'):
+                # Repeated group names are stored as cogroups, so the patch is
+                #   applied to the target's corresponding group.
+                grp = _cogroup_basename(key)
+
+                # A plain group of the target is promoted first, or it would
+                #   be left beside an empty duplicate of the patched one.
+                if grp in self and grp not in self._cogroups:
+                    self.create_cogroup(grp)
+
+                index = nml_patch._cogroups[grp].index(key)
+                while index >= len(self._cogroups.get(grp, [])):
+                    self.add_cogroup(grp, Namelist())
+                self[grp][index].update(sec_patch)
+
             else:
-                self[sec].update(nml_patch[sec])
+                if sec not in self:
+                    self[key] = Namelist()
+
+                # NOTE: Resolve the name through `__getitem__`, so that a
+                #   cogroup target is updated as a whole.
+                if '_index' in sec_patch:
+                    index = int(sec_patch.pop('_index'))
+                    self[key][index].update(sec_patch)
+                else:
+                    self[key].update(sec_patch)
 
     def groups(self):
         """Return an iterator that spans values with group and variable names.
@@ -806,10 +830,11 @@ class Namelist(OrderedDict):
             # NOTE: Fixing this would also clean up the output of todict(),
             # which is now incorrectly documenting unspecified indices as 1.
 
-            # For now, we will assume 1-based indexing here, just to keep
-            # things working smoothly.
+            # Use the configured default where available, otherwise fall back
+            # to 1-based indexing to keep multidimensional output working.
             if i_s is None:
-                i_s = 1
+                i_s = (self.default_start_index
+                       if self.default_start_index is not None else 1)
 
             for idx, val in enumerate(v_values, start=i_s):
                 v_idx_new = v_idx + [idx]

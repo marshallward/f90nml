@@ -77,6 +77,8 @@ class Parser(object):
         :type: ``int``
         :default: 1
 
+        This value applies to omitted lower bounds in every array dimension.
+
         Since Fortran allows users to set an arbitrary start index, it is not
         always possible to assign an index to values when no index range has
         been provided.
@@ -343,7 +345,14 @@ class Parser(object):
             v_name = None
 
             # TODO: Edit `Namelist` to support case-insensitive `get` calls
-            grp_patch = nml_patch.pop(g_name.lower(), Namelist())
+            # NOTE: A patch may contain cogroups, i.e. repeated group names,
+            #   so the next group matching this name is popped.
+            g_key = g_name.lower()
+            for p_key in nml_patch.keys():
+                if p_key == g_key:
+                    g_key = p_key._key
+                    break
+            grp_patch = nml_patch.pop(g_key, Namelist())
 
             # Populate the namelist group
             while g_name:
@@ -433,7 +442,10 @@ class Parser(object):
 
             # Now append the values to the output namelist
             for grp in nml_patch:
-                nmls[grp] = nml_patch[grp]
+                if grp._key.startswith('_grp_'):
+                    nmls.add_cogroup(str(grp), nml_patch[grp])
+                else:
+                    nmls[grp] = nml_patch[grp]
 
         return nmls
 

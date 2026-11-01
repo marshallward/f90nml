@@ -59,9 +59,8 @@ for d in (
 ):
     M['blank'].update(d)
 
-# This doesn't actually get used more than once, but it is correct.
 M['cmt'] = {c: 'cmt' for c in notchar('\n')}
-M['cmt']['\n'] = 'end'
+M['cmt']['\n'] = 'blank'
 
 
 # Identifiers (keywords, functions, variables, ...)
@@ -102,7 +101,6 @@ for d in (
     {c: 'num_float_e' for c in 'eEdD'},
     {'.': 'num_frac'},
     {c: 'num_float_sign' for c in '+-'},
-    {'_': 'num_kind'},
     {c: 'end' for c in notchar(digit + '+-._eEdD')},
 ):
     M['num'].update(d)
@@ -112,7 +110,6 @@ for d in (
     {c: 'num_frac' for c in digit},
     {c: 'num_float_e' for c in 'eEdD'},
     {c: 'num_float_sign' for c in '+-'},
-    {'_': 'num_kind'},
     {c: 'end' for c in notchar(digit + '+-_eEdD')},
 ):
     M['num_frac'].update(d)
@@ -134,36 +131,9 @@ M['num_float_sign'] = {c: 'num_float_exp' for c in digit}
 M['num_float_exp'] = {}
 for d in (
     {c: 'num_float_exp' for c in digit},
-    {'_': 'num_kind'},
     {c: 'end' for c in notchar(digit + '_')},
 ):
     M['num_float_exp'].update(d)
-
-# Numeric kind token (_)
-M['num_kind'] = {}
-for d in (
-    {c: 'num_kind_name' for c in alpha},
-    {c: 'num_kind_int' for c in digit},
-):
-    M['num_kind'].update(d)
-
-# Numeric kind as a variable name
-# NOTE: This is identical to name, but might be useful for tokenization
-M['num_kind_name'] = {}
-for d in (
-    {c: 'num_kind_name' for c in alnum},
-    {c: 'end' for c in notchar(alnum)},
-):
-    M['num_kind_name'].update(d)
-
-# Numeric kind as coded integer
-# XXX: Why is this alnum?  Shouldn't it be digit?
-M['num_kind_int'] = {}
-for d in (
-    {c: 'num_kind_int' for c in alnum},
-    {c: 'end' for c in notchar(alnum)},
-):
-    M['num_kind_int'].update(d)
 
 # ----
 # Old numeric stuff.. not sure how it holds up
@@ -173,7 +143,6 @@ for d in (
 M['dec'] = {}
 for d in (
     {c: 'num' for c in digit},
-    {'_': 'num_kind'},
     {c: 'op_keyword' for c in notchar('eEdD', ref=alpha)},
     {c: 'op_kw_test' for c in 'eEdD'},
     {c: 'end' for c in notchar(digit + alpha + '_')},
@@ -227,56 +196,35 @@ for d in (
     M['op_keyword'].update(d)
 
 
-def scan(file):
+def scan(source):
     lexemes = []
 
     lex = ''
     state = 'start'
 
-    for line in file:
-        linelx = []
-
-        for char in line:
+    # This is the "unit of characters" from the input source.
+    # For files, this is a line.  For strings, this is a character.
+    for unit in source:
+        for char in unit:
             try:
                 state = M[state][char]
             except KeyError:
                 # This catches potential unicode characters in a string.
-                # TODO: What about non-delimited strings?
-                if state in ('str_a', 'str_q') and char == '\n':
-                    # However, non-closed strings are an error
+                if state not in ('str_a', 'str_q'):
                     raise
 
-            if state not in ('end', 'cmt'):
+            if state != 'end':
                 lex += char
 
-            elif (state == 'end'):
-                linelx.append(lex)
+            else:
+                lexemes.append(lex)
 
                 # Re-evaluate the current token (as a lookback)
                 lex = char
                 state = M['start'][char]
 
-            elif (state == 'cmt'):
-                # Find the index of the first comment character.
-                buf = ''.join(linelx) + lex
-                idx = len(buf[buf.rfind('\n') + 1:])
-
-                # Skip per-character iteration and append the comment as blank.
-                lex += line[idx:]
-                state = 'blank'
-
-                break
-
-        lexemes.extend(linelx)
-
     # Append any trailing lexeme
     if lex:
-        try:
-            assert any('end' in M[state][c] for c in M[state])
-        except AssertionError:
-            print(M[state])
-            raise
-
         lexemes.append(lex)
 
     return lexemes
