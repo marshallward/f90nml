@@ -136,6 +136,10 @@ def parse():
     update_nml = {}
     if args.variable:
         if not args.group:
+            if not input_data:
+                print('f90nml: error: no namelist groups in input; '
+                      'specify a group with --group.', file=sys.stderr)
+                sys.exit(-1)
             # Use the first available group
             grp = list(input_data.keys())[0]
             warnings.warn(
