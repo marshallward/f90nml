@@ -863,6 +863,39 @@ class Test(unittest.TestCase):
             nml = f90nml.reads("&g\n  {0}\n/\n".format(text))
             self.assertEqual({'g': {'s': expected}}, nml, msg=text)
 
+    def test_array_section_component_null_update(self):
+        for values, expected in [(', 2', [10, 2]),
+                                 ('2*', [10, 20]),
+                                 ('0,', [0, 20])]:
+            nml = f90nml.reads(
+                '&g s(1:2)%foo = 10, 20 s(1:2)%FOO = {0} /'
+                .format(values))
+            self.assertEqual(
+                {'g': {'s': [{'foo': v} for v in expected]}}, nml)
+            self.assertEqual(nml, f90nml.reads(str(nml)))
+
+    def test_array_section_component_nested_null_update(self):
+        nml = f90nml.reads(
+            '&g s(1:3)%inner%foo = 10, 20, 30 '
+            's(1:3:2)%inner%foo = , 0 /')
+        self.assertEqual(
+            {'g': {'s': [{'inner': {'foo': v}} for v in [10, 20, 0]]}},
+            nml)
+        self.assertEqual(nml, f90nml.reads(str(nml)))
+
+    def test_array_section_component_logical_null_update(self):
+        nml = f90nml.reads(
+            '&g s(1:2)%flag = .true., .true. '
+            's(1:2)%flag = , .false. /')
+        self.assertEqual(
+            {'g': {'s': [{'flag': True}, {'flag': False}]}}, nml)
+        self.assertEqual(nml, f90nml.reads(str(nml)))
+
+    def test_array_section_component_unset_null(self):
+        nml = f90nml.reads('&g s(1:2)%foo = , 2 /')
+        self.assertEqual(
+            {'g': {'s': [{'foo': None}, {'foo': 2}]}}, nml)
+
     def test_array_section_component_edge_cases(self):
         # Higher index first -> lower index second
         nml = f90nml.reads(
