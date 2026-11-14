@@ -775,7 +775,8 @@ class Parser(object):
                     child = Namelist()
                     node[name] = child
                 node = child
-            node[path[-1]] = val
+            if val is not None or path[-1] not in node:
+                node[path[-1]] = val
 
         parent[v_name] = vpar
         parent.start_index[v_name.lower()] = [base]
