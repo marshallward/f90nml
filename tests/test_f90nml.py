@@ -1485,6 +1485,38 @@ class Test(unittest.TestCase):
         finally:
             os.remove('tmp.nml')
 
+    def test_todict_preserves_complex_array(self):
+        nml = f90nml.reads('&config values = (1, 2), (3, 4) /')
+        group = nml['config']
+        original = str(nml)
+
+        converted = group.todict(complex_tuple=True)
+
+        self.assertEqual(converted, {
+            'values': [[1.0, 2.0], [3.0, 4.0]],
+            '_complex': ['values'],
+        })
+        self.assertEqual(group['values'], [1+2j, 3+4j])
+        self.assertEqual(group.todict(complex_tuple=True), converted)
+        self.assertEqual(str(nml), original)
+        self.assertEqual(f90nml.Namelist(converted), group)
+
+    def test_todict_preserves_derived_type_array(self):
+        nml = f90nml.reads('&config points(1)%x = 1, points(3)%x = 3 /')
+        group = nml['config']
+        points = list(group['points'])
+        original = str(nml)
+
+        converted = group.todict()
+
+        self.assertEqual(converted['points'], [{'x': 1}, None, {'x': 3}])
+        self.assertNotIsInstance(converted['points'][0], f90nml.Namelist)
+        for actual, expected in zip(group['points'], points):
+            self.assertIs(actual, expected)
+        self.assertEqual(group.todict(), converted)
+        self.assertEqual(str(nml), original)
+        self.assertEqual(f90nml.Namelist(converted), group)
+
     def test_del_item(self):
         test_nml = f90nml.read('types.nml')
         del1 = copy.deepcopy(self.types_nml)

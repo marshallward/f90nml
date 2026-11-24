@@ -1089,6 +1089,7 @@ class Namelist(OrderedDict):
                     nmldict['_complex'] = [key]
 
             elif isinstance(value, list):
+                nmldict[key] = list(value)
                 complex_list = False
                 for idx, entry in enumerate(value):
                     if isinstance(entry, Namelist):
