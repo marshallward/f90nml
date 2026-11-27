@@ -1694,6 +1694,14 @@ class Test(unittest.TestCase):
             target_str = target.read()
             self.assertEqual(source_str, target_str)
 
+    def test_cli_variable_requires_group(self):
+        expected = ('f90nml: error: no namelist groups in input; '
+                    'specify a group with --group.\n')
+        for input_args in ([], ['empty_file']):
+            cmd = ['f90nml', '-v', 'foo=1'] + input_args
+            self.assertEqual(self.get_cli_output(cmd, get_stderr=True),
+                             expected)
+
     def test_cli_replace_write(self):
         cmd = ['f90nml', '-g', 'types_nml', '-v', 'v_integer=5',
                '-v', 'v_logical=.false.', 'types.nml', 'tmp.nml']
